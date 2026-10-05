@@ -1,0 +1,21 @@
+{
+  "name": "PixKit — Minimal Image Studio",
+  "short_name": "PixKit",
+  "description": "Private, client-side, all-in-one PWA image studio.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FBFBF8",
+  "theme_color": "#FBFBF8",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

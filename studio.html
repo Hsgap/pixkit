@@ -1,0 +1,2441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PixKit — Minimal PWA Image Studio</title>
+  <meta name="description" content="PixKit is a private, client-side, all-in-one PWA image studio. Fast, minimal, zero backend.">
+  <link rel="stylesheet" href="styles/main.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FBFBF8">
+</head>
+<body>
+  <div class="shell">
+    
+    <!-- Topbar Navigation -->
+    <header class="topbar">
+      <div class="brand-nav-group">
+        <a href="index.html" class="brand" title="PixKit Home & Wave Engine" style="text-decoration:none;">
+          <span class="mark">✳</span>pixkit
+        </a>
+        <nav class="nav" aria-label="Main Navigation">
+          <button id="nav-home" class="nav-link active" onclick="showView('home')">Home</button>
+          <button id="nav-edit" class="nav-link" onclick="showView('edit')">Edit Image</button>
+          <button id="nav-convert" class="nav-link" onclick="showView('convert')">Convert</button>
+        </nav>
+      </div>
+
+      <div class="topbar-right">
+        <!-- Keyboard Shortcuts Trigger Button -->
+        <button class="shortcuts-toggle-btn" onclick="toggleShortcutsModal(true)" title="Keyboard Shortcuts (Press ?)" aria-label="Keyboard Shortcuts">
+          <span class="shortcuts-btn-icon">⌨️</span>
+          <span class="shortcuts-btn-text">Shortcuts</span>
+          <kbd class="shortcuts-badge">?</kbd>
+        </button>
+
+        <label class="action-btn-sm" style="cursor:pointer;" title="Upload custom image">
+          <span>↑ Upload Image</span>
+          <input type="file" accept="image/*" class="global-file-picker" hidden>
+        </label>
+        
+        <!-- Magic UI Animated Theme Toggle Button -->
+        <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle Light / Dark mode" onclick="toggleThemeAnimated(event)">
+          <!-- Sun Icon (Light mode) -->
+          <svg class="sun-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2"></path>
+            <path d="M12 20v2"></path>
+            <path d="m4.93 4.93 1.41 1.41"></path>
+            <path d="m17.66 17.66 1.41 1.41"></path>
+            <path d="M2 12h2"></path>
+            <path d="M20 12h2"></path>
+            <path d="m6.34 17.66-1.41 1.41"></path>
+            <path d="m19.07 4.93-1.41 1.41"></path>
+          </svg>
+          <!-- Moon Icon (Dark mode) -->
+          <svg class="moon-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+        </button>
+
+        <div class="privacy-badge">
+          <span>🔒 100% In-Browser Private</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- ============================================================== -->
+      <!-- 1. HOME SCREEN                                                 -->
+      <!-- ============================================================== -->
+      <section class="view active" id="home-view">
+        <div class="hero">
+          <div>
+            <div class="eyebrow">Your private image studio</div>
+            <h1 class="kinetic-text-wrap" id="hero-kinetic-title" aria-label="Make every image feel just right.">
+              <span class="kinetic-line">Make every image</span>
+              <span class="kinetic-line">feel just right.</span>
+            </h1>
+            <p>A calm, minimal image editor running 100% in your browser. Fast, private, and with zero tracking.</p>
+            
+            <label class="upload-zone" id="home-upload-zone">
+              <span class="upload-icon">↑</span>
+              <strong>Drop an image or choose file</strong>
+              <small>JPG, PNG, WEBP, SVG, HEIC up to 25 MB</small>
+              <input type="file" accept="image/*" class="global-file-picker" hidden>
+            </label>
+          </div>
+
+          <!-- Aceternity UI 3D Card Effect Container -->
+          <div class="mock-wrap" id="hero-3d-card-container">
+            <div class="mock-card-body" id="hero-3d-card-body">
+              <div class="photo-preview" id="hero-photo-preview" onclick="showView('edit')" style="cursor: pointer;" title="Click to edit image in studio">
+                <!-- Uploaded custom image preview (dynamic) -->
+                <img id="hero-preview-img" class="hero-preview-img" alt="Uploaded Image Preview" style="display: none;" />
+                
+                <!-- Default Sample Artwork -->
+                <div class="photo-artwork" id="hero-sample-artwork">
+                  <i class="sun"></i>
+                  <i class="mountain"></i>
+                  <i class="mountain back"></i>
+                  <i class="water"></i>
+                </div>
+
+                <!-- Dynamic 3D Card Glare Sheen Reflection Layer -->
+                <div class="card-glare" id="hero-card-glare"></div>
+              </div>
+
+              <!-- 3D Layered Floating Badges -->
+              <div class="float-badge a">
+                <span class="tiny-icon">⌗</span>
+                <span><b>8 Edit Tools</b><br><small style="color:var(--muted)">Resize, Crop, Adjust & more</small></span>
+              </div>
+              <div class="float-badge b">
+                <span class="tiny-icon">🔒</span>
+                <span><b>Private & Fast</b><br><small style="color:var(--muted)">Processed locally in browser</small></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="eyebrow" style="margin-bottom: 12px;">Choose a workflow</div>
+        
+        <div class="category-cards-grid">
+          <div class="cat-feature-card highlight" onclick="showView('edit')">
+            <div class="cat-card-top">
+              <div class="cat-icon-tile">✎</div>
+              <span class="cat-pill-badge">8 Tools</span>
+            </div>
+            <div>
+              <h3>Edit Image</h3>
+              <p>Resize, crop, rotate & flip, compress, adjust tones, preset filters, add text, and draw shapes.</p>
+            </div>
+            <div class="cat-card-footer">
+              <span>Explore 8 Edit Tools</span>
+              <span>→</span>
+            </div>
+          </div>
+
+          <div class="cat-feature-card highlight" onclick="showView('convert')">
+            <div class="cat-card-top">
+              <div class="cat-icon-tile">⇄</div>
+              <span class="cat-pill-badge">6 Tools</span>
+            </div>
+            <div>
+              <h3>Convert Formats</h3>
+              <p>Switch seamlessly between JPG, PNG, WebP, AVIF, SVG, HEIC, ICO, and PDF documents.</p>
+            </div>
+            <div class="cat-card-footer">
+              <span>Explore 6 Convert Tools</span>
+              <span>→</span>
+            </div>
+          </div>
+
+          <div class="cat-feature-card" onclick="showToast('Optimize suite coming in next step')">
+            <div class="cat-card-top">
+              <div class="cat-icon-tile">◉</div>
+              <span class="cat-pill-badge" style="background:var(--soft); color:var(--muted);">Fast</span>
+            </div>
+            <div>
+              <h3>Optimize & Batch</h3>
+              <p>Reduce file size drastically for web speed and social sharing without visual loss.</p>
+            </div>
+            <div class="cat-card-footer">
+              <span>Batch Tools</span>
+              <span>→</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 2. EDIT CATEGORY SCREEN (8 Tool Rows)                          -->
+      <!-- ============================================================== -->
+      <section class="view" id="edit-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Category · 8 Studio Tools</div>
+            <h1>Edit Image</h1>
+            <p>Select any tool to open its dedicated live editing workspace.</p>
+          </div>
+          <button class="back-btn" onclick="showView('home')">
+            <span>←</span> Back to Home
+          </button>
+        </div>
+
+        <div class="tool-rows-list">
+          <!-- 1. Resize -->
+          <div class="tool-row-card" onclick="openToolWorkspace('resize')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">↗</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Resize</strong>
+                  <span class="tool-number-badge">01</span>
+                </div>
+                <p>Change image dimensions by exact pixels or scaling percentage</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Dimensions</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 2. Crop -->
+          <div class="tool-row-card" onclick="openToolWorkspace('crop')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">⌗</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Crop</strong>
+                  <span class="tool-number-badge">02</span>
+                </div>
+                <p>Trim image to selected custom area or fixed aspect ratio</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Framing</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 3. Rotate & Flip -->
+          <div class="tool-row-card" onclick="openToolWorkspace('rotate')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">⤾</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Rotate & Flip</strong>
+                  <span class="tool-number-badge">03</span>
+                </div>
+                <p>90° steps, custom straighten angle, horizontal and vertical flip</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Orientation</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 4. Compress -->
+          <div class="tool-row-card" onclick="openToolWorkspace('compress')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">◉</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Compress</strong>
+                  <span class="tool-number-badge">04</span>
+                </div>
+                <p>Reduce file size with visual quality slider and live savings estimate</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Optimization</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 5. Adjust -->
+          <div class="tool-row-card" onclick="openToolWorkspace('adjust')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">☼</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Adjust</strong>
+                  <span class="tool-number-badge">05</span>
+                </div>
+                <p>Fine-tune brightness, contrast, saturation, and exposure levels</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Tone & Light</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 6. Filters -->
+          <div class="tool-row-card" onclick="openToolWorkspace('filters')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">✧</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Filters</strong>
+                  <span class="tool-number-badge">06</span>
+                </div>
+                <p>Preset curated color looks: Black & White, Vintage, Warm Film, Cool Tone</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Aesthetic</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 7. Add Text -->
+          <div class="tool-row-card" onclick="openToolWorkspace('text')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">T</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Add Text</strong>
+                  <span class="tool-number-badge">07</span>
+                </div>
+                <p>Overlay typographic text with interactive cursor drag, font size, and color</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Typography</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 8. Draw & Shapes -->
+          <div class="tool-row-card" onclick="openToolWorkspace('draw')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">✎</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Draw & Shapes</strong>
+                  <span class="tool-number-badge">08</span>
+                </div>
+                <p>Freehand drawing brush, arrows, rectangles, circles, and movable shapes</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Annotation</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 9. Blur & Focus -->
+          <div class="tool-row-card" onclick="openToolWorkspace('blur')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">◎</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Blur & Focus</strong>
+                  <span class="tool-number-badge">09</span>
+                </div>
+                <p>Radial bokeh focus, tilt-shift miniature effect, and Gaussian background blur</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Depth</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 3. CONVERT CATEGORY SCREEN (6 Conversion Tools)                -->
+      <!-- ============================================================== -->
+      <section class="view" id="convert-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Category · 6 Convert Tools</div>
+            <h1>Convert Formats</h1>
+            <p>Convert images between formats, rasterize vector SVGs, create favicons, or export to PDF.</p>
+          </div>
+          <button class="back-btn" onclick="showView('home')">
+            <span>←</span> Back to Home
+          </button>
+        </div>
+
+        <div class="tool-rows-list">
+          <!-- 1. Format Converter -->
+          <div class="tool-row-card" onclick="openToolWorkspace('convert-format')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">⇄</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Format Converter</strong>
+                  <span class="tool-number-badge">01</span>
+                </div>
+                <p>Convert between JPG, PNG, WEBP, AVIF, HEIC, and BMP with custom quality</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Multi-Format</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 2. HEIC to JPG -->
+          <div class="tool-row-card" onclick="openToolWorkspace('convert-heic')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">📱</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>HEIC to JPG</strong>
+                  <span class="tool-number-badge">02</span>
+                </div>
+                <p>Convert iPhone and iPad HEIC photos to standard high-quality JPG</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Apple / iPhone</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 3. SVG to PNG -->
+          <div class="tool-row-card" onclick="openToolWorkspace('convert-svg')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">⬡</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>SVG to PNG</strong>
+                  <span class="tool-number-badge">03</span>
+                </div>
+                <p>Rasterize vector SVG files to sharp, high-resolution PNG with custom scale</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Vector Rasterizer</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 4. Image to ICO -->
+          <div class="tool-row-card" onclick="openToolWorkspace('convert-ico')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">★</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Image to ICO</strong>
+                  <span class="tool-number-badge">04</span>
+                </div>
+                <p>Create multi-size website favicons (.ico) from any image format</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Favicon</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 5. Image to Base64 -->
+          <div class="tool-row-card" onclick="openToolWorkspace('convert-base64')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">&lt;/&gt;</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Image to Base64</strong>
+                  <span class="tool-number-badge">05</span>
+                </div>
+                <p>Encode image into Data URL / Base64 string for CSS, HTML, and web APIs</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Developer</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 6. Image to PDF -->
+          <div class="tool-row-card" onclick="openToolWorkspace('convert-pdf')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">📄</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Image to PDF</strong>
+                  <span class="tool-number-badge">06</span>
+                </div>
+                <p>Convert and package single or multiple images into a clean PDF file</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Document</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 1 WORKSPACE: RESIZE                                       -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-resize-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 01 · Edit Suite</div>
+            <h1>Resize Image</h1>
+            <p>Change dimensions by exact pixels, percentage scale, or social presets.</p>
+          </div>
+          <button class="back-btn" onclick="showView('edit')">← Back to Edit Tools</button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <span>Preview</span>
+              <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
+                <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
+              </div>
+            </div>
+            <div class="stage-viewport">
+              <div class="canvas-wrapper">
+                <canvas id="canvas-resize"></canvas>
+              </div>
+            </div>
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">↗</span>
+                <div>
+                  <strong class="img-meta-name">mountain-view.jpg</strong>
+                  <small class="img-meta-dims">1600 × 1200 px</small>
+                </div>
+              </div>
+              <label class="action-btn-sm" style="cursor:pointer;">
+                Replace image
+                <input type="file" accept="image/*" class="global-file-picker" hidden>
+              </label>
+            </div>
+          </div>
+
+          <aside class="settings-panel">
+            <h3>Resize Settings</h3>
+            <p class="sub">Set target pixel dimensions or scale percentage.</p>
+
+            <div class="form-group">
+              <div class="form-label">
+                <label>Dimensions</label>
+                <span>Pixels (px)</span>
+              </div>
+              <div class="input-row">
+                <input id="resize-w" class="input-text" type="number" value="1600">
+                <button id="aspect-btn" class="link-btn active" title="Lock aspect ratio" onclick="toggleAspect()">⛓</button>
+                <input id="resize-h" class="input-text" type="number" value="1200">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Quick Presets</label>
+              <div class="preset-grid">
+                <button class="preset-card active" onclick="setPresetSize(1600, 1200, this)">
+                  <strong>Original</strong>
+                  <small>1600 × 1200</small>
+                </button>
+                <button class="preset-card" onclick="setPresetSize(1080, 1080, this)">
+                  <strong>Square (1:1)</strong>
+                  <small>1080 × 1080</small>
+                </button>
+                <button class="preset-card" onclick="setPresetSize(1080, 1920, this)">
+                  <strong>Story (9:16)</strong>
+                  <small>1080 × 1920</small>
+                </button>
+                <button class="preset-card" onclick="setPresetSize(1200, 630, this)">
+                  <strong>Social Preview</strong>
+                  <small>1200 × 630</small>
+                </button>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <button class="btn-primary" onclick="applyResizeAction(true)">Resize & Download</button>
+            <button class="btn-secondary" onclick="applyResizeAction(false)">Apply Dimensions</button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 2 WORKSPACE: CROP                                         -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-crop-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 02 · Edit Suite</div>
+            <h1>Crop Image</h1>
+            <p>Trim image framing to standard aspect ratios or custom selection.</p>
+          </div>
+          <button class="back-btn" onclick="showView('edit')">← Back to Edit Tools</button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <span>Crop Framing</span>
+              <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
+                <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
+              </div>
+            </div>
+            <div class="stage-viewport">
+              <div class="canvas-wrapper crop-canvas-wrapper" style="position:relative;">
+                <canvas id="canvas-crop"></canvas>
+                <div id="crop-box" class="crop-overlay">
+                  <!-- Rule-of-thirds grid -->
+                  <div class="crop-grid-line crop-grid-h1"></div>
+                  <div class="crop-grid-line crop-grid-h2"></div>
+                  <div class="crop-grid-line crop-grid-v1"></div>
+                  <div class="crop-grid-line crop-grid-v2"></div>
+
+                  <!-- Live Dimension Badge -->
+                  <div class="crop-dim-badge" id="crop-dim-badge">1200 × 800 px</div>
+
+                  <!-- 8 Interactive Resize Handles -->
+                  <div class="crop-handle tl" data-handle="tl" title="Resize Top-Left"></div>
+                  <div class="crop-handle tc" data-handle="tc" title="Resize Top"></div>
+                  <div class="crop-handle tr" data-handle="tr" title="Resize Top-Right"></div>
+                  <div class="crop-handle ml" data-handle="ml" title="Resize Left"></div>
+                  <div class="crop-handle mr" data-handle="mr" title="Resize Right"></div>
+                  <div class="crop-handle bl" data-handle="bl" title="Resize Bottom-Left"></div>
+                  <div class="crop-handle bc" data-handle="bc" title="Resize Bottom"></div>
+                  <div class="crop-handle br" data-handle="br" title="Resize Bottom-Right"></div>
+                </div>
+              </div>
+            </div>
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">⌗</span>
+                <div>
+                  <strong class="img-meta-name">mountain-view.jpg</strong>
+                  <small id="crop-status-label">Crop Selection</small>
+                </div>
+              </div>
+              <label class="action-btn-sm" style="cursor:pointer;">
+                Replace image
+                <input type="file" accept="image/*" class="global-file-picker" hidden>
+              </label>
+            </div>
+          </div>
+
+          <aside class="settings-panel">
+            <h3>Crop Framing</h3>
+            <p class="sub">Freely draw with mouse or pick an aspect ratio preset.</p>
+
+            <div class="drag-tip-banner" style="margin-bottom:14px;">
+              <span>🖱️</span>
+              <span><strong>Mouse Control:</strong> Drag corners/edges to resize, drag center to move, or drag on image to draw a free box.</span>
+            </div>
+
+            <div class="preset-grid">
+              <button class="preset-card active" onclick="setCropRatio('free', this)">
+                <strong>Freeform</strong>
+                <small>Mouse drag / draw</small>
+              </button>
+              <button class="preset-card" onclick="setCropRatio('1:1', this)">
+                <strong>Square (1:1)</strong>
+                <small>Avatar / Post</small>
+              </button>
+              <button class="preset-card" onclick="setCropRatio('4:5', this)">
+                <strong>Portrait (4:5)</strong>
+                <small>Instagram feed</small>
+              </button>
+              <button class="preset-card" onclick="setCropRatio('16:9', this)">
+                <strong>Landscape (16:9)</strong>
+                <small>Banner / Video</small>
+              </button>
+              <button class="preset-card" onclick="setCropRatio('3:2', this)">
+                <strong>Classic (3:2)</strong>
+                <small>Standard Photo</small>
+              </button>
+              <button class="preset-card" onclick="setCropRatio('9:16', this)">
+                <strong>Story (9:16)</strong>
+                <small>Reel / Mobile</small>
+              </button>
+            </div>
+
+            <div class="divider"></div>
+
+            <button class="btn-primary" onclick="applyCropAction(true)">Crop & Download</button>
+            <button class="btn-secondary" onclick="applyCropAction(false)">Apply Crop</button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 3 WORKSPACE: ROTATE & FLIP                                -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-rotate-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 03 · Edit Suite</div>
+            <h1>Rotate & Flip</h1>
+            <p>Turn 90° steps, fine horizon angle, or flip horizontally and vertically.</p>
+          </div>
+          <button class="back-btn" onclick="showView('edit')">← Back to Edit Tools</button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <span>Orientation</span>
+              <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
+                <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
+              </div>
+            </div>
+            <div class="stage-viewport">
+              <div class="canvas-wrapper">
+                <canvas id="canvas-rotate"></canvas>
+              </div>
+            </div>
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">⤾</span>
+                <div>
+                  <strong class="img-meta-name">mountain-view.jpg</strong>
+                  <small id="rotate-angle-info">Angle: 0°</small>
+                </div>
+              </div>
+              <label class="action-btn-sm" style="cursor:pointer;">
+                Replace image
+                <input type="file" accept="image/*" class="global-file-picker" hidden>
+              </label>
+            </div>
+          </div>
+
+          <aside class="settings-panel">
+            <h3>Rotate & Mirror</h3>
+            
+            <div class="form-group">
+              <label class="form-label">Step Rotation</label>
+              <div class="btn-group-row">
+                <button class="btn-secondary" style="margin:0;" onclick="stepRotate(-90)">↺ 90° Left</button>
+                <button class="btn-secondary" style="margin:0;" onclick="stepRotate(90)">↻ 90° Right</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Mirror / Flip</label>
+              <div class="btn-group-row">
+                <button class="btn-secondary" style="margin:0;" onclick="flipAxis('h')">⇄ Flip Horiz</button>
+                <button class="btn-secondary" style="margin:0;" onclick="flipAxis('v')">⇅ Flip Vert</button>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <button class="btn-primary" onclick="applyRotateAction(true)">Apply & Download</button>
+            <button class="btn-secondary" onclick="applyRotateAction(false)">Commit Orientation</button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 4 WORKSPACE: COMPRESS                                     -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-compress-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 04 · Edit Suite</div>
+            <h1>Compress Image</h1>
+            <p>Reduce file size with auto-calibrated target size, custom pixel budget, or manual quality.</p>
+          </div>
+          <button class="back-btn" onclick="showView('edit')">← Back to Edit Tools</button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <span id="compress-stage-title">Compressed Live Preview</span>
+              <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" id="btn-compress-compare" onmousedown="showCompressOriginal(true)" onmouseup="showCompressOriginal(false)" ontouchstart="showCompressOriginal(true)" ontouchend="showCompressOriginal(false)">
+                  <span>⇄ Hold to View Original</span>
+                </button>
+              </div>
+            </div>
+            <div class="stage-viewport">
+              <div class="canvas-wrapper">
+                <canvas id="canvas-compress"></canvas>
+              </div>
+            </div>
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">◉</span>
+                <div>
+                  <strong class="img-meta-name">mountain-view.jpg</strong>
+                  <small id="compress-stat">Auto-calibrated optimal compression</small>
+                </div>
+              </div>
+              <label class="action-btn-sm" style="cursor:pointer;">
+                Replace image
+                <input type="file" accept="image/*" class="global-file-picker" hidden>
+              </label>
+            </div>
+          </div>
+
+          <aside class="settings-panel">
+            <h3>Compression Mode</h3>
+            <p class="sub">Choose how you want to optimize your image.</p>
+
+            <!-- Mode Selector Tabs (Segmented Control) -->
+            <div class="segmented-control" style="margin: 14px 0 16px;">
+              <button id="compress-tab-target" class="segment-btn active" onclick="setCompressMode('target')">
+                🎯 Target Size
+              </button>
+              <button id="compress-tab-pixels" class="segment-btn" onclick="setCompressMode('pixels')">
+                📏 Pixel Size
+              </button>
+              <button id="compress-tab-manual" class="segment-btn" onclick="setCompressMode('manual')">
+                🎚️ Manual
+              </button>
+            </div>
+
+            <!-- MODE 1: TARGET FILE SIZE (AUTO-CALIBRATION) -->
+            <div id="compress-mode-target-panel" class="compress-mode-panel">
+              <label class="field-label">Target File Size (Strictly Under)</label>
+              <div class="input-with-select">
+                <input id="compress-target-val" type="number" class="text-input" min="5" max="50000" value="200" oninput="calibrateCompressTarget()" placeholder="e.g. 200" />
+                <select id="compress-target-unit" class="select-dropdown unit-select" onchange="calibrateCompressTarget()">
+                  <option value="KB" selected>KB</option>
+                  <option value="MB">MB</option>
+                </select>
+              </div>
+
+              <!-- Quick Target Size Presets -->
+              <div class="quick-chips" style="margin-top: 10px;">
+                <button class="chip-btn" onclick="setQuickTargetSize(100, 'KB')">100 KB</button>
+                <button class="chip-btn" onclick="setQuickTargetSize(200, 'KB')">200 KB</button>
+                <button class="chip-btn" onclick="setQuickTargetSize(500, 'KB')">500 KB</button>
+                <button class="chip-btn" onclick="setQuickTargetSize(1, 'MB')">1 MB</button>
+                <button class="chip-btn" onclick="setQuickTargetSize(2, 'MB')">2 MB</button>
+              </div>
+
+              <div class="calibrated-status-card" id="calibrated-status-card" style="margin-top: 16px;">
+                <div class="calibrated-row">
+                  <span>Auto-Tuned Quality:</span>
+                  <strong id="calibrated-quality-text">82%</strong>
+                </div>
+                <div class="calibrated-row">
+                  <span>Calibrated Dimensions:</span>
+                  <strong id="calibrated-dims-text">1600 × 1200 px</strong>
+                </div>
+                <div class="calibrated-row">
+                  <span>Calibrated File Size:</span>
+                  <strong id="calibrated-size-text" class="highlight-text">184 KB</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- MODE 2: PIXEL SIZE / DIMENSIONS (PIXEL ENTER FEATURE) -->
+            <div id="compress-mode-pixels-panel" class="compress-mode-panel" style="display: none;">
+              <div class="form-group">
+                <div class="form-label">
+                  <label>Target Dimensions</label>
+                  <span>Width × Height (px)</span>
+                </div>
+                <div class="input-row">
+                  <input id="compress-px-width" class="input-text" type="number" min="30" max="12000" placeholder="Width" oninput="onCompressPxChange('width')" />
+                  <button id="compress-px-lock-btn" class="link-btn active" title="Lock Aspect Ratio" onclick="toggleCompressAspectLock()">⛓</button>
+                  <input id="compress-px-height" class="input-text" type="number" min="30" max="12000" placeholder="Height" oninput="onCompressPxChange('height')" />
+                </div>
+              </div>
+
+              <!-- Quick Pixel Presets -->
+              <div class="form-group" style="margin-top: 10px;">
+                <label class="form-label">Quick Presets</label>
+                <div class="quick-chips">
+                  <button class="chip-btn" onclick="setCompressPxPreset(1920, 1080)">1080p FHD</button>
+                  <button class="chip-btn" onclick="setCompressPxPreset(1280, 720)">720p HD</button>
+                  <button class="chip-btn" onclick="setCompressPxPreset(1080, 1080)">1:1 Square</button>
+                  <button class="chip-btn" onclick="setCompressPxPreset(800, 600)">Web 800px</button>
+                </div>
+              </div>
+
+              <div class="slider-group" style="margin-top: 16px;">
+                <div class="slider-header">
+                  <span>Visual Quality</span>
+                  <strong id="compress-px-quality-val">82%</strong>
+                </div>
+                <input id="compress-px-slider" class="range-slider" type="range" min="15" max="98" value="82" oninput="updateCompressPxLive()">
+              </div>
+            </div>
+
+            <!-- MODE 3: MANUAL QUALITY SLIDER -->
+            <div id="compress-mode-manual-panel" class="compress-mode-panel" style="display: none;">
+              <div class="slider-group">
+                <div class="slider-header">
+                  <span>Compression Quality</span>
+                  <strong id="compress-quality-val">80%</strong>
+                </div>
+                <input id="compress-slider" class="range-slider" type="range" min="10" max="98" value="80" oninput="updateCompressManualLive()">
+                <div class="slider-ticks">
+                  <span>Max Compression</span>
+                  <span>Balanced</span>
+                  <span>Best Quality</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Output Format -->
+            <div style="margin-top: 16px;">
+              <label class="field-label">Export Format</label>
+              <div class="radio-pill-group">
+                <label class="radio-pill">
+                  <input type="radio" name="compress-format" value="image/jpeg" checked onchange="recalculateCompression()">
+                  <span>JPEG (Universal)</span>
+                </label>
+                <label class="radio-pill">
+                  <input type="radio" name="compress-format" value="image/webp" onchange="recalculateCompression()">
+                  <span>WebP (Ultra Small)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Live Savings Summary Card -->
+            <div class="summary-stat-box" style="margin-top: 16px;">
+              <div class="stat-badge-row">
+                <span class="stat-label">Original: <b id="compress-orig-size">2.4 MB</b></span>
+                <span class="savings-pill" id="compress-savings-badge">↓ 88% Savings</span>
+              </div>
+              <div class="stat-detail-line">
+                <span>Compressed Output:</span>
+                <strong id="compress-final-size">280 KB</strong>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <button class="btn-primary" onclick="downloadCompressedAction()">↓ Download Compressed File</button>
+            <button class="btn-secondary" style="margin-top: 8px; width: 100%;" onclick="applyCompressedToStudio()">✓ Apply & Keep in Studio</button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 5 WORKSPACE: ADJUST                                       -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-adjust-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 05 · Edit Suite</div>
+            <h1>Adjust Light & Tones</h1>
+            <p>Fine-tune brightness, contrast, saturation, and warmth levels.</p>
+          </div>
+          <button class="back-btn" onclick="showView('edit')">← Back to Edit Tools</button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <span>Live Tone Adjustments</span>
+              <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
+                <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
+              </div>
+            </div>
+            <div class="stage-viewport">
+              <div class="canvas-wrapper">
+                <canvas id="canvas-adjust"></canvas>
+              </div>
+            </div>
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">☼</span>
+                <div>
+                  <strong class="img-meta-name">mountain-view.jpg</strong>
+                  <small>Real-time Tone Sliders</small>
+                </div>
+              </div>
+              <label class="action-btn-sm" style="cursor:pointer;">
+                Replace image
+                <input type="file" accept="image/*" class="global-file-picker" hidden>
+              </label>
+            </div>
+          </div>
+
+          <aside class="settings-panel">
+            <h3>Lighting Controls</h3>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>Brightness</span>
+                <strong id="lbl-bright">100%</strong>
+              </div>
+              <input id="adj-bright" class="range-slider" type="range" min="40" max="170" value="100" oninput="updateAdjustPreview()">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>Contrast</span>
+                <strong id="lbl-contrast">100%</strong>
+              </div>
+              <input id="adj-contrast" class="range-slider" type="range" min="40" max="170" value="100" oninput="updateAdjustPreview()">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>Saturation</span>
+                <strong id="lbl-sat">100%</strong>
+              </div>
+              <input id="adj-sat" class="range-slider" type="range" min="0" max="200" value="100" oninput="updateAdjustPreview()">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>Warmth</span>
+                <strong id="lbl-warmth">0</strong>
+              </div>
+              <input id="adj-warmth" class="range-slider" type="range" min="-50" max="50" value="0" oninput="updateAdjustPreview()">
+            </div>
+
+            <div class="divider"></div>
+
+            <button class="btn-primary" onclick="applyAdjustAction(true)">Apply & Download</button>
+            <button class="btn-secondary" onclick="applyAdjustAction(false)">Commit Adjustments</button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 6 WORKSPACE: FILTERS                                      -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-filters-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 06 · Edit Suite</div>
+            <h1>Preset Filters</h1>
+            <p>Curated color aesthetics: Black & White, Vintage, Warm Film, Cool Tone.</p>
+          </div>
+          <button class="back-btn" onclick="showView('edit')">← Back to Edit Tools</button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <span>Filter Look</span>
+              <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
+                <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
+              </div>
+            </div>
+            <div class="stage-viewport">
+              <div class="canvas-wrapper">
+                <canvas id="canvas-filters"></canvas>
+              </div>
+            </div>
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">✧</span>
+                <div>
+                  <strong class="img-meta-name">mountain-view.jpg</strong>
+                  <small>Preset Looks</small>
+                </div>
+              </div>
+              <label class="action-btn-sm" style="cursor:pointer;">
+                Replace image
+                <input type="file" accept="image/*" class="global-file-picker" hidden>
+              </label>
+            </div>
+          </div>
+
+          <aside class="settings-panel">
+            <h3>Preset Styles</h3>
+
+            <div class="preset-grid">
+              <button class="preset-card active" onclick="applyFilterPreset('natural', this)">
+                <strong>Natural</strong>
+                <small>Original</small>
+              </button>
+              <button class="preset-card" onclick="applyFilterPreset('bw', this)">
+                <strong>B&W Classic</strong>
+                <small>Monochrome</small>
+              </button>
+              <button class="preset-card" onclick="applyFilterPreset('vintage', this)">
+                <strong>Vintage</strong>
+                <small>Sepia & Soft</small>
+              </button>
+              <button class="preset-card" onclick="applyFilterPreset('warm', this)">
+                <strong>Warm Film</strong>
+                <small>Golden tone</small>
+              </button>
+              <button class="preset-card" onclick="applyFilterPreset('cool', this)">
+                <strong>Cool Ocean</strong>
+                <small>Clean blue</small>
+              </button>
+              <button class="preset-card" onclick="applyFilterPreset('crisp', this)">
+                <strong>Crisp Pop</strong>
+                <small>Vibrant punch</small>
+              </button>
+            </div>
+
+            <div class="divider"></div>
+
+            <button class="btn-primary" onclick="commitFilterAction(true)">Apply & Download</button>
+            <button class="btn-secondary" onclick="commitFilterAction(false)">Commit Look</button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 7 WORKSPACE: ADD TEXT (Interactive Cursor Drag & Move)    -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-text-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 07 · Edit Suite</div>
+            <h1>Add Text</h1>
+            <p>Type text and drag it anywhere across the image with your cursor.</p>
+          </div>
+          <button class="back-btn" onclick="showView('edit')">← Back to Edit Tools</button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <span class="stage-hint">✋ Click & drag text anywhere on canvas to reposition</span>
+              <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
+                <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
+              </div>
+            </div>
+            <div class="stage-viewport">
+              <div class="canvas-wrapper" style="cursor:grab;">
+                <canvas id="canvas-text"></canvas>
+              </div>
+            </div>
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">T</span>
+                <div>
+                  <strong class="img-meta-name">mountain-view.jpg</strong>
+                  <small id="text-pos-readout">Drag text with cursor</small>
+                </div>
+              </div>
+              <label class="action-btn-sm" style="cursor:pointer;">
+                Replace image
+                <input type="file" accept="image/*" class="global-file-picker" hidden>
+              </label>
+            </div>
+          </div>
+
+          <aside class="settings-panel">
+            <h3>Text Settings</h3>
+
+            <div class="drag-tip-banner">
+              <span>Tip: Click & drag text on image with cursor</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Text Content</label>
+              <input id="txt-content" class="input-text" type="text" value="PixKit Studio" oninput="updateTextLive()">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Quick Align Preset</label>
+              <div class="preset-grid">
+                <button class="preset-card" onclick="setQuickTextPos('center')"><strong>Center</strong></button>
+                <button class="preset-card active" onclick="setQuickTextPos('bottom-right')"><strong>Bottom Right</strong></button>
+                <button class="preset-card" onclick="setQuickTextPos('top-left')"><strong>Top Left</strong></button>
+                <button class="preset-card" onclick="setQuickTextPos('top-right')"><strong>Top Right</strong></button>
+              </div>
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>Font Size</span>
+                <strong id="lbl-txt-size">52px</strong>
+              </div>
+              <input id="txt-size" class="range-slider" type="range" min="16" max="140" value="52" oninput="updateTextLive()">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Color</label>
+              <div style="display:flex; gap:8px;">
+                <select id="txt-color" class="input-select" onchange="updateTextLive()" style="flex:1;">
+                  <option value="#FFFFFF">White (#FFF)</option>
+                  <option value="#22241F">PixKit Ink (#22241F)</option>
+                  <option value="#D7F36A">PixKit Lime (#D7F36A)</option>
+                  <option value="#F4DF9A">Sun Gold (#F4DF9A)</option>
+                  <option value="#E5484D">Red (#E5484D)</option>
+                </select>
+                <input id="txt-color-custom" type="color" value="#FFFFFF" style="width:40px; height:40px; padding:0; border:1px solid var(--line); border-radius:10px; cursor:pointer;" oninput="document.getElementById('txt-color').value = this.value; updateTextLive();">
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <button class="btn-primary" onclick="commitTextAction(true)">Apply & Download</button>
+            <button class="btn-secondary" onclick="commitTextAction(false)">Commit Text</button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 8 WORKSPACE: DRAW & SHAPES (With Move & Reposition Mode)  -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-draw-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 08 · Edit Suite</div>
+            <h1>Draw & Shapes</h1>
+            <p>Draw freehand, add shapes, and use "Select & Move" to reposition shapes with cursor.</p>
+          </div>
+          <button class="back-btn" onclick="showView('edit')">← Back to Edit Tools</button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <span class="stage-hint" id="draw-mode-hint">✎ Draw mode: Drag on canvas to draw</span>
+              <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="clearDrawings()">Clear All</button>
+                <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
+                <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
+              </div>
+            </div>
+            <div class="stage-viewport">
+              <div class="canvas-wrapper" style="cursor:crosshair;">
+                <canvas id="canvas-draw"></canvas>
+              </div>
+            </div>
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">✎</span>
+                <div>
+                  <strong class="img-meta-name">mountain-view.jpg</strong>
+                  <small id="shapes-count-label">0 shapes on canvas</small>
+                </div>
+              </div>
+              <label class="action-btn-sm" style="cursor:pointer;">
+                Replace image
+                <input type="file" accept="image/*" class="global-file-picker" hidden>
+              </label>
+            </div>
+          </div>
+
+          <aside class="settings-panel">
+            <h3>Tools & Shapes</h3>
+
+            <div class="form-group">
+              <label class="form-label">Mode / Tool</label>
+              <div class="btn-group-row">
+                <button id="tool-pen" class="btn-secondary" style="margin:0; font-weight:700; background:var(--lime-tint); border-color:var(--accent-lime-border);" onclick="setDrawMode('pen')">✎ Pen</button>
+                <button id="tool-move" class="btn-secondary" style="margin:0;" onclick="setDrawMode('move')">✋ Move / Select</button>
+              </div>
+              <div class="btn-group-row" style="margin-top:8px;">
+                <button id="tool-rect" class="btn-secondary" style="margin:0;" onclick="setDrawMode('rect')">Rectangle</button>
+                <button id="tool-circle" class="btn-secondary" style="margin:0;" onclick="setDrawMode('circle')">Circle</button>
+                <button id="tool-arrow-btn" class="btn-secondary" style="margin:0;" onclick="setDrawMode('arrow')">Arrow</button>
+              </div>
+            </div>
+
+            <div class="drag-tip-banner" id="move-tip-box" style="display:none;">
+              <span>✋ Select & drag any shape on canvas to move it!</span>
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span>Stroke Width</span>
+                <strong id="lbl-draw-stroke">5px</strong>
+              </div>
+              <input id="draw-stroke" class="range-slider" type="range" min="1" max="36" value="5" oninput="updateDrawStroke(this.value)">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Shape Color</label>
+              <div style="display:flex; gap:8px;">
+                <select id="draw-color" class="input-select" style="flex:1;">
+                  <option value="#D7F36A">PixKit Lime (#D7F36A)</option>
+                  <option value="#22241F">PixKit Ink (#22241F)</option>
+                  <option value="#FFFFFF">White (#FFF)</option>
+                  <option value="#E5484D">Red (#E5484D)</option>
+                  <option value="#007AFF">Blue (#007AFF)</option>
+                  <option value="#F4DF9A">Yellow (#F4DF9A)</option>
+                </select>
+                <input id="draw-color-custom" type="color" value="#D7F36A" style="width:40px; height:40px; padding:0; border:1px solid var(--line); border-radius:10px; cursor:pointer;" oninput="document.getElementById('draw-color').value = this.value;">
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <button class="btn-primary" onclick="commitDrawAction(true)">Save & Download</button>
+            <button class="btn-secondary" onclick="commitDrawAction(false)">Commit Drawings</button>
+          </aside>
+        </div>
+      </section>
+
+
+
+      <!-- ============================================================== -->
+      <!-- 09. BLUR & FOCUS WORKSPACE                                     -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-blur-view">
+        <div class="workspace-header">
+          <div class="breadcrumb">
+            <a onclick="showView('edit')">Edit Image</a>
+            <span>/</span>
+            <strong>Blur & Focus</strong>
+          </div>
+          <button class="back-btn" onclick="showView('edit')">
+            <span>←</span> Back to Tools
+          </button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="canvas-stage">
+            <div class="canvas-wrapper" style="position:relative;">
+              <canvas id="canvas-blur" class="stage-canvas"></canvas>
+              <canvas id="canvas-blur-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:auto; cursor:crosshair;"></canvas>
+            </div>
+            <div class="canvas-meta">
+              <span id="meta-blur">Ready · Drag guide or paint to blur</span>
+              <label class="action-btn-sm" style="cursor:pointer;">
+                Replace image
+                <input type="file" accept="image/*" class="global-file-picker" hidden>
+              </label>
+            </div>
+          </div>
+
+          <aside class="settings-panel">
+            <h3>Focus & Depth</h3>
+
+            <div class="form-group">
+              <label class="form-label">Blur Mode</label>
+              <div class="preset-grid" style="grid-template-columns: repeat(2, 1fr);">
+                <button id="blur-mode-radial" class="preset-card active" onclick="setBlurMode('radial')"><strong>◎ Bokeh Lens</strong></button>
+                <button id="blur-mode-tilt" class="preset-card" onclick="setBlurMode('tiltshift')"><strong>⌸ Tilt-Shift</strong></button>
+                <button id="blur-mode-brush" class="preset-card" onclick="setBlurMode('brush')"><strong>🖌 Blur Brush</strong></button>
+                <button id="blur-mode-full" class="preset-card" onclick="setBlurMode('full')"><strong>▦ Full Blur</strong></button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Blur Style & Effect</label>
+              <div class="preset-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <button id="blur-type-gaussian" class="preset-card active" onclick="setBlurType('gaussian')">
+                  <strong>Simple</strong>
+                  <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Gaussian</span>
+                </button>
+                <button id="blur-type-pixelate" class="preset-card" onclick="setBlurType('pixelate')">
+                  <strong>Pixelated</strong>
+                  <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Mosaic</span>
+                </button>
+                <button id="blur-type-motion" class="preset-card" onclick="setBlurType('motion')">
+                  <strong>Motion</strong>
+                  <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Streak</span>
+                </button>
+                <button id="blur-type-zoom" class="preset-card" onclick="setBlurType('zoom')">
+                  <strong>Zoom</strong>
+                  <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Radial Spin</span>
+                </button>
+                <button id="blur-type-frosted" class="preset-card" onclick="setBlurType('frosted')">
+                  <strong>Frosted</strong>
+                  <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Glass Prism</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span id="lbl-blur-strength-title">Blur Intensity</span>
+                <strong id="lbl-blur-radius">18px</strong>
+              </div>
+              <input id="blur-radius" class="range-slider" type="range" min="2" max="48" value="18" oninput="updateBlurLive()">
+            </div>
+
+            <!-- Shown in Radial & TiltShift -->
+            <div class="slider-group" id="group-focus-radius">
+              <div class="slider-header">
+                <span id="lbl-focus-title">Sharp Focus Area</span>
+                <strong id="lbl-focus-size">35%</strong>
+              </div>
+              <input id="blur-focus-size" class="range-slider" type="range" min="10" max="85" value="35" oninput="updateBlurLive()">
+            </div>
+
+            <!-- Shown in Brush Mode -->
+            <div class="slider-group" id="group-blur-brush-size" style="display:none;">
+              <div class="slider-header">
+                <span>Brush Size</span>
+                <strong id="lbl-blur-brush-size">45px</strong>
+              </div>
+              <input id="blur-brush-size" class="range-slider" type="range" min="10" max="160" value="45" oninput="updateBlurBrushSize(this.value)">
+            </div>
+
+            <div class="form-group" id="group-blur-brush-tools" style="display:none;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label class="form-label" style="margin:0;">Painted Blur Areas</label>
+                <button class="action-btn-sm" style="color:#E5484D; background:rgba(229,72,77,0.1);" onclick="clearBlurBrush()">✕ Clear Brush</button>
+              </div>
+              <p style="font-size:12px; color:var(--muted); margin-top:6px;">Paint directly with cursor/pen over areas you want to blur.</p>
+            </div>
+
+            <!-- Overlay Boundary Toggle -->
+            <div class="form-group" id="group-blur-guides">
+              <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:600; font-size:13px;">
+                <input id="blur-show-guides" type="checkbox" checked onchange="drawBlurOverlayGuides()" style="width:18px; height:18px; accent-color:var(--ink);">
+                <span>Show Focus Boundary Guidelines</span>
+              </label>
+            </div>
+
+            <div class="drag-tip-banner" id="blur-mode-tip">
+              <span>Tip: Drag on image to move the focus point. Boundary lines show sharp vs blurred zones.</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <button class="btn-primary" onclick="commitBlurAction(true)">Save & Download</button>
+            <button class="btn-secondary" onclick="commitBlurAction(false)">Apply Blur</button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 10 WORKSPACE: FORMAT CONVERTER                            -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-convert-format-view">
+        <div class="workspace-header">
+          <div class="breadcrumb">
+            <a onclick="showView('convert')">Convert</a>
+            <span>/</span>
+            <strong>Format Converter</strong>
+          </div>
+          <button class="back-btn" onclick="showView('convert')">
+            <span>←</span> Back to Convert Tools
+          </button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="canvas-stage">
+            <div class="canvas-wrapper">
+              <canvas id="canvas-convert-format" class="stage-canvas"></canvas>
+            </div>
+            <div class="canvas-meta">
+              <span id="meta-convert-format">Ready · Select target format</span>
+              <label class="action-btn-sm" style="cursor:pointer;">
+                Replace image
+                <input type="file" accept="image/*" class="global-file-picker" hidden>
+              </label>
+            </div>
+          </div>
+
+          <aside class="settings-panel">
+            <h3>Format Converter</h3>
+            <p class="sub">Convert between standard and next-gen raster formats with quality controls.</p>
+
+            <!-- Target Format Selection -->
+            <div class="form-group">
+              <label class="form-label">Target Format</label>
+              <div class="preset-grid" style="grid-template-columns: repeat(auto-fit, minmax(95px, 1fr));">
+                <button id="fmt-opt-jpeg" class="preset-card active" onclick="setConvertTargetFormat('jpeg')">
+                  <strong>JPG</strong>
+                  <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Universal</span>
+                </button>
+                <button id="fmt-opt-png" class="preset-card" onclick="setConvertTargetFormat('png')">
+                  <strong>PNG</strong>
+                  <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Lossless / Alpha</span>
+                </button>
+                <button id="fmt-opt-webp" class="preset-card" onclick="setConvertTargetFormat('webp')">
+                  <strong>WEBP</strong>
+                  <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Modern Web</span>
+                </button>
+                <button id="fmt-opt-avif" class="preset-card" onclick="setConvertTargetFormat('avif')">
+                  <strong>AVIF</strong>
+                  <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Next-Gen</span>
+                </button>
+                <button id="fmt-opt-heic" class="preset-card" onclick="setConvertTargetFormat('heic')">
+                  <strong>HEIC</strong>
+                  <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Apple Photos</span>
+                </button>
+                <button id="fmt-opt-svg" class="preset-card" onclick="setConvertTargetFormat('svg')">
+                  <strong>SVG</strong>
+                  <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Vector XML</span>
+                </button>
+                <button id="fmt-opt-ico" class="preset-card" onclick="setConvertTargetFormat('ico')">
+                  <strong>ICO</strong>
+                  <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Favicon</span>
+                </button>
+                <button id="fmt-opt-bmp" class="preset-card" onclick="setConvertTargetFormat('bmp')">
+                  <strong>BMP</strong>
+                  <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Bitmap RAW</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Quality Slider (shown for JPG, WEBP, AVIF) -->
+            <div class="slider-group" id="convert-quality-group">
+              <div class="slider-header">
+                <span id="lbl-convert-q-title">Compression Quality</span>
+                <strong id="lbl-convert-quality">90%</strong>
+              </div>
+              <input id="convert-quality" class="range-slider" type="range" min="10" max="100" value="90" oninput="updateConvertQuality(this.value)">
+              <div class="preset-chips" style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                <button class="chip-btn" id="chip-q-100" onclick="setConvertQualityPreset(100)">Max (100%)</button>
+                <button class="chip-btn active" id="chip-q-90" onclick="setConvertQualityPreset(90)">High (90%)</button>
+                <button class="chip-btn" id="chip-q-75" onclick="setConvertQualityPreset(75)">Balanced (75%)</button>
+                <button class="chip-btn" id="chip-q-50" onclick="setConvertQualityPreset(50)">Small (50%)</button>
+              </div>
+            </div>
+
+            <!-- Transparency / Background Color Fill (shown for JPG and BMP which lack alpha) -->
+            <div class="form-group" id="convert-bg-fill-group">
+              <label class="form-label">Background Color (for transparent areas)</label>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <input type="color" id="convert-bg-color" value="#ffffff" oninput="updateConvertBgPreview(this.value)" style="width:40px; height:36px; border:1px solid var(--line); border-radius:var(--radius-sm); cursor:pointer; padding:2px; background:var(--paper);">
+                <div style="display:flex; gap:6px; flex:1;">
+                  <button class="chip-btn active" id="btn-bg-white" onclick="setConvertBgColor('#ffffff')">White</button>
+                  <button class="chip-btn" id="btn-bg-black" onclick="setConvertBgColor('#000000')">Black</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Conversion Statistics & Savings Card -->
+            <div class="metric-card" style="margin:16px 0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Output Comparison</span>
+                <span id="convert-savings-badge" class="badge-pill" style="background:var(--paper); border:1px solid var(--line); color:var(--ink);">Estimating...</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size:11px; color:var(--muted);">Original (<span id="convert-orig-format">JPG</span>)</div>
+                  <strong id="convert-orig-size" style="font-size:13px; color:var(--ink);">--</strong>
+                </div>
+                <div style="font-size:16px; color:var(--muted);">→</div>
+                <div style="text-align:right;">
+                  <div style="font-size:11px; color:var(--muted);">Target (<span id="convert-target-name">JPG</span>)</div>
+                  <strong id="convert-est-size" style="font-size:15px; color:var(--ink);">--</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <button id="btn-convert-download" class="btn-primary" onclick="commitConvertAction(true)">Convert & Download JPG</button>
+            <button class="btn-secondary" onclick="commitConvertAction(false)">Apply in Workspace</button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 11 WORKSPACE: HEIC TO JPG                                 -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-convert-heic-view">
+        <div class="workspace-header">
+          <div class="breadcrumb">
+            <a onclick="showView('convert')">Convert</a>
+            <span>/</span>
+            <strong>HEIC to JPG</strong>
+          </div>
+          <button class="back-btn" onclick="showView('convert')">
+            <span>←</span> Back to Convert Tools
+          </button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="canvas-stage">
+            <div class="canvas-wrapper">
+              <canvas id="canvas-convert-heic" class="stage-canvas"></canvas>
+            </div>
+            <div class="canvas-meta">
+              <span id="meta-convert-heic">Ready · Upload an iPhone HEIC photo</span>
+              <label class="action-btn-sm" style="cursor:pointer;">
+                Select HEIC Photo
+                <input type="file" id="picker-convert-heic" accept=".heic,.heif,image/heic,image/heif,image/*" onchange="handleHeicFileSelect(event)" hidden>
+              </label>
+            </div>
+          </div>
+
+          <aside class="settings-panel">
+            <h3>HEIC to JPG Converter</h3>
+            <p class="sub">Convert Apple iPhone & iPad HEIC/HEIF photos to universal high-quality JPG or PNG.</p>
+
+            <!-- Format Status / Warning Banner -->
+            <div id="heic-format-alert" class="alert-banner-danger" style="display:none;">
+              <div style="display:flex; align-items:flex-start; gap:8px;">
+                <span style="font-size:16px; line-height:1.2;">⚠️</span>
+                <div>
+                  <strong style="display:block; font-size:13px; margin-bottom:2px;">Incorrect Format Detected</strong>
+                  <span id="heic-warning-text" style="font-size:11.5px; line-height:1.45;">
+                    The currently loaded file is not an Apple HEIC photo. Please choose a <strong>.heic</strong> or <strong>.heif</strong> file to use this converter.
+                  </span>
+                </div>
+              </div>
+              <label class="btn-primary" style="margin-top:4px; width:100%; text-align:center; cursor:pointer; background:#dc2626; border-color:#dc2626; color:#fff; display:flex; justify-content:center; align-items:center; gap:8px; padding:8px 12px; font-size:12px;">
+                <span>📱</span> Select .HEIC / .HEIF Photo
+                <input type="file" accept=".heic,.heif,image/heic,image/heif" onchange="handleHeicFileSelect(event)" hidden>
+              </label>
+            </div>
+
+            <!-- Valid Format Success Banner -->
+            <div id="heic-format-success" class="alert-banner-success" style="display:none; padding:8px 12px; font-size:11.5px;">
+              <span>✓</span> <span id="heic-success-text">Valid Apple HEIC photo ready for conversion.</span>
+            </div>
+
+            <!-- Conversion Format -->
+            <div class="form-group">
+              <label class="form-label">Output Format</label>
+              <div class="preset-grid" style="grid-template-columns: repeat(2, 1fr);">
+                <button id="heic-fmt-jpg" class="preset-card active" onclick="setHeicTargetFormat('jpeg')">
+                  <strong>JPG</strong>
+                  <small>Universal & Compact</small>
+                </button>
+                <button id="heic-fmt-png" class="preset-card" onclick="setHeicTargetFormat('png')">
+                  <strong>PNG</strong>
+                  <small>Lossless Quality</small>
+                </button>
+              </div>
+            </div>
+
+            <!-- Quality Slider -->
+            <div class="slider-group" id="heic-quality-group">
+              <div class="slider-header">
+                <span id="lbl-heic-q-title">JPG Output Quality</span>
+                <strong id="lbl-heic-quality">92%</strong>
+              </div>
+              <input id="heic-quality" class="range-slider" type="range" min="10" max="100" value="92" oninput="updateHeicQuality(this.value)">
+              <div class="preset-chips" style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                <button class="chip-btn" id="chip-heic-100" onclick="setHeicQualityPreset(100)">Max (100%)</button>
+                <button class="chip-btn active" id="chip-heic-92" onclick="setHeicQualityPreset(92)">High (92%)</button>
+                <button class="chip-btn" id="chip-heic-80" onclick="setHeicQualityPreset(80)">Medium (80%)</button>
+                <button class="chip-btn" id="chip-heic-65" onclick="setHeicQualityPreset(65)">Compact (65%)</button>
+              </div>
+            </div>
+
+            <!-- Apple Optimization Info Tip -->
+            <div class="drag-tip-banner" style="margin-top:14px;">
+              <span>📱 <strong>100% Private Client-Side:</strong> Decoded directly in your browser memory without uploading to any remote servers.</span>
+            </div>
+
+            <!-- Live Conversion Statistics Card -->
+            <div class="metric-card" style="margin:16px 0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Output Comparison</span>
+                <span id="heic-savings-badge" class="badge-pill" style="background:var(--lime-tint); border:1px solid var(--accent-lime-border); color:#2d6a4f;">Estimating...</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size:11px; color:var(--muted);">Source (<span id="heic-orig-format">HEIC</span>)</div>
+                  <strong id="heic-orig-size" style="font-size:13px; color:var(--ink);">--</strong>
+                </div>
+                <div style="font-size:16px; color:var(--muted);">→</div>
+                <div style="text-align:right;">
+                  <div style="font-size:11px; color:var(--muted);">Target (<span id="heic-target-name">JPG</span>)</div>
+                  <strong id="heic-est-size" style="font-size:15px; color:var(--ink);">--</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <button id="btn-heic-download" class="btn-primary" onclick="commitHeicAction(true)">Convert & Download JPG</button>
+            <button class="btn-secondary" onclick="commitHeicAction(false)">Open in PixKit Studio</button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 12 WORKSPACE: SVG TO PNG RASTERIZER                        -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-convert-svg-view">
+        <div class="workspace-header">
+          <div class="breadcrumb">
+            <a onclick="showView('convert')">Convert</a>
+            <span>/</span>
+            <strong>SVG to PNG</strong>
+          </div>
+          <button class="back-btn" onclick="showView('convert')">
+            <span>←</span> Back to Convert Tools
+          </button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="canvas-stage">
+            <div class="canvas-wrapper">
+              <canvas id="canvas-convert-svg" class="stage-canvas"></canvas>
+            </div>
+            <div class="canvas-meta">
+              <span id="meta-convert-svg">Ready · Select SVG resolution scale</span>
+              <label class="action-btn-sm" style="cursor:pointer;">
+                Select SVG File
+                <input type="file" id="picker-convert-svg" accept=".svg,image/svg+xml" onchange="handleSvgFileSelect(event)" hidden>
+              </label>
+            </div>
+          </div>
+
+          <aside class="settings-panel">
+            <h3>SVG to PNG Rasterizer</h3>
+            <p class="sub">Rasterize scalable vector SVG graphics into ultra-sharp high-resolution PNG with alpha transparency.</p>
+
+            <!-- Format Status / Red Warning Banner -->
+            <div id="svg-format-alert" class="alert-banner-danger" style="display:none;">
+              <div style="display:flex; align-items:flex-start; gap:8px;">
+                <span style="font-size:16px; line-height:1.2;">⚠️</span>
+                <div>
+                  <strong style="display:block; font-size:13px; margin-bottom:2px;">Incorrect Format Detected</strong>
+                  <span id="svg-warning-text" style="font-size:11.5px; line-height:1.45;">
+                    The currently loaded file is not a vector SVG file. Please choose or upload an <strong>.svg</strong> file to use this rasterizer.
+                  </span>
+                </div>
+              </div>
+              <div style="display:flex; gap:8px; margin-top:4px;">
+                <label class="btn-primary" style="flex:1; text-align:center; cursor:pointer; background:#dc2626; border-color:#dc2626; color:#fff; display:flex; justify-content:center; align-items:center; gap:8px; padding:8px 12px; font-size:12px;">
+                  <span>⬡</span> Select .SVG Vector
+                  <input type="file" accept=".svg,image/svg+xml" onchange="handleSvgFileSelect(event)" hidden>
+                </label>
+                <button class="chip-btn" style="background:var(--paper); border:1px solid var(--line); font-size:11px;" onclick="loadSampleSvgVector()">
+                  Use Demo SVG
+                </button>
+              </div>
+            </div>
+
+            <!-- Valid Format Success Banner -->
+            <div id="svg-format-success" class="alert-banner-success" style="display:none; padding:8px 12px; font-size:11.5px;">
+              <span>✓</span> <span id="svg-success-text">Valid SVG vector loaded.</span>
+            </div>
+
+            <!-- Scale Multipliers Grid -->
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label class="form-label" style="margin-bottom:0;">Resolution Scale</label>
+                <strong id="lbl-svg-dimensions" style="font-size:12px; color:var(--ink);">1024 × 1024 px</strong>
+              </div>
+              <div class="preset-grid" style="grid-template-columns: repeat(4, 1fr);">
+                <button id="svg-scale-1" class="preset-card" onclick="setSvgScale(1)">
+                  <strong>1×</strong>
+                  <small>Standard</small>
+                </button>
+                <button id="svg-scale-2" class="preset-card active" onclick="setSvgScale(2)">
+                  <strong>2×</strong>
+                  <small>Retina HD</small>
+                </button>
+                <button id="svg-scale-3" class="preset-card" onclick="setSvgScale(3)">
+                  <strong>3×</strong>
+                  <small>Ultra HD</small>
+                </button>
+                <button id="svg-scale-4" class="preset-card" onclick="setSvgScale(4)">
+                  <strong>4×</strong>
+                  <small>4K Print</small>
+                </button>
+              </div>
+            </div>
+
+            <!-- Custom Dimensions Input Row -->
+            <div class="form-group">
+              <label class="form-label">Custom Output Size (px)</label>
+              <div class="input-row">
+                <div class="input-with-unit">
+                  <input type="number" id="svg-custom-w" min="16" max="8192" value="1024" placeholder="Width" oninput="handleSvgCustomDimension('width', this.value)" class="input-text">
+                  <span class="unit">W</span>
+                </div>
+                <button id="svg-aspect-lock" class="link-btn active" title="Lock Aspect Ratio" onclick="toggleSvgAspectLock()">
+                  🔒
+                </button>
+                <div class="input-with-unit">
+                  <input type="number" id="svg-custom-h" min="16" max="8192" value="1024" placeholder="Height" oninput="handleSvgCustomDimension('height', this.value)" class="input-text">
+                  <span class="unit">H</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Background Fill Options -->
+            <div class="form-group">
+              <label class="form-label">Background Fill</label>
+              <div class="preset-chips" style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="chip-btn active" id="svg-bg-transparent" onclick="setSvgBackground('transparent')">Transparent (Alpha)</button>
+                <button class="chip-btn" id="svg-bg-white" onclick="setSvgBackground('#ffffff')">White</button>
+                <button class="chip-btn" id="svg-bg-black" onclick="setSvgBackground('#000000')">Black</button>
+                <input type="color" id="svg-bg-custom" value="#ffffff" oninput="setSvgBackground(this.value)" style="width:32px; height:28px; border:1px solid var(--line); border-radius:var(--radius-sm); cursor:pointer; padding:1px; background:var(--paper); display:inline-block; vertical-align:middle;">
+              </div>
+            </div>
+
+            <!-- Output Format (PNG default, WEBP, JPG) -->
+            <div class="form-group">
+              <label class="form-label">Output Target Format</label>
+              <div class="preset-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <button id="svg-fmt-png" class="preset-card active" onclick="setSvgTargetFormat('png')">
+                  <strong>PNG</strong>
+                  <small>Lossless Alpha</small>
+                </button>
+                <button id="svg-fmt-webp" class="preset-card" onclick="setSvgTargetFormat('webp')">
+                  <strong>WEBP</strong>
+                  <small>Modern Web</small>
+                </button>
+                <button id="svg-fmt-jpeg" class="preset-card" onclick="setSvgTargetFormat('jpeg')">
+                  <strong>JPG</strong>
+                  <small>Universal</small>
+                </button>
+              </div>
+            </div>
+
+            <!-- Live Output Statistics Card -->
+            <div class="metric-card" style="margin:16px 0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Rasterization Output</span>
+                <span id="svg-render-badge" class="badge-pill" style="background:var(--lime-tint); border:1px solid var(--accent-lime-border); color:#2d6a4f;">Vector Ready</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size:11px; color:var(--muted);">Source (<span id="svg-orig-format">SVG</span>)</div>
+                  <strong id="svg-orig-size" style="font-size:13px; color:var(--ink);">--</strong>
+                </div>
+                <div style="font-size:16px; color:var(--muted);">→</div>
+                <div style="text-align:right;">
+                  <div style="font-size:11px; color:var(--muted);">Target (<span id="svg-target-name">PNG</span>)</div>
+                  <strong id="svg-est-size" style="font-size:15px; color:var(--ink);">--</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <button id="btn-svg-download" class="btn-primary" onclick="commitSvgAction(true)">Rasterize & Download PNG</button>
+            <button class="btn-secondary" onclick="commitSvgAction(false)">Open in PixKit Studio</button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 13 WORKSPACE: IMAGE TO ICO (FAVICON GENERATOR)             -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-convert-ico-view">
+        <div class="workspace-header">
+          <div class="breadcrumb">
+            <a onclick="showView('convert')">Convert</a>
+            <span>/</span>
+            <strong>Image to ICO</strong>
+          </div>
+          <button class="back-btn" onclick="showView('convert')">
+            <span>←</span> Back to Convert Tools
+          </button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <div class="stage-hint">
+                <span>✨</span>
+                <span>Multi-Resolution Windows .ICO Favicon Simulation</span>
+              </div>
+              <div class="stage-topbar-tools">
+                <span class="badge-pill" style="font-size: 10.5px; background: var(--soft); color: var(--ink);">Multi-Layer Binary</span>
+              </div>
+            </div>
+
+            <div class="stage-viewport" style="display: flex; align-items: center; justify-content: center; padding: 28px; background: var(--stage); overflow-y: auto;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; width: 100%; max-width: 720px; margin: auto;">
+                
+                <!-- Left Card: Master 256px Icon Showcase -->
+                <div style="background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-shadow: var(--shadow-sm); gap: 16px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;">
+                      Master Icon (256px)
+                    </span>
+                    <span class="badge-pill" style="font-size: 10px; background: var(--soft); color: var(--ink);">Hi-Res Source</span>
+                  </div>
+
+                  <div style="width: 170px; height: 170px; display: grid; place-items: center; background: repeating-conic-gradient(#e2e8f0 0% 25%, #ffffff 0% 50%) 50% / 16px 16px; border: 1px solid var(--line); border-radius: var(--radius-md); box-shadow: inset 0 2px 6px rgba(0,0,0,0.04); overflow: hidden; padding: 8px;">
+                    <canvas id="canvas-convert-ico" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 2px;"></canvas>
+                  </div>
+
+                  <span class="badge-pill" style="font-size: 11px; background: var(--soft); color: var(--ink); border: 1px solid var(--line);">
+                    256 × 256 px · 32-bit Alpha
+                  </span>
+                </div>
+
+                <!-- Right Card: Real-World Environment Previews -->
+                <div style="background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-sm); gap: 16px;">
+                  <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                      <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;">
+                        Browser & OS Mockups
+                      </span>
+                      <span class="badge-pill" style="font-size: 10px; background: var(--lime-tint); color: #2d6a4f;">Live</span>
+                    </div>
+
+                    <!-- Simulated Browser Tab -->
+                    <div style="background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; display: flex; align-items: center; gap: 10px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                      <img id="ico-preview-tab-img" src="" style="width: 18px; height: 18px; object-fit: contain; border-radius: 3px;" alt="favicon">
+                      <span style="font-size: 12px; font-weight: 600; color: var(--ink); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        My Website — Home Tab
+                      </span>
+                      <span style="font-size: 11px; color: var(--muted); cursor: default;">✕</span>
+                    </div>
+
+                    <!-- Desktop, Taskbar & Retina Tiles -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; text-align: center;">
+                      <div style="background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 10px 4px;">
+                        <div style="width: 46px; height: 46px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; display: grid; place-items: center; margin: 0 auto 4px auto; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                          <img id="ico-preview-48-img" src="" style="width: 36px; height: 36px; object-fit: contain;" alt="48px">
+                        </div>
+                        <strong style="font-size: 10.5px; color: var(--ink); display: block;">48 × 48</strong>
+                        <span style="font-size: 9.5px; color: var(--muted);">Desktop</span>
+                      </div>
+
+                      <div style="background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 10px 4px;">
+                        <div style="width: 46px; height: 46px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; display: grid; place-items: center; margin: 0 auto 4px auto; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                          <img id="ico-preview-32-img" src="" style="width: 26px; height: 26px; object-fit: contain;" alt="32px">
+                        </div>
+                        <strong style="font-size: 10.5px; color: var(--ink); display: block;">32 × 32</strong>
+                        <span style="font-size: 9.5px; color: var(--muted);">Retina Tab</span>
+                      </div>
+
+                      <div style="background: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 10px 4px;">
+                        <div style="width: 46px; height: 46px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; display: grid; place-items: center; margin: 0 auto 4px auto; box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
+                          <img id="ico-preview-16-img" src="" style="width: 16px; height: 16px; object-fit: contain;" alt="16px">
+                        </div>
+                        <strong style="font-size: 10.5px; color: var(--ink); display: block;">16 × 16</strong>
+                        <span style="font-size: 9.5px; color: var(--muted);">Standard</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="font-size: 10.5px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; display: flex; align-items: center; gap: 6px;">
+                    <span>💡</span> <span>All resolutions are packed into a single <code>.ico</code> binary file.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="stage-footer">
+              <div class="file-info">
+                <span id="meta-convert-ico">Ready · Multi-resolution ICO generator</span>
+              </div>
+              <div class="stage-actions">
+                <label class="btn-ghost btn-sm" style="cursor:pointer;">
+                  Replace image
+                  <input type="file" accept="image/*" class="global-file-picker" hidden>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <aside class="settings-panel">
+            <h3>Image to ICO Generator</h3>
+            <p class="sub">Generate universal multi-resolution Windows .ICO favicons for websites and apps.</p>
+
+            <!-- Multi-Size Selection Grid -->
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label class="form-label" style="margin-bottom:0;">Bundled ICO Resolutions</label>
+                <span id="ico-sizes-count-badge" class="badge-pill" style="font-size:10px; background:var(--lime-tint); color:#2d6a4f; border:1px solid var(--accent-lime-border);">3 Sizes Selected</span>
+              </div>
+              <div class="preset-grid" style="grid-template-columns: repeat(3, 1fr);">
+                <button id="ico-size-16" class="preset-card active" onclick="toggleIcoSize(16)">
+                  <strong>16 × 16</strong>
+                  <small>Browser Tab</small>
+                </button>
+                <button id="ico-size-32" class="preset-card active" onclick="toggleIcoSize(32)">
+                  <strong>32 × 32</strong>
+                  <small>Retina Tab</small>
+                </button>
+                <button id="ico-size-48" class="preset-card active" onclick="toggleIcoSize(48)">
+                  <strong>48 × 48</strong>
+                  <small>Desktop Icon</small>
+                </button>
+                <button id="ico-size-64" class="preset-card" onclick="toggleIcoSize(64)">
+                  <strong>64 × 64</strong>
+                  <small>Windows HD</small>
+                </button>
+                <button id="ico-size-128" class="preset-card" onclick="toggleIcoSize(128)">
+                  <strong>128 × 128</strong>
+                  <small>App Icon</small>
+                </button>
+                <button id="ico-size-256" class="preset-card" onclick="toggleIcoSize(256)">
+                  <strong>256 × 256</strong>
+                  <small>Full HD Icon</small>
+                </button>
+              </div>
+              <div class="preset-chips" style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;">
+                <button class="chip-btn active" id="ico-bundle-standard" onclick="setIcoBundlePreset('standard')">Standard Web (16+32+48)</button>
+                <button class="chip-btn" id="ico-bundle-all" onclick="setIcoBundlePreset('all')">All 6 Sizes (Complete)</button>
+                <button class="chip-btn" id="ico-bundle-single" onclick="setIcoBundlePreset('single')">Single 32px</button>
+              </div>
+            </div>
+
+            <!-- Fit & Cropping Mode -->
+            <div class="form-group">
+              <label class="form-label">Fit Mode (1:1 Square)</label>
+              <div class="preset-chips" style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="chip-btn active" id="ico-fit-cover" onclick="setIcoFitMode('cover')">Center Crop (Cover)</button>
+                <button class="chip-btn" id="ico-fit-contain" onclick="setIcoFitMode('contain')">Fit Entire Icon (Contain)</button>
+                <button class="chip-btn" id="ico-fit-stretch" onclick="setIcoFitMode('stretch')">Stretch</button>
+              </div>
+            </div>
+
+            <!-- HTML Embed Snippet -->
+            <div class="form-group">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                <label class="form-label" style="margin-bottom:0;">HTML Embed Tag</label>
+                <button class="chip-btn" onclick="copyIcoHtmlCode()" style="font-size:11px; padding:3px 8px;">Copy Code</button>
+              </div>
+              <div style="background:var(--soft); border:1px solid var(--line); border-radius:var(--radius-sm); padding:8px 10px; font-family:monospace; font-size:11px; color:var(--ink); word-break:break-all;" id="ico-html-snippet">
+                &lt;link rel="icon" type="image/x-icon" href="/favicon.ico"&gt;
+              </div>
+            </div>
+
+            <!-- Statistics Card -->
+            <div class="metric-card" style="margin:16px 0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Output ICO Package</span>
+                <span id="ico-badge" class="badge-pill" style="background:var(--lime-tint); border:1px solid var(--accent-lime-border); color:#2d6a4f;">ICO Multi-Layer</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size:11px; color:var(--muted);">Source Image</div>
+                  <strong id="ico-orig-dims" style="font-size:13px; color:var(--ink);">--</strong>
+                </div>
+                <div style="font-size:16px; color:var(--muted);">→</div>
+                <div style="text-align:right;">
+                  <div style="font-size:11px; color:var(--muted);">Generated Size</div>
+                  <strong id="ico-est-size" style="font-size:15px; color:var(--ink);">--</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <button id="btn-ico-download" class="btn-primary" onclick="commitIcoAction(true)">Generate & Download favicon.ico</button>
+            <button class="btn-secondary" onclick="commitIcoAction(false)">Open in PixKit Studio</button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 14 WORKSPACE: IMAGE TO BASE64 (DATA URI & SNIPPET GEN)    -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-convert-base64-view">
+        <div class="workspace-header">
+          <div class="breadcrumb">
+            <a onclick="showView('convert')">Convert</a>
+            <span>/</span>
+            <strong>Image to Base64</strong>
+          </div>
+          <button class="back-btn" onclick="showView('convert')">
+            <span>←</span> Back to Convert Tools
+          </button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <div class="stage-hint">
+                <span>&lt;/&gt;</span>
+                <span>Base64 Data URI & Code Snippet Studio</span>
+              </div>
+              <div class="stage-topbar-tools">
+                <span class="badge-pill" style="font-size: 10.5px; background: var(--soft); color: var(--ink);">100% In-Browser Private</span>
+              </div>
+            </div>
+
+            <div class="stage-viewport" style="display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; padding: 24px; gap: 18px; background: var(--stage); overflow-y: auto;">
+              
+              <!-- Code Snippet Card with Toolbar -->
+              <div style="background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 18px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span id="base64-snippet-type-badge" class="badge-pill" style="font-size: 11px; background: var(--lime-tint); color: #2d6a4f; border: 1px solid var(--accent-lime-border); font-weight: 700;">
+                      Data URI Snippet
+                    </span>
+                    <span id="base64-char-count-label" style="font-size: 11.5px; color: var(--muted);">0 characters</span>
+                  </div>
+
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <button class="link-btn" style="font-size: 11.5px;" onclick="toggleBase64Wrap()" id="btn-base64-wrap">
+                      <span>↩</span> Wrap Lines
+                    </button>
+                    <button class="link-btn" style="font-size: 11.5px;" onclick="copyBase64Code()">
+                      <span>📋</span> Copy
+                    </button>
+                    <button class="link-btn" style="font-size: 11.5px;" onclick="downloadBase64Snippet()">
+                      <span>⬇</span> .txt
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Monospace Output Codearea -->
+                <div style="position: relative;">
+                  <textarea id="base64-output-textarea" readonly style="width: 100%; height: 200px; font-family: 'SF Mono', Consolas, Menlo, Monaco, monospace; font-size: 11.5px; line-height: 1.5; color: var(--ink); background: var(--soft); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 14px; resize: vertical; outline: none; box-shadow: inset 0 1px 4px rgba(0,0,0,0.03); white-space: pre-wrap; word-break: break-all;" spellcheck="false" placeholder="Generating Base64 string..."></textarea>
+                </div>
+              </div>
+
+              <!-- Real-Time Base64 Rendered Image Verification Card -->
+              <div style="background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 18px; box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 18px;">
+                <div style="width: 80px; height: 80px; flex-shrink: 0; display: grid; place-items: center; background: repeating-conic-gradient(#e2e8f0 0% 25%, #ffffff 0% 50%) 50% / 12px 12px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; padding: 4px;">
+                  <img id="base64-live-preview-img" src="" style="max-width: 100%; max-height: 100%; object-fit: contain;" alt="Base64 preview">
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <strong style="font-size: 12.5px; color: var(--ink);">Live Decoded Render</strong>
+                    <span class="badge-pill" style="font-size: 9.5px; background: var(--soft); color: var(--ink);">Verified</span>
+                  </div>
+                  <p style="font-size: 11.5px; color: var(--muted); margin-bottom: 6px; line-height: 1.4;">
+                    Your browser directly renders this image using the generated Data URI string above without external network requests.
+                  </p>
+                  <div style="display: flex; gap: 12px; font-size: 11px; color: var(--ink); font-weight: 600;">
+                    <span id="base64-render-dims">-- × -- px</span>
+                    <span>·</span>
+                    <span id="base64-render-mime">image/png</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="stage-footer">
+              <div class="file-info">
+                <span id="meta-convert-base64">Ready · Base64 encoder</span>
+              </div>
+              <div class="stage-actions">
+                <label class="btn-ghost btn-sm" style="cursor:pointer;">
+                  Replace image
+                  <input type="file" accept="image/*" class="global-file-picker" hidden>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <aside class="settings-panel">
+            <h3>Image to Base64</h3>
+            <p class="sub">Encode any image into a self-contained Base64 Data URI string or ready-to-use code snippet.</p>
+
+            <!-- Code Snippet Format Selection -->
+            <div class="form-group">
+              <label class="form-label">Code Snippet Format</label>
+              <div class="preset-grid" style="grid-template-columns: repeat(2, 1fr);">
+                <button id="base64-type-data-uri" class="preset-card active" onclick="setBase64SnippetType('data-uri')">
+                  <strong>Data URI</strong>
+                  <small>data:image/...;base64</small>
+                </button>
+                <button id="base64-type-html-img" class="preset-card" onclick="setBase64SnippetType('html-img')">
+                  <strong>HTML &lt;img&gt;</strong>
+                  <small>&lt;img src="..."&gt;</small>
+                </button>
+                <button id="base64-type-css-bg" class="preset-card" onclick="setBase64SnippetType('css-bg')">
+                  <strong>CSS Background</strong>
+                  <small>background-image: url()</small>
+                </button>
+                <button id="base64-type-raw" class="preset-card" onclick="setBase64SnippetType('raw')">
+                  <strong>Raw Base64</strong>
+                  <small>Pure string without header</small>
+                </button>
+                <button id="base64-type-markdown" class="preset-card" onclick="setBase64SnippetType('markdown')">
+                  <strong>Markdown</strong>
+                  <small>![Image](data:...)</small>
+                </button>
+                <button id="base64-type-json" class="preset-card" onclick="setBase64SnippetType('json')">
+                  <strong>JSON Object</strong>
+                  <small>{"image": "data:..."}</small>
+                </button>
+              </div>
+            </div>
+
+            <!-- Target Encoding MIME Type -->
+            <div class="form-group">
+              <label class="form-label">MIME / Image Type</label>
+              <div class="preset-chips" style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="chip-btn active" id="base64-mime-png" onclick="setBase64MimeType('image/png')">PNG (Lossless)</button>
+                <button class="chip-btn" id="base64-mime-jpeg" onclick="setBase64MimeType('image/jpeg')">JPEG (Compressed)</button>
+                <button class="chip-btn" id="base64-mime-webp" onclick="setBase64MimeType('image/webp')">WEBP (Smallest)</button>
+              </div>
+            </div>
+
+            <!-- Quality Slider for JPEG / WEBP -->
+            <div class="form-group" id="base64-quality-group" style="display:none;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <label class="form-label" style="margin-bottom:0;">Encoding Quality</label>
+                <span id="base64-quality-val" style="font-size:12px; font-weight:700; color:var(--ink);">85%</span>
+              </div>
+              <input type="range" id="base64-quality-slider" min="10" max="100" value="85" class="slider-control" oninput="handleBase64QualityChange(this.value)">
+              <div style="display:flex; justify-content:space-between; font-size:10px; color:var(--muted); margin-top:2px;">
+                <span>Smaller Code</span>
+                <span>High Quality</span>
+              </div>
+            </div>
+
+            <!-- Max Dimension Downscale (Helps keep Base64 strings under payload limits) -->
+            <div class="form-group">
+              <label class="form-label">Resolution Scale (Optional)</label>
+              <div class="preset-chips" style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="chip-btn active" id="base64-dim-orig" onclick="setBase64MaxDim(null)">Original Size</button>
+                <button class="chip-btn" id="base64-dim-800" onclick="setBase64MaxDim(800)">Max 800px</button>
+                <button class="chip-btn" id="base64-dim-400" onclick="setBase64MaxDim(400)">Max 400px</button>
+                <button class="chip-btn" id="base64-dim-200" onclick="setBase64MaxDim(200)">Max 200px</button>
+              </div>
+            </div>
+
+            <!-- Statistics Card -->
+            <div class="metric-card" style="margin:16px 0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">Base64 Payload Stats</span>
+                <span id="base64-overhead-badge" class="badge-pill" style="background:var(--soft); border:1px solid var(--line); color:var(--ink);">+33% Size Overhead</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size:11px; color:var(--muted);">Binary Size</div>
+                  <strong id="base64-raw-size" style="font-size:13px; color:var(--ink);">--</strong>
+                </div>
+                <div style="font-size:16px; color:var(--muted);">→</div>
+                <div style="text-align:right;">
+                  <div style="font-size:11px; color:var(--muted);">String Length</div>
+                  <strong id="base64-string-chars" style="font-size:14px; color:var(--ink);">-- chars</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <button id="btn-base64-copy-main" class="btn-primary" onclick="copyBase64Code()">📋 Copy Base64 Snippet</button>
+            <button class="btn-secondary" onclick="downloadBase64Snippet()">⬇ Download Snippet as .txt</button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 15 WORKSPACE: IMAGE TO PDF (DOCUMENT GENERATOR)           -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-convert-pdf-view">
+        <div class="workspace-header">
+          <div class="breadcrumb">
+            <a onclick="showView('convert')">Convert</a>
+            <span>/</span>
+            <strong>Image to PDF</strong>
+          </div>
+          <button class="back-btn" onclick="showView('convert')">
+            <span>←</span> Back to Convert Tools
+          </button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <div class="stage-hint">
+                <span>📄</span>
+                <span>PDF Document & Print Sheet Simulation</span>
+              </div>
+              <div class="stage-topbar-tools">
+                <span id="pdf-page-spec-badge" class="badge-pill" style="font-size: 10.5px; background: var(--lime-tint); color: #2d6a4f; border: 1px solid var(--accent-lime-border);">A4 Portrait · 210 × 297 mm</span>
+                <span class="badge-pill" style="font-size: 10.5px; background: var(--soft); color: var(--ink);">ISO 32000 PDF</span>
+              </div>
+            </div>
+
+            <div class="stage-viewport" style="display: flex; align-items: center; justify-content: center; padding: 28px; background: var(--stage); overflow-y: auto;">
+              
+              <!-- Realistic White Print Sheet Preview Container -->
+              <div id="pdf-sheet-wrapper" style="background: #ffffff; border: 1px solid rgba(0,0,0,0.12); border-radius: 4px; box-shadow: 0 12px 35px rgba(0,0,0,0.12); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; transition: all 200ms ease; max-width: 95%; max-height: 480px;">
+                <canvas id="canvas-convert-pdf" style="max-width: 100%; max-height: 100%; object-fit: contain;"></canvas>
+              </div>
+
+            </div>
+
+            <div class="stage-footer">
+              <div class="file-info">
+                <span id="meta-convert-pdf">document.pdf · A4 Portrait · 1 Page</span>
+              </div>
+              <div class="stage-actions">
+                <label class="btn-ghost btn-sm" style="cursor:pointer;">
+                  Replace image
+                  <input type="file" accept="image/*" class="global-file-picker" hidden>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <aside class="settings-panel">
+            <h3>Image to PDF Document</h3>
+            <p class="sub">Convert images into standard, clean PDF documents for printing, archiving, or sharing.</p>
+
+            <!-- Page Size Options -->
+            <div class="form-group">
+              <label class="form-label">Page Size</label>
+              <div class="preset-chips" style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="chip-btn active" id="pdf-size-a4" onclick="setPdfPageSize('a4')">A4 (210×297 mm)</button>
+                <button class="chip-btn" id="pdf-size-letter" onclick="setPdfPageSize('letter')">US Letter (8.5×11")</button>
+                <button class="chip-btn" id="pdf-size-legal" onclick="setPdfPageSize('legal')">Legal (8.5×14")</button>
+                <button class="chip-btn" id="pdf-size-auto" onclick="setPdfPageSize('auto')">Fit Image (Auto)</button>
+              </div>
+            </div>
+
+            <!-- Page Orientation Options -->
+            <div class="form-group" id="pdf-orientation-group">
+              <label class="form-label">Page Orientation</label>
+              <div class="preset-chips" style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="chip-btn active" id="pdf-orient-auto" onclick="setPdfOrientation('auto')">Auto Detect</button>
+                <button class="chip-btn" id="pdf-orient-portrait" onclick="setPdfOrientation('portrait')">Portrait 📄</button>
+                <button class="chip-btn" id="pdf-orient-landscape" onclick="setPdfOrientation('landscape')">Landscape 📃</button>
+              </div>
+            </div>
+
+            <!-- Page Margins -->
+            <div class="form-group" id="pdf-margin-group">
+              <label class="form-label">Page Margins</label>
+              <div class="preset-chips" style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="chip-btn" id="pdf-margin-none" onclick="setPdfMargin('none')">No Margin (0 mm)</button>
+                <button class="chip-btn active" id="pdf-margin-small" onclick="setPdfMargin('small')">Small (10 mm)</button>
+                <button class="chip-btn" id="pdf-margin-standard" onclick="setPdfMargin('standard')">Standard (20 mm)</button>
+              </div>
+            </div>
+
+            <!-- Image Fit Mode -->
+            <div class="form-group">
+              <label class="form-label">Image Placement</label>
+              <div class="preset-chips" style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="chip-btn active" id="pdf-fit-contain" onclick="setPdfFitMode('contain')">Fit to Page (Contain)</button>
+                <button class="chip-btn" id="pdf-fit-cover" onclick="setPdfFitMode('cover')">Fill Page (Cover)</button>
+                <button class="chip-btn" id="pdf-fit-original" onclick="setPdfFitMode('original')">Original Scale</button>
+              </div>
+            </div>
+
+            <!-- Quality / Compression -->
+            <div class="form-group">
+              <label class="form-label">Image Quality in PDF</label>
+              <div class="preset-chips" style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="chip-btn active" id="pdf-quality-high" onclick="setPdfQuality(0.92)">High Quality (92%)</button>
+                <button class="chip-btn" id="pdf-quality-medium" onclick="setPdfQuality(0.75)">Compact / Web (75%)</button>
+              </div>
+            </div>
+
+            <!-- Statistics Card -->
+            <div class="metric-card" style="margin:16px 0;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">PDF Document Summary</span>
+                <span id="pdf-badge" class="badge-pill" style="background:var(--lime-tint); border:1px solid var(--accent-lime-border); color:#2d6a4f;">PDF Document</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-size:11px; color:var(--muted);">Source Image</div>
+                  <strong id="pdf-orig-dims" style="font-size:13px; color:var(--ink);">--</strong>
+                </div>
+                <div style="font-size:16px; color:var(--muted);">→</div>
+                <div style="text-align:right;">
+                  <div style="font-size:11px; color:var(--muted);">Generated PDF Size</div>
+                  <strong id="pdf-est-size" style="font-size:15px; color:var(--ink);">--</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <button id="btn-pdf-download" class="btn-primary" onclick="commitPdfAction(true)">📄 Generate & Download PDF</button>
+            <button class="btn-secondary" onclick="previewPdfInNewTab()">👁 Preview PDF in New Tab</button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- Floating Global History Toolbar (Undo / Redo) -->
+      <div id="floating-history-bar" class="floating-history-bar">
+        <button id="btn-global-undo" class="history-btn" title="Undo (⌘Z / Ctrl+Z)" onclick="handleGlobalUndo()" disabled>
+          <span>↶</span> Undo
+        </button>
+        <span class="history-divider"></span>
+        <span id="history-status-badge" class="history-badge">Original</span>
+        <span class="history-divider"></span>
+        <button id="btn-global-redo" class="history-btn" title="Redo (⇧⌘Z / Ctrl+Y)" onclick="handleGlobalRedo()" disabled>
+          Redo <span>↷</span>
+        </button>
+      </div>
+
+      <!-- Keyboard Shortcuts Modal Dialog -->
+      <div id="shortcuts-modal" class="modal-backdrop" onclick="handleShortcutsBackdropClick(event)">
+        <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-shortcuts-title">
+          <div class="modal-header">
+            <div class="modal-title-group">
+              <span class="modal-icon">⌨️</span>
+              <div>
+                <h3 id="modal-shortcuts-title">Keyboard Shortcuts</h3>
+                <p>Quick studio controls and keyboard navigation</p>
+              </div>
+            </div>
+            <button class="modal-close-btn" onclick="toggleShortcutsModal(false)" title="Close (Esc)" aria-label="Close shortcuts dialog">✕</button>
+          </div>
+
+          <div class="modal-body">
+            <!-- Section 1: Navigation & General -->
+            <div class="shortcuts-section">
+              <div class="shortcuts-category-title">Navigation & Studio</div>
+              <div class="shortcut-row">
+                <span>Go back / Close dialog</span>
+                <div class="keys-wrap"><kbd>Esc</kbd></div>
+              </div>
+              <div class="shortcut-row">
+                <span>Open Shortcuts helper</span>
+                <div class="keys-wrap"><kbd>?</kbd> <span class="or">or</span> <kbd>⇧</kbd><kbd>/</kbd></div>
+              </div>
+              <div class="shortcut-row">
+                <span>Open new image file</span>
+                <div class="keys-wrap"><kbd>⌘</kbd><kbd>O</kbd> <span class="or">or</span> <kbd>Ctrl</kbd><kbd>O</kbd></div>
+              </div>
+              <div class="shortcut-row">
+                <span>Quick download / save</span>
+                <div class="keys-wrap"><kbd>⌘</kbd><kbd>S</kbd> <span class="or">or</span> <kbd>Ctrl</kbd><kbd>S</kbd></div>
+              </div>
+            </div>
+
+            <!-- Section 2: History & Edits -->
+            <div class="shortcuts-section">
+              <div class="shortcuts-category-title">History & Edits</div>
+              <div class="shortcut-row">
+                <span>Undo edit</span>
+                <div class="keys-wrap"><kbd>⌘</kbd><kbd>Z</kbd> <span class="or">or</span> <kbd>Ctrl</kbd><kbd>Z</kbd></div>
+              </div>
+              <div class="shortcut-row">
+                <span>Redo edit</span>
+                <div class="keys-wrap"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>Z</kbd> <span class="or">or</span> <kbd>Ctrl</kbd><kbd>Y</kbd></div>
+              </div>
+            </div>
+
+            <!-- Section 3: Quick Tool Switcher -->
+            <div class="shortcuts-section">
+              <div class="shortcuts-category-title">Quick Tool Switcher (Number Keys)</div>
+              <div class="shortcuts-grid">
+                <div class="shortcut-pill" onclick="openToolWorkspace('resize'); toggleShortcutsModal(false);">
+                  <kbd>1</kbd> <span>Resize</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('crop'); toggleShortcutsModal(false);">
+                  <kbd>2</kbd> <span>Crop</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('rotate'); toggleShortcutsModal(false);">
+                  <kbd>3</kbd> <span>Rotate</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('compress'); toggleShortcutsModal(false);">
+                  <kbd>4</kbd> <span>Compress</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('adjust'); toggleShortcutsModal(false);">
+                  <kbd>5</kbd> <span>Adjust</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('filters'); toggleShortcutsModal(false);">
+                  <kbd>6</kbd> <span>Filters</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('text'); toggleShortcutsModal(false);">
+                  <kbd>7</kbd> <span>Text</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('draw'); toggleShortcutsModal(false);">
+                  <kbd>8</kbd> <span>Draw</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('blur'); toggleShortcutsModal(false);">
+                  <kbd>9</kbd> <span>Blur</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <small style="color:var(--muted)">✨ Your image & edits are automatically saved in your browser.</small>
+            <button class="btn-secondary" style="padding:6px 16px; font-size:12px;" onclick="toggleShortcutsModal(false)">Close</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="js/engine.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
