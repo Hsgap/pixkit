@@ -22,6 +22,7 @@
           <button id="nav-home" class="nav-link active" onclick="showView('home')">Home</button>
           <button id="nav-edit" class="nav-link" onclick="showView('edit')">Edit Image</button>
           <button id="nav-convert" class="nav-link" onclick="showView('convert')">Convert</button>
+          <button id="nav-document" class="nav-link" onclick="showView('document')">Document</button>
         </nav>
       </div>
 
@@ -151,17 +152,17 @@
             </div>
           </div>
 
-          <div class="cat-feature-card" onclick="showToast('Optimize suite coming in next step')">
+          <div class="cat-feature-card highlight" onclick="showView('document')">
             <div class="cat-card-top">
-              <div class="cat-icon-tile">◉</div>
-              <span class="cat-pill-badge" style="background:var(--soft); color:var(--muted);">Fast</span>
+              <div class="cat-icon-tile">📄</div>
+              <span class="cat-pill-badge">7 Tools</span>
             </div>
             <div>
-              <h3>Optimize & Batch</h3>
-              <p>Reduce file size drastically for web speed and social sharing without visual loss.</p>
+              <h3>PDF & Document</h3>
+              <p>Images to PDF, PDF to Images, Merge, Split, Compress, Rotate, and Delete PDF pages.</p>
             </div>
             <div class="cat-card-footer">
-              <span>Batch Tools</span>
+              <span>Explore 7 Document Tools</span>
               <span>→</span>
             </div>
           </div>
@@ -469,6 +470,150 @@
             </div>
             <div class="tool-row-right">
               <span class="tool-tag">Document</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- 4. DOCUMENT CATEGORY SCREEN (7 PDF Tools)                      -->
+      <!-- ============================================================== -->
+      <section class="view" id="document-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Category · 7 Document Tools</div>
+            <h1>PDF & Document</h1>
+            <p>Combine, split, compress, extract, rotate, and manage PDF documents 100% in your browser.</p>
+          </div>
+          <button class="back-btn" onclick="showView('home')">
+            <span>←</span> Back to Home
+          </button>
+        </div>
+
+        <div class="tool-rows-list">
+          <!-- 1. Images to PDF -->
+          <div class="tool-row-card" onclick="openToolWorkspace('doc-images-to-pdf')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">📑</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Images to PDF</strong>
+                  <span class="tool-number-badge">01</span>
+                </div>
+                <p>Combine multiple images into one clean multi-page PDF document</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Multi-Page</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 2. PDF to Images -->
+          <div class="tool-row-card" onclick="openToolWorkspace('doc-pdf-to-images')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">🖼️</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>PDF to Images</strong>
+                  <span class="tool-number-badge">02</span>
+                </div>
+                <p>Extract each PDF page as a separate high-resolution image</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Extract</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 3. Merge PDF -->
+          <div class="tool-row-card" onclick="openToolWorkspace('doc-merge-pdf')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">📎</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Merge PDF</strong>
+                  <span class="tool-number-badge">03</span>
+                </div>
+                <p>Combine multiple PDF files into one single unified document</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Combine</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 4. Split PDF -->
+          <div class="tool-row-card" onclick="openToolWorkspace('doc-split-pdf')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">✂️</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Split PDF</strong>
+                  <span class="tool-number-badge">04</span>
+                </div>
+                <p>Extract a page range or split document into multiple files</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Ranges</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 5. Compress PDF -->
+          <div class="tool-row-card" onclick="openToolWorkspace('doc-compress-pdf')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">🗜️</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Compress PDF</strong>
+                  <span class="tool-number-badge">05</span>
+                </div>
+                <p>Reduce PDF file size for fast email sharing and web uploads</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Optimize</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 6. Rotate PDF Pages -->
+          <div class="tool-row-card" onclick="openToolWorkspace('doc-rotate-pdf')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">🔄</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Rotate PDF Pages</strong>
+                  <span class="tool-number-badge">06</span>
+                </div>
+                <p>Rotate specific pages or all pages in a PDF document</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Orientation</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 7. Delete PDF Pages -->
+          <div class="tool-row-card" onclick="openToolWorkspace('doc-delete-pdf')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">🗑️</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Delete PDF Pages</strong>
+                  <span class="tool-number-badge">07</span>
+                </div>
+                <p>Remove unwanted pages from a PDF document effortlessly</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Page Editor</span>
               <div class="tool-arrow">→</div>
             </div>
           </div>

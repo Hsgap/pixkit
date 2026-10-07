@@ -380,6 +380,8 @@ document.addEventListener('DOMContentLoaded', () => {
       renderViewDirect('edit');
     } else if (parts[0] === 'convert') {
       renderViewDirect('convert');
+    } else if (parts[0] === 'document') {
+      renderViewDirect('document');
     } else if (parts[0] === 'tool' && parts[1]) {
       renderToolWorkspaceDirect(parts[1]);
     } else {
@@ -400,6 +402,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('nav-home')?.classList.toggle('active', viewId === 'home');
     document.getElementById('nav-edit')?.classList.toggle('active', viewId === 'edit');
     document.getElementById('nav-convert')?.classList.toggle('active', viewId === 'convert');
+    document.getElementById('nav-document')?.classList.toggle('active', viewId === 'document');
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
     updateHistoryUI();
@@ -413,14 +416,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const workspaceView = document.getElementById(`tool-${toolId}-view`) || document.getElementById(`${toolId}-view`);
     if (workspaceView) {
       workspaceView.classList.add('active');
+      initToolStage(toolId);
+    } else {
+      // If individual tool workspace is not yet built, notify the user and keep on category view
+      const toolName = toolId.replace(/^doc-/, '').replace(/-/g, ' ');
+      showToast(`${toolName.charAt(0).toUpperCase() + toolName.slice(1)} tool workspace will be built next!`);
+      const fallbackView = toolId.startsWith('doc-') ? document.getElementById('document-view') : document.getElementById('home-view');
+      fallbackView?.classList.add('active');
     }
 
+    const isDocTool = toolId.startsWith('doc-');
+    const isConvertTool = toolId.startsWith('convert-');
     document.getElementById('nav-home')?.classList.remove('active');
-    document.getElementById('nav-edit')?.classList.toggle('active', !toolId.startsWith('convert-'));
-    document.getElementById('nav-convert')?.classList.toggle('active', toolId.startsWith('convert-'));
+    document.getElementById('nav-edit')?.classList.toggle('active', !isDocTool && !isConvertTool);
+    document.getElementById('nav-convert')?.classList.toggle('active', isConvertTool);
+    document.getElementById('nav-document')?.classList.toggle('active', isDocTool);
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    initToolStage(toolId);
     updateHistoryUI();
   }
 
