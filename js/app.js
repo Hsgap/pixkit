@@ -461,12 +461,23 @@ document.addEventListener('DOMContentLoaded', () => {
     updateHistoryUI();
   }
 
+  function trackAnalyticsEvent(eventName, params = {}) {
+    try {
+      if (typeof window.gtag === 'function') {
+        window.gtag('event', eventName, params);
+      }
+    } catch (_) {}
+  }
+  window.trackAnalyticsEvent = trackAnalyticsEvent;
+
   window.showView = function(viewId) {
+    trackAnalyticsEvent('view_page', { page_name: viewId });
     navigateTo(`#/${viewId}`, true);
   };
 
   window.openToolWorkspace = function(toolId) {
     hasUserAddedImage = true;
+    trackAnalyticsEvent('open_tool', { tool_id: toolId });
     navigateTo(`#/tool/${toolId}`, true);
   };
 
