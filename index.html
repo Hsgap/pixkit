@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PixKit — Seamless Surface & Generative Wave Engine</title>
+  <title>PixKit</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Manrope:wght@200..800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -490,7 +490,7 @@
   <!-- Center Stage Brand -->
   <main class="hero-stage">
     <div class="center-brand-wrap" id="centerBrand">
-      <a href="studio.html" class="center-brand-logo" id="logoInteractiveWrap" title="Click to Launch PixKit Image Studio">
+      <a href="studio.html" class="center-brand-logo" id="logoInteractiveWrap" title="Click to Launch PixKit Image Studio" onclick="launchStudioWithSavedWork(event)">
         <!-- Dual Layer Animated Logo Box with Magnetic Cursor Movement -->
         <div class="center-brand-mark" id="brandMarkBox">
           <!-- Resting Base Layer -->
@@ -508,13 +508,20 @@
         </span>
       </div>
       
-      <a href="studio.html" class="enter-studio-link">
+      <a href="studio.html" class="enter-studio-link" onclick="launchStudioWithSavedWork(event)">
         Launch Studio <i class="fa-solid fa-arrow-right" style="font-size: 11px;"></i>
       </a>
     </div>
   </main>
 
   <script>
+    function launchStudioWithSavedWork(event) {
+      if (event) event.preventDefault();
+      localStorage.setItem('pixkit_entered', 'true');
+      const lastRoute = localStorage.getItem('pixkit_last_route') || '#/home';
+      const cleanRoute = lastRoute.startsWith('#') ? lastRoute : '#' + lastRoute;
+      window.location.href = 'studio.html' + cleanRoute;
+    }
     /**
      * Real-World Time-Based Theme Manager
      */

@@ -112,6 +112,35 @@ class PixKitEngine {
     });
   }
 
+  // Load directly from an existing Canvas element (e.g. extracted PDF page)
+  loadFromCanvas(sourceCanvas, name = 'extracted-page.png') {
+    this.filename = name;
+    this.fileType = 'image/png';
+    this.fileSize = 0;
+
+    this.sourceCanvas.width = sourceCanvas.width;
+    this.sourceCanvas.height = sourceCanvas.height;
+    this.sourceCtx.clearRect(0, 0, sourceCanvas.width, sourceCanvas.height);
+    this.sourceCtx.drawImage(sourceCanvas, 0, 0);
+
+    this.activeCanvas.width = sourceCanvas.width;
+    this.activeCanvas.height = sourceCanvas.height;
+    this.activeCtx.clearRect(0, 0, sourceCanvas.width, sourceCanvas.height);
+    this.activeCtx.drawImage(sourceCanvas, 0, 0);
+
+    this.historyStack = [];
+    this.pushHistory('Load Extracted PDF Page');
+
+    return {
+      name: this.filename,
+      type: this.fileType,
+      format: 'PNG',
+      size: this.fileSize,
+      width: sourceCanvas.width,
+      height: sourceCanvas.height
+    };
+  }
+
   // High-Resolution Default Sample Image
   generateSampleArtwork(width = 1600, height = 1200) {
     this.filename = 'mountain-view.jpg';

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PixKit — Minimal PWA Image Studio</title>
+  <title>PixKit</title>
   <meta name="description" content="PixKit is a private, client-side, all-in-one PWA image studio. Fast, minimal, zero backend.">
   <link rel="stylesheet" href="styles/main.css">
   <link rel="manifest" href="manifest.json">
@@ -15,7 +15,7 @@
     <!-- Topbar Navigation -->
     <header class="topbar">
       <div class="brand-nav-group">
-        <a href="index.html" class="brand" title="PixKit Home & Wave Engine" style="text-decoration:none;">
+        <a href="#/home" class="brand" onclick="showView('home'); return false;" title="PixKit Studio Home" style="text-decoration:none;">
           <span class="mark">✳</span>pixkit
         </a>
         <nav class="nav" aria-label="Main Navigation">
@@ -2348,12 +2348,12 @@
       <section class="view" id="tool-convert-pdf-view">
         <div class="workspace-header">
           <div class="breadcrumb">
-            <a onclick="showView('convert')">Convert</a>
+            <a id="pdf-parent-crumb" onclick="navigatePdfBack()" style="cursor:pointer;">Document</a>
             <span>/</span>
-            <strong>Image to PDF</strong>
+            <strong id="pdf-title-crumb">Images to PDF</strong>
           </div>
-          <button class="back-btn" onclick="showView('convert')">
-            <span>←</span> Back to Convert Tools
+          <button class="back-btn" onclick="navigatePdfBack()">
+            <span>←</span> <span id="pdf-back-btn-text">Back to Document Tools</span>
           </button>
         </div>
 
@@ -2473,6 +2473,961 @@
         </div>
       </section>
 
+      <!-- ============================================================== -->
+      <!-- TOOL 16 WORKSPACE: PDF TO IMAGES (EXTRACTOR & RASTERIZER)      -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-doc-pdf-to-images-view">
+        <div class="workspace-header">
+          <div class="breadcrumb">
+            <a onclick="showView('document')" style="cursor:pointer;">Document</a>
+            <span>/</span>
+            <strong>PDF to Images</strong>
+          </div>
+          <button class="back-btn" onclick="showView('document')">
+            <span>←</span> Back to Document Tools
+          </button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <div class="stage-hint">
+                <span>🖼️</span>
+                <span id="pdf-extract-status-hint">Upload a PDF to extract pages as crisp images</span>
+              </div>
+              <div class="stage-topbar-tools" id="pdf-extract-topbar-tools" style="display:none;">
+                <button class="chip-btn" onclick="toggleSelectAllPdfPages(true)">Select All</button>
+                <button class="chip-btn" onclick="toggleSelectAllPdfPages(false)">Clear</button>
+                <span id="pdf-extract-page-counter" class="badge-pill" style="font-size: 10.5px; background: var(--lime-tint); color: #2d6a4f; border: 1px solid var(--accent-lime-border);">0 Pages</span>
+              </div>
+            </div>
+
+            <div class="stage-viewport" style="padding: 20px; background: var(--stage); overflow-y: auto; min-height: 440px; display: flex; align-items: center; justify-content: center;">
+              
+              <!-- PDF Upload Drop Zone -->
+              <div class="pdf-extract-dropzone" id="pdf-extract-dropzone">
+                <div class="pdf-extract-dropzone-icon">📄</div>
+                <strong style="font-size: 16px; color: var(--ink);">Drop PDF document here or browse</strong>
+                <span style="font-size: 12.5px; color: var(--muted); max-width: 340px;">Extract all pages as high-resolution PNG, JPG, or WebP images 100% in your browser</span>
+                <span class="badge-pill" style="background: var(--soft); color: var(--ink); margin-top: 4px;">Zero Server Upload · Completely Private</span>
+                <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; justify-content:center;">
+                  <label class="btn-primary" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:13px; padding:8px 18px;">
+                    <span>Browse PDF File</span>
+                    <input type="file" accept="application/pdf" id="pdf-file-picker" onchange="handlePdfFileUpload(this.files[0])" hidden>
+                  </label>
+                  <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px;" onclick="loadSamplePdfForExtract()">
+                    ✨ Load Sample 3-Page PDF
+                  </button>
+                </div>
+              </div>
+
+              <!-- Extracted Pages Gallery Grid -->
+              <div id="pdf-extract-grid" class="pdf-pages-grid" style="display:none;"></div>
+
+              <!-- Loading / Rendering Spinner Container -->
+              <div id="pdf-extract-loading" style="display:none; flex-direction:column; align-items:center; gap:12px; text-align:center;">
+                <div class="spinner" style="width:36px; height:36px; border:3px solid var(--line); border-top-color:var(--ink); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+                <strong id="pdf-extract-loading-text" style="color:var(--ink); font-size:14px;">Parsing & rendering PDF pages...</strong>
+                <span style="font-size:12px; color:var(--muted);">Rendering at high resolution</span>
+              </div>
+
+            </div>
+
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">📄</span>
+                <div>
+                  <strong id="pdf-extract-file-name" class="img-meta-name">No PDF Selected</strong>
+                  <small id="pdf-extract-file-sub" class="img-meta-dims">Select a PDF file to begin extraction</small>
+                </div>
+              </div>
+              <label class="action-btn-sm" style="cursor:pointer;" title="Choose another PDF">
+                Replace PDF
+                <input type="file" accept="application/pdf" onchange="handlePdfFileUpload(this.files[0])" hidden>
+              </label>
+            </div>
+          </div>
+
+          <!-- Settings Panel -->
+          <aside class="settings-panel">
+            <div class="panel-header">
+              <h3>Extraction Settings</h3>
+              <p>Choose export format, resolution, and page range.</p>
+            </div>
+
+            <!-- Target Format -->
+            <div class="form-group">
+              <label>Export Image Format</label>
+              <div class="chip-group">
+                <button class="chip-btn active" id="pdf-fmt-png" onclick="setPdfExtractFormat('png')">PNG (Lossless)</button>
+                <button class="chip-btn" id="pdf-fmt-jpg" onclick="setPdfExtractFormat('jpg')">JPG (Photo)</button>
+                <button class="chip-btn" id="pdf-fmt-webp" onclick="setPdfExtractFormat('webp')">WebP</button>
+              </div>
+            </div>
+
+            <!-- Resolution Scale -->
+            <div class="form-group">
+              <label>Resolution Scale (DPI)</label>
+              <div class="chip-group">
+                <button class="chip-btn" id="pdf-scale-1" onclick="setPdfExtractScale(1)">1x (Standard)</button>
+                <button class="chip-btn active" id="pdf-scale-2" onclick="setPdfExtractScale(2)">2x (High Res · 300 DPI)</button>
+                <button class="chip-btn" id="pdf-scale-3" onclick="setPdfExtractScale(3)">3x (Ultra 450 DPI)</button>
+              </div>
+              <small style="color:var(--muted); font-size:11px; margin-top:4px; display:block;">2x gives crisp, publication-ready vector rendering.</small>
+            </div>
+
+            <!-- Quality Slider for JPG / WebP -->
+            <div class="form-group" id="pdf-extract-quality-group" style="display:none;">
+              <div class="control-row">
+                <label for="pdf-extract-quality-slider">Image Quality</label>
+                <span class="val-badge" id="pdf-extract-quality-val">92%</span>
+              </div>
+              <input type="range" min="50" max="100" value="92" class="slider" id="pdf-extract-quality-slider" oninput="setPdfExtractQuality(this.value)">
+            </div>
+
+            <!-- Page Range Filter -->
+            <div class="form-group">
+              <label>Pages to Extract</label>
+              <div class="chip-group">
+                <button class="chip-btn active" id="pdf-range-all" onclick="setPdfExtractRangeMode('all')">All Pages</button>
+                <button class="chip-btn" id="pdf-range-selected" onclick="setPdfExtractRangeMode('selected')">Selected Only</button>
+                <button class="chip-btn" id="pdf-range-custom" onclick="setPdfExtractRangeMode('custom')">Custom Range</button>
+              </div>
+              <div id="pdf-custom-range-input-wrap" style="display:none; margin-top:8px;">
+                <input type="text" id="pdf-custom-range-input" class="input-text" placeholder="e.g. 1, 3-5, 8" style="width:100%; padding:7px 10px; font-size:12px; border:1px solid var(--line); border-radius:var(--radius-sm);" oninput="handlePdfCustomRangeChange(this.value)">
+                <small style="color:var(--muted); font-size:11px; margin-top:3px; display:block;">Enter page numbers and ranges separated by commas.</small>
+              </div>
+            </div>
+
+            <!-- Summary Card -->
+            <div class="card" style="background:var(--soft); padding:12px 14px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Total Pages in PDF:</span>
+                <strong id="pdf-summary-total" style="color:var(--ink);">0</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Selected for Export:</span>
+                <strong id="pdf-summary-selected" style="color:#2d6a4f;">0</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Output Format:</span>
+                <strong id="pdf-summary-format" style="color:var(--ink);">PNG @ 2x</strong>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Action Buttons -->
+            <button id="btn-pdf-download-zip" class="btn-primary" onclick="downloadPdfExtractedZip()" disabled>
+              📦 Download All as ZIP
+            </button>
+            <button id="btn-pdf-download-single" class="btn-secondary" onclick="downloadSelectedPdfPagesSingle()" disabled>
+              ⬇ Download Selected Pages
+            </button>
+            <button id="btn-pdf-open-studio" class="btn-secondary" onclick="openActivePdfPageInStudio()" disabled>
+              ✎ Open Page 1 in Studio Editor
+            </button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 17 WORKSPACE: MERGE PDF (COMBINE MULTIPLE PDF FILES)      -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-doc-merge-pdf-view">
+        <div class="workspace-header">
+          <div class="breadcrumb">
+            <a onclick="showView('document')" style="cursor:pointer;">Document</a>
+            <span>/</span>
+            <strong>Merge PDF</strong>
+          </div>
+          <button class="back-btn" onclick="showView('document')">
+            <span>←</span> Back to Document Tools
+          </button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <div class="stage-hint">
+                <span>📎</span>
+                <span id="pdf-merge-status-hint">Combine and reorder multiple PDF documents into one</span>
+              </div>
+              <div class="stage-topbar-tools" id="pdf-merge-topbar-tools" style="display:none;">
+                <button class="chip-btn" onclick="clearAllMergePdfs()">Clear All</button>
+                <span id="pdf-merge-summary-pill" class="badge-pill" style="font-size: 10.5px; background: var(--lime-tint); color: #2d6a4f; border: 1px solid var(--accent-lime-border);">0 Files · 0 Pages</span>
+              </div>
+            </div>
+
+            <div class="stage-viewport" style="padding: 20px; background: var(--stage); overflow-y: auto; min-height: 440px; display: flex; align-items: center; justify-content: center;">
+              
+              <!-- PDF Upload Drop Zone -->
+              <div class="pdf-extract-dropzone" id="pdf-merge-dropzone">
+                <div class="pdf-extract-dropzone-icon">📎</div>
+                <strong style="font-size: 16px; color: var(--ink);">Drop multiple PDF documents here or browse</strong>
+                <span style="font-size: 12.5px; color: var(--muted); max-width: 340px;">Select 2 or more PDF files to combine them in your exact preferred order</span>
+                <span class="badge-pill" style="background: var(--soft); color: var(--ink); margin-top: 4px;">100% Client-Side Merging · Instant & Zero Upload</span>
+                <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; justify-content:center;">
+                  <label class="btn-primary" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:13px; padding:8px 18px;">
+                    <span>Browse PDF Files</span>
+                    <input type="file" accept="application/pdf" multiple id="pdf-merge-file-picker" onchange="handlePdfMergeFiles(this.files)" hidden>
+                  </label>
+                  <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px;" onclick="loadSamplePdfsForMerge()">
+                    ✨ Load 2 Sample PDFs
+                  </button>
+                </div>
+              </div>
+
+              <!-- Reorderable Files List -->
+              <div id="pdf-merge-list" class="pdf-merge-list" style="display:none;"></div>
+
+              <!-- Loading / Processing Spinner -->
+              <div id="pdf-merge-loading" style="display:none; flex-direction:column; align-items:center; gap:12px; text-align:center;">
+                <div class="spinner" style="width:36px; height:36px; border:3px solid var(--line); border-top-color:var(--ink); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+                <strong id="pdf-merge-loading-text" style="color:var(--ink); font-size:14px;">Parsing & merging PDF documents...</strong>
+                <span style="font-size:12px; color:var(--muted);">Merging byte streams without quality loss</span>
+              </div>
+
+            </div>
+
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">📑</span>
+                <div>
+                  <strong id="pdf-merge-footer-title" class="img-meta-name">No PDF Files Added</strong>
+                  <small id="pdf-merge-footer-sub" class="img-meta-dims">Add at least 2 PDF files to merge</small>
+                </div>
+              </div>
+              <label class="action-btn-sm" style="cursor:pointer;" title="Add more PDF files">
+                + Add More PDFs
+                <input type="file" accept="application/pdf" multiple onchange="handlePdfMergeFiles(this.files)" hidden>
+              </label>
+            </div>
+          </div>
+
+          <!-- Settings Panel -->
+          <aside class="settings-panel">
+            <div class="panel-header">
+              <h3>Merge Settings</h3>
+              <p>Configure output file name and review document order.</p>
+            </div>
+
+            <!-- Output File Name -->
+            <div class="form-group">
+              <label for="pdf-merge-output-name">Output PDF Filename</label>
+              <input type="text" id="pdf-merge-output-name" class="input-text" value="merged_document.pdf" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid var(--line); border-radius:var(--radius-sm); font-weight:600; color:var(--ink);">
+            </div>
+
+            <!-- Summary Card -->
+            <div class="card" style="background:var(--soft); padding:12px 14px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Total PDF Files:</span>
+                <strong id="pdf-merge-summary-files" style="color:var(--ink);">0</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Combined Total Pages:</span>
+                <strong id="pdf-merge-summary-pages" style="color:#2d6a4f;">0 Pages</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Combined Input Size:</span>
+                <strong id="pdf-merge-summary-size" style="color:var(--ink);">0 KB</strong>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Action Buttons -->
+            <button id="btn-pdf-merge-download" class="btn-primary" onclick="executePdfMerge(true)" disabled>
+              📎 Merge & Download PDF
+            </button>
+            <button id="btn-pdf-merge-preview" class="btn-secondary" onclick="executePdfMerge(false)" disabled>
+              👁 Preview Merged PDF in New Tab
+            </button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 18 WORKSPACE: SPLIT PDF (PAGES & RANGES EXTRACTOR)        -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-doc-split-pdf-view">
+        <div class="workspace-header">
+          <div class="breadcrumb">
+            <a onclick="showView('document')" style="cursor:pointer;">Document</a>
+            <span>/</span>
+            <strong>Split PDF</strong>
+          </div>
+          <button class="back-btn" onclick="showView('document')">
+            <span>←</span> Back to Document Tools
+          </button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <div class="stage-hint">
+                <span>✂️</span>
+                <span id="pdf-split-status-hint">Extract specific pages, page ranges, or split into individual PDF files</span>
+              </div>
+              <div class="stage-topbar-tools" id="pdf-split-topbar-tools" style="display:none;">
+                <div class="chip-group" style="display:flex; gap:6px; flex-wrap:wrap;">
+                  <button class="chip-btn" onclick="selectPdfSplitPages('all')">Select All</button>
+                  <button class="chip-btn" onclick="selectPdfSplitPages('none')">None</button>
+                  <button class="chip-btn" onclick="selectPdfSplitPages('odd')">Odd</button>
+                  <button class="chip-btn" onclick="selectPdfSplitPages('even')">Even</button>
+                  <button class="chip-btn" onclick="selectPdfSplitPages('invert')">Invert</button>
+                </div>
+                <span id="pdf-split-summary-pill" class="badge-pill" style="font-size: 10.5px; background: var(--lime-tint); color: #2d6a4f; border: 1px solid var(--accent-lime-border);">0 Pages Selected</span>
+              </div>
+            </div>
+
+            <div class="stage-viewport" style="padding: 20px; background: var(--stage); overflow-y: auto; min-height: 440px; display: flex; align-items: center; justify-content: center;">
+              
+              <!-- PDF Upload Drop Zone -->
+              <div class="pdf-extract-dropzone" id="pdf-split-dropzone">
+                <div class="pdf-extract-dropzone-icon">✂️</div>
+                <strong style="font-size: 16px; color: var(--ink);">Drop a PDF document here to split or extract</strong>
+                <span style="font-size: 12.5px; color: var(--muted); max-width: 340px;">Select custom page ranges, extract selected pages, or split into individual PDF files</span>
+                <span class="badge-pill" style="background: var(--soft); color: var(--ink); margin-top: 4px;">100% Client-Side Processing · Lossless PDF Vector Stream</span>
+                <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; justify-content:center;">
+                  <label class="btn-primary" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:13px; padding:8px 18px;">
+                    <span>Browse PDF File</span>
+                    <input type="file" accept="application/pdf" id="pdf-split-file-picker" onchange="handlePdfSplitFile(this.files[0])" hidden>
+                  </label>
+                  <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px;" onclick="loadSamplePdfForSplit()">
+                    ✨ Load Sample 6-Page PDF
+                  </button>
+                </div>
+              </div>
+
+              <!-- Interactive Pages Grid -->
+              <div id="pdf-split-grid" class="pdf-pages-grid" style="display:none;"></div>
+
+              <!-- Loading / Rendering Spinner -->
+              <div id="pdf-split-loading" style="display:none; flex-direction:column; align-items:center; gap:12px; text-align:center;">
+                <div class="spinner" style="width:36px; height:36px; border:3px solid var(--line); border-top-color:var(--ink); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+                <strong id="pdf-split-loading-text" style="color:var(--ink); font-size:14px;">Reading & rendering PDF pages...</strong>
+                <span style="font-size:12px; color:var(--muted);">Processing pages client-side</span>
+              </div>
+
+            </div>
+
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">📄</span>
+                <div>
+                  <strong id="pdf-split-footer-title" class="img-meta-name">No PDF Loaded</strong>
+                  <small id="pdf-split-footer-sub" class="img-meta-dims">Load a PDF document to begin splitting</small>
+                </div>
+              </div>
+              <label class="action-btn-sm" style="cursor:pointer;" title="Load different PDF">
+                Change PDF
+                <input type="file" accept="application/pdf" onchange="handlePdfSplitFile(this.files[0])" hidden>
+              </label>
+            </div>
+          </div>
+
+          <!-- Settings Panel -->
+          <aside class="settings-panel">
+            <div class="panel-header">
+              <h3>Split Settings</h3>
+              <p>Configure splitting mode, page ranges, and target files.</p>
+            </div>
+
+            <!-- Split Mode Selector -->
+            <div class="form-group">
+              <label for="pdf-split-mode">Split Method</label>
+              <select id="pdf-split-mode" class="select-input" onchange="onPdfSplitModeChange(this.value)">
+                <option value="extract-selected">Extract Selected Pages (1 PDF)</option>
+                <option value="split-ranges">Custom Page Ranges (e.g. 1-2, 3-5)</option>
+                <option value="split-all">Split Every Page into Separate PDFs (ZIP)</option>
+                <option value="split-fixed">Split into Fixed Chunks (Every N Pages)</option>
+              </select>
+            </div>
+
+            <!-- Mode Details: Custom Ranges Input -->
+            <div class="form-group" id="pdf-split-ranges-group" style="display:none;">
+              <label for="pdf-split-ranges-input">
+                Page Ranges
+                <span class="badge-pill" style="font-size:10px; margin-left:4px;">Comma Separated</span>
+              </label>
+              <input type="text" id="pdf-split-ranges-input" class="input-text" placeholder="e.g. 1-2, 3, 5-6" oninput="validatePdfSplitRanges()" style="width:100%; padding:8px 12px; font-size:12.5px; border:1px solid var(--line); border-radius:var(--radius-sm);">
+              <small id="pdf-split-ranges-hint" style="font-size:11px; color:var(--muted); margin-top:4px; display:block;">Enter ranges like 1-3, 4-6 to create multiple separate files.</small>
+            </div>
+
+            <!-- Mode Details: Fixed Chunk Size Input -->
+            <div class="form-group" id="pdf-split-fixed-group" style="display:none;">
+              <label for="pdf-split-chunk-size">Pages Per Output PDF</label>
+              <div class="range-row">
+                <input type="range" id="pdf-split-chunk-size" min="1" max="10" value="2" oninput="updatePdfSplitChunkSize(this.value)">
+                <span id="pdf-split-chunk-size-val" class="range-val">2 Pages</span>
+              </div>
+            </div>
+
+            <!-- Output Filename Prefix -->
+            <div class="form-group">
+              <label for="pdf-split-output-prefix">Output File Prefix</label>
+              <input type="text" id="pdf-split-output-prefix" class="input-text" value="split_document" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid var(--line); border-radius:var(--radius-sm); font-weight:600; color:var(--ink);">
+            </div>
+
+            <!-- Summary Breakdown Card -->
+            <div class="card" style="background:var(--soft); padding:12px 14px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Total Document Pages:</span>
+                <strong id="pdf-split-summary-total" style="color:var(--ink);">0 Pages</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Selected for Output:</span>
+                <strong id="pdf-split-summary-selected" style="color:#2d6a4f;">0 Pages</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Files to Generate:</span>
+                <strong id="pdf-split-summary-files" style="color:var(--ink);">0 Files</strong>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Action Buttons -->
+            <button id="btn-pdf-split-execute" class="btn-primary" onclick="executePdfSplit(true)" disabled>
+              ✂️ Split & Download PDF
+            </button>
+            <button id="btn-pdf-split-preview" class="btn-secondary" onclick="executePdfSplit(false)" disabled>
+              👁 Preview Output PDF
+            </button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 19 WORKSPACE: COMPRESS PDF (OPTIMIZE & SHRINK FILE SIZE)   -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-doc-compress-pdf-view">
+        <div class="workspace-header">
+          <div class="breadcrumb">
+            <a onclick="showView('document')" style="cursor:pointer;">Document</a>
+            <span>/</span>
+            <strong>Compress PDF</strong>
+          </div>
+          <button class="back-btn" onclick="showView('document')">
+            <span>←</span> Back to Document Tools
+          </button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <div class="stage-hint">
+                <span>🗜️</span>
+                <span id="pdf-compress-status-hint">Reduce PDF document size for email sharing and web uploads</span>
+              </div>
+              <div class="stage-topbar-tools" id="pdf-compress-topbar-tools" style="display:none;">
+                <span id="pdf-compress-summary-pill" class="badge-pill" style="font-size: 10.5px; background: var(--lime-tint); color: #2d6a4f; border: 1px solid var(--accent-lime-border);">0 Pages · 0 KB</span>
+              </div>
+            </div>
+
+            <div class="stage-viewport" style="padding: 20px; background: var(--stage); overflow-y: auto; min-height: 440px; display: flex; align-items: center; justify-content: center;">
+              
+              <!-- PDF Upload Drop Zone -->
+              <input type="file" accept=".pdf,application/pdf" id="pdf-compress-file-picker" onclick="event.stopPropagation();" onchange="if(this.files && this.files.length){handlePdfCompressFile(this.files[0]);}" style="position:fixed; top:-9999px; left:-9999px; opacity:0; pointer-events:none;">
+              <div class="pdf-extract-dropzone" id="pdf-compress-dropzone" onclick="if(!event.target.closest('label') && !event.target.closest('button')){ triggerPdfCompressPicker(event); }" style="cursor:pointer;" title="Click or drop a PDF file to compress">
+                <div class="pdf-extract-dropzone-icon">🗜️</div>
+                <strong style="font-size: 16px; color: var(--ink);">Drop a PDF document here to compress</strong>
+                <span style="font-size: 12.5px; color: var(--muted); max-width: 340px;">Click anywhere to browse or drag & drop any PDF file to optimize and shrink its size</span>
+                <span class="badge-pill" style="background: var(--soft); color: var(--ink); margin-top: 4px;">100% In-Browser Compression · Zero Server Uploads</span>
+                <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; justify-content:center;">
+                  <label for="pdf-compress-file-picker" class="btn-primary" style="font-size:13px; padding:8px 18px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;" onclick="event.stopPropagation();">
+                    <span>Browse PDF File</span>
+                  </label>
+                  <button type="button" id="pdf-compress-sample-btn" class="btn-secondary" style="font-size:13px; padding:8px 18px; cursor:pointer;" onclick="event.stopPropagation(); loadSamplePdfForCompress()">
+                    ✨ Load Sample Graphic PDF (4 Pages)
+                  </button>
+                </div>
+              </div>
+
+              <!-- Interactive Pages Grid / Preview -->
+              <div id="pdf-compress-grid" class="pdf-pages-grid" style="display:none;"></div>
+
+              <!-- Loading / Processing Spinner -->
+              <div id="pdf-compress-loading" style="display:none; flex-direction:column; align-items:center; gap:12px; text-align:center;">
+                <div class="spinner" style="width:36px; height:36px; border:3px solid var(--line); border-top-color:var(--ink); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+                <strong id="pdf-compress-loading-text" style="color:var(--ink); font-size:14px;">Optimizing and compressing PDF streams...</strong>
+                <span style="font-size:12px; color:var(--muted);">Re-encoding pages client-side</span>
+              </div>
+
+            </div>
+
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">📄</span>
+                <div>
+                  <strong id="pdf-compress-footer-title" class="img-meta-name">No PDF Loaded</strong>
+                  <small id="pdf-compress-footer-sub" class="img-meta-dims">Load a PDF document to begin compression</small>
+                </div>
+              </div>
+              <label for="pdf-compress-file-picker" class="action-btn-sm" style="cursor:pointer; display:inline-flex; align-items:center;" title="Load different PDF">
+                Change PDF
+              </label>
+            </div>
+          </div>
+
+          <!-- Settings Panel -->
+          <aside class="settings-panel">
+            <div class="panel-header">
+              <h3>Compression Settings</h3>
+              <p>Select a compression level or fine-tune quality and resolution.</p>
+            </div>
+
+            <!-- Compression Level Preset Cards -->
+            <div class="form-group">
+              <label>Compression Level</label>
+              <div class="pdf-compress-presets" style="display:flex; flex-direction:column; gap:8px; margin-top:4px;">
+                
+                <!-- Preset 1: Extreme -->
+                <label class="preset-option-card" id="preset-card-extreme" style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:var(--radius-md); cursor:pointer; background:var(--surface); transition:all 0.15s ease;">
+                  <input type="radio" name="pdf-compress-preset" value="extreme" onchange="onPdfCompressPresetChange('extreme')" style="margin-top:3px;">
+                  <div style="flex:1;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <strong style="font-size:13px; color:var(--ink);">⚡ Extreme Compression</strong>
+                      <span class="badge-pill" style="font-size:10px; background:rgba(239,68,68,0.12); color:#dc2626;">~75-90% Smaller</span>
+                    </div>
+                    <p style="font-size:11.5px; color:var(--muted); margin-top:2px;">High compression, lower image DPI. Best for email limits and strict upload sizes.</p>
+                  </div>
+                </label>
+
+                <!-- Preset 2: Balanced (Recommended) -->
+                <label class="preset-option-card active" id="preset-card-balanced" style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1.5px solid var(--ink); border-radius:var(--radius-md); cursor:pointer; background:var(--soft); transition:all 0.15s ease;">
+                  <input type="radio" name="pdf-compress-preset" value="balanced" checked onchange="onPdfCompressPresetChange('balanced')" style="margin-top:3px;">
+                  <div style="flex:1;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <strong style="font-size:13px; color:var(--ink);">⚖️ Balanced (Recommended)</strong>
+                      <span class="badge-pill" style="font-size:10px; background:var(--lime-tint); color:#2d6a4f;">~50-70% Smaller</span>
+                    </div>
+                    <p style="font-size:11.5px; color:var(--muted); margin-top:2px;">Standard quality and DPI with clean readable text and balanced size reduction.</p>
+                  </div>
+                </label>
+
+                <!-- Preset 3: Low Compression (High Quality) -->
+                <label class="preset-option-card" id="preset-card-low" style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:var(--radius-md); cursor:pointer; background:var(--surface); transition:all 0.15s ease;">
+                  <input type="radio" name="pdf-compress-preset" value="low" onchange="onPdfCompressPresetChange('low')" style="margin-top:3px;">
+                  <div style="flex:1;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <strong style="font-size:13px; color:var(--ink);">💎 High Quality</strong>
+                      <span class="badge-pill" style="font-size:10px; background:var(--soft); color:var(--ink);">~25-45% Smaller</span>
+                    </div>
+                    <p style="font-size:11.5px; color:var(--muted); margin-top:2px;">Light compression. Keeps high-resolution photos and crisp sharp vectors.</p>
+                  </div>
+                </label>
+
+                <!-- Preset 4: Custom -->
+                <label class="preset-option-card" id="preset-card-custom" style="display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:var(--radius-md); cursor:pointer; background:var(--surface); transition:all 0.15s ease;">
+                  <input type="radio" name="pdf-compress-preset" value="custom" onchange="onPdfCompressPresetChange('custom')" style="margin-top:3px;">
+                  <div style="flex:1;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <strong style="font-size:13px; color:var(--ink);">⚙️ Custom Settings</strong>
+                      <span class="badge-pill" style="font-size:10px; background:var(--soft); color:var(--muted);">Manual</span>
+                    </div>
+                    <p style="font-size:11.5px; color:var(--muted); margin-top:2px;">Manually configure JPEG quality, scale factor, and color modes.</p>
+                  </div>
+                </label>
+
+              </div>
+            </div>
+
+            <!-- Custom Controls Container -->
+            <div id="pdf-compress-custom-controls" style="display:none; flex-direction:column; gap:12px; background:var(--soft); padding:12px 14px; border-radius:var(--radius-md); border:1px solid var(--line); margin-top:4px;">
+              
+              <!-- Quality Slider -->
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="pdf-compress-quality" style="display:flex; justify-content:space-between;">
+                  <span>Image Quality</span>
+                  <strong id="pdf-compress-quality-val" style="color:var(--ink);">70%</strong>
+                </label>
+                <input type="range" id="pdf-compress-quality" min="15" max="95" value="70" step="5" oninput="onPdfCompressCustomInput()" style="width:100%;">
+              </div>
+
+              <!-- Resolution / Scale Slider -->
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="pdf-compress-scale" style="display:flex; justify-content:space-between;">
+                  <span>Render Resolution Scale</span>
+                  <strong id="pdf-compress-scale-val" style="color:var(--ink);">1.0x (150 DPI)</strong>
+                </label>
+                <input type="range" id="pdf-compress-scale" min="0.5" max="1.5" value="1.0" step="0.1" oninput="onPdfCompressCustomInput()" style="width:100%;">
+              </div>
+
+              <!-- Color Palette Mode -->
+              <div class="form-group" style="margin-bottom:0;">
+                <label for="pdf-compress-colormode" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <span style="font-size:12px; font-weight:600; color:var(--ink);">Color Mode</span>
+                  <span id="pdf-compress-colormode-badge" class="badge-pill" style="font-size:10px; background:var(--white); border:1px solid var(--line); color:var(--ink);">Full Color</span>
+                </label>
+
+                <!-- 1-Click Segmented Pill Buttons -->
+                <div class="segmented-control" style="margin-bottom:8px;">
+                  <button type="button" class="segment-btn active" id="btn-colormode-color" onclick="setPdfCompressColorMode('color')">
+                    🎨 Color
+                  </button>
+                  <button type="button" class="segment-btn" id="btn-colormode-grayscale" onclick="setPdfCompressColorMode('grayscale')">
+                    ⚪ Grayscale
+                  </button>
+                  <button type="button" class="segment-btn" id="btn-colormode-contrast" onclick="setPdfCompressColorMode('high-contrast')">
+                    🔲 High B&W
+                  </button>
+                </div>
+
+                <!-- Themed Custom Select Dropdown -->
+                <select id="pdf-compress-colormode" class="select-input" onchange="onPdfCompressColorModeSelect(this.value)">
+                  <option value="color">Full Color (Default · Preserve All Hues)</option>
+                  <option value="grayscale">Grayscale (Black & White · Extra Savings)</option>
+                  <option value="high-contrast">High Contrast B&W (Scanned Docs & Text)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Output Filename -->
+            <div class="form-group">
+              <label for="pdf-compress-output-name">Output PDF Filename</label>
+              <input type="text" id="pdf-compress-output-name" class="input-text" value="compressed_document.pdf" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid var(--line); border-radius:var(--radius-sm); font-weight:600; color:var(--ink);">
+            </div>
+
+            <!-- Compression Stats Summary Card -->
+            <div class="card" style="background:var(--soft); padding:12px 14px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Original Size:</span>
+                <strong id="pdf-compress-stat-original" style="color:var(--ink);">0 KB</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Estimated Compressed Size:</span>
+                <strong id="pdf-compress-stat-estimated" style="color:#2d6a4f;">0 KB</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Estimated Savings:</span>
+                <strong id="pdf-compress-stat-savings" style="color:#2d6a4f;">0% Reduction</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Total Pages:</span>
+                <strong id="pdf-compress-stat-pages" style="color:var(--ink);">0 Pages</strong>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Action Buttons -->
+            <button id="btn-pdf-compress-execute" class="btn-primary" onclick="executePdfCompress(true)" disabled>
+              🗜️ Compress & Download PDF
+            </button>
+            <button id="btn-pdf-compress-preview" class="btn-secondary" onclick="executePdfCompress(false)" disabled>
+              👁 Preview Compressed PDF in New Tab
+            </button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 20 WORKSPACE: ROTATE PDF PAGES                            -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-doc-rotate-pdf-view">
+        <div class="workspace-header">
+          <div class="breadcrumb">
+            <a onclick="showView('document')" style="cursor:pointer;">Document</a>
+            <span>/</span>
+            <strong>Rotate PDF Pages</strong>
+          </div>
+          <button class="back-btn" onclick="showView('document')">
+            <span>←</span> Back to Document Tools
+          </button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <div class="stage-hint">
+                <span>🔄</span>
+                <span id="pdf-rotate-status-hint">Rotate individual pages or apply bulk orientation changes across your document</span>
+              </div>
+              <div class="stage-topbar-tools" id="pdf-rotate-topbar-tools" style="display:none;">
+                <div class="chip-group" style="display:flex; gap:6px; flex-wrap:wrap;">
+                  <button class="chip-btn" onclick="rotateAllPdfPages(-90)" title="Rotate all pages counter-clockwise">↺ All Left (-90°)</button>
+                  <button class="chip-btn" onclick="rotateAllPdfPages(90)" title="Rotate all pages clockwise">↻ All Right (+90°)</button>
+                  <button class="chip-btn" onclick="rotateAllPdfPages(180)" title="Flip all pages 180 degrees">🔄 Flip 180°</button>
+                  <button class="chip-btn" onclick="resetAllPdfPageRotations()" title="Reset all pages to original orientation">↺ Reset All</button>
+                </div>
+                <span id="pdf-rotate-summary-pill" class="badge-pill" style="font-size: 10.5px; background: var(--lime-tint); color: #2d6a4f; border: 1px solid var(--accent-lime-border);">0 Pages Loaded</span>
+              </div>
+            </div>
+
+            <div class="stage-viewport" style="padding: 20px; background: var(--stage); overflow-y: auto; min-height: 440px; display: flex; align-items: center; justify-content: center;">
+              
+              <!-- PDF Upload Drop Zone -->
+              <div class="pdf-extract-dropzone" id="pdf-rotate-dropzone">
+                <div class="pdf-extract-dropzone-icon">🔄</div>
+                <strong style="font-size: 16px; color: var(--ink);">Drop a PDF document here to rotate pages</strong>
+                <span style="font-size: 12.5px; color: var(--muted); max-width: 360px;">Rotate single pages or all pages clockwise / counter-clockwise with lossless vector preservation</span>
+                <span class="badge-pill" style="background: var(--soft); color: var(--ink); margin-top: 4px;">100% Client-Side Processing · Instant & Vector Lossless</span>
+                <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; justify-content:center;">
+                  <label class="btn-primary" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:13px; padding:8px 18px;">
+                    <span>Browse PDF File</span>
+                    <input type="file" accept="application/pdf" id="pdf-rotate-file-picker" onchange="handlePdfRotateFile(this.files[0])" hidden>
+                  </label>
+                  <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px;" onclick="loadSamplePdfForRotate()">
+                    ✨ Load Sample 6-Page PDF
+                  </button>
+                </div>
+              </div>
+
+              <!-- Interactive Pages Grid -->
+              <div id="pdf-rotate-grid" class="pdf-pages-grid" style="display:none;"></div>
+
+              <!-- Loading / Rendering Spinner -->
+              <div id="pdf-rotate-loading" style="display:none; flex-direction:column; align-items:center; gap:12px; text-align:center;">
+                <div class="spinner" style="width:36px; height:36px; border:3px solid var(--line); border-top-color:var(--ink); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+                <strong id="pdf-rotate-loading-text" style="color:var(--ink); font-size:14px;">Reading & rendering PDF pages...</strong>
+                <span style="font-size:12px; color:var(--muted);">Processing pages client-side</span>
+              </div>
+
+            </div>
+
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">📄</span>
+                <div>
+                  <strong id="pdf-rotate-footer-title" class="img-meta-name">No PDF Loaded</strong>
+                  <small id="pdf-rotate-footer-sub" class="img-meta-dims">Load a PDF document to begin rotating pages</small>
+                </div>
+              </div>
+              <label class="action-btn-sm" style="cursor:pointer;" title="Load different PDF">
+                Change PDF
+                <input type="file" accept="application/pdf" onchange="handlePdfRotateFile(this.files[0])" hidden>
+              </label>
+            </div>
+          </div>
+
+          <!-- Settings Panel -->
+          <aside class="settings-panel">
+            <div class="panel-header">
+              <h3>Rotate Settings</h3>
+              <p>Rotate individual pages on canvas or apply batch changes below.</p>
+            </div>
+
+            <!-- Bulk Quick Rotation Actions -->
+            <div class="form-group">
+              <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Batch Quick Rotate</span>
+                <span class="badge-pill" style="font-size:10px; background:var(--white); border:1px solid var(--line); color:var(--ink);">All Pages</span>
+              </label>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                <button type="button" class="btn-secondary" style="margin:0; padding:8px 10px; font-size:12px; font-weight:600;" onclick="rotateAllPdfPages(-90)">
+                  ↺ 90° Left
+                </button>
+                <button type="button" class="btn-secondary" style="margin:0; padding:8px 10px; font-size:12px; font-weight:600;" onclick="rotateAllPdfPages(90)">
+                  ↻ 90° Right
+                </button>
+                <button type="button" class="btn-secondary" style="margin:0; padding:8px 10px; font-size:12px; font-weight:600;" onclick="rotateAllPdfPages(180)">
+                  🔄 Flip 180°
+                </button>
+                <button type="button" class="btn-secondary" style="margin:0; padding:8px 10px; font-size:12px; font-weight:600;" onclick="resetAllPdfPageRotations()">
+                  ↺ Reset 0°
+                </button>
+              </div>
+            </div>
+
+            <!-- Page Selection Helper -->
+            <div class="form-group">
+              <label class="form-label">Rotate Target Filter</label>
+              <select id="pdf-rotate-filter" class="select-input" onchange="onPdfRotateFilterChange(this.value)">
+                <option value="all">Apply to All Pages</option>
+                <option value="odd">Apply to Odd Pages Only (1, 3, 5...)</option>
+                <option value="even">Apply to Even Pages Only (2, 4, 6...)</option>
+                <option value="first">Apply to First Page Only</option>
+              </select>
+            </div>
+
+            <!-- Output Filename -->
+            <div class="form-group">
+              <label for="pdf-rotate-output-name">Output PDF Filename</label>
+              <input type="text" id="pdf-rotate-output-name" class="input-text" value="rotated_document.pdf" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid var(--line); border-radius:var(--radius-sm); font-weight:600; color:var(--ink);">
+            </div>
+
+            <!-- Rotation Stats Summary Card -->
+            <div class="card" style="background:var(--soft); padding:12px 14px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Total Pages:</span>
+                <strong id="pdf-rotate-stat-total" style="color:var(--ink);">0 Pages</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Pages Rotated:</span>
+                <strong id="pdf-rotate-stat-modified" style="color:#2d6a4f;">0 Modified</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Preservation:</span>
+                <strong style="color:var(--ink);">100% Vector Lossless</strong>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Action Buttons -->
+            <button id="btn-pdf-rotate-execute" class="btn-primary" onclick="executePdfRotate(true)" disabled>
+              🔄 Save & Download Rotated PDF
+            </button>
+            <button id="btn-pdf-rotate-preview" class="btn-secondary" onclick="executePdfRotate(false)" disabled>
+              👁 Preview in New Tab
+            </button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 21 WORKSPACE: DELETE PDF PAGES                            -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-doc-delete-pdf-view">
+        <div class="workspace-header">
+          <div class="breadcrumb">
+            <a onclick="showView('document')" style="cursor:pointer;">Document</a>
+            <span>/</span>
+            <strong>Delete PDF Pages</strong>
+          </div>
+          <button class="back-btn" onclick="showView('document')">
+            <span>←</span> Back to Document Tools
+          </button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <div class="stage-hint">
+                <span>🗑️</span>
+                <span id="pdf-delete-status-hint">Click any page thumbnail or card button to mark it for removal</span>
+              </div>
+              <div class="stage-topbar-tools" id="pdf-delete-topbar-tools" style="display:none;">
+                <div class="chip-group" style="display:flex; gap:6px; flex-wrap:wrap;">
+                  <button class="chip-btn" onclick="setPdfDeleteFilter('odd')" title="Mark odd pages for deletion">Delete Odd</button>
+                  <button class="chip-btn" onclick="setPdfDeleteFilter('even')" title="Mark even pages for deletion">Delete Even</button>
+                  <button class="chip-btn" onclick="invertPdfDeleteSelection()" title="Invert kept and deleted pages">Invert</button>
+                  <button class="chip-btn" onclick="resetPdfDeleteSelection()" title="Keep all pages">Keep All</button>
+                </div>
+                <span id="pdf-delete-summary-pill" class="badge-pill" style="font-size: 10.5px; background: var(--soft); color: var(--ink); border: 1px solid var(--line);">0 Pages Marked</span>
+              </div>
+            </div>
+
+            <div class="stage-viewport" style="padding: 20px; background: var(--stage); overflow-y: auto; min-height: 440px; display: flex; align-items: center; justify-content: center;">
+              
+              <!-- PDF Upload Drop Zone -->
+              <div class="pdf-extract-dropzone" id="pdf-delete-dropzone">
+                <div class="pdf-extract-dropzone-icon" style="background:#fee2e2; color:#b91c1c;">🗑️</div>
+                <strong style="font-size: 16px; color: var(--ink);">Drop a PDF document here to delete pages</strong>
+                <span style="font-size: 12.5px; color: var(--muted); max-width: 360px;">Selectively remove unwanted pages or blank sheets and download a clean document</span>
+                <span class="badge-pill" style="background: var(--soft); color: var(--ink); margin-top: 4px;">100% Client-Side Processing · Lossless PDF Vector Stream</span>
+                <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; justify-content:center;">
+                  <label class="btn-primary" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px; font-size:13px; padding:8px 18px;">
+                    <span>Browse PDF File</span>
+                    <input type="file" accept="application/pdf" id="pdf-delete-file-picker" onchange="handlePdfDeleteFile(this.files[0])" hidden>
+                  </label>
+                  <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px;" onclick="loadSamplePdfForDelete()">
+                    ✨ Load Sample 6-Page PDF
+                  </button>
+                </div>
+              </div>
+
+              <!-- Interactive Pages Grid -->
+              <div id="pdf-delete-grid" class="pdf-pages-grid" style="display:none;"></div>
+
+              <!-- Loading / Rendering Spinner -->
+              <div id="pdf-delete-loading" style="display:none; flex-direction:column; align-items:center; gap:12px; text-align:center;">
+                <div class="spinner" style="width:36px; height:36px; border:3px solid var(--line); border-top-color:var(--ink); border-radius:50%; animation:spin 0.8s linear infinite;"></div>
+                <strong id="pdf-delete-loading-text" style="color:var(--ink); font-size:14px;">Reading & rendering PDF pages...</strong>
+                <span style="font-size:12px; color:var(--muted);">Processing pages client-side</span>
+              </div>
+
+            </div>
+
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">📄</span>
+                <div>
+                  <strong id="pdf-delete-footer-title" class="img-meta-name">No PDF Loaded</strong>
+                  <small id="pdf-delete-footer-sub" class="img-meta-dims">Load a PDF document to begin removing pages</small>
+                </div>
+              </div>
+              <label class="action-btn-sm" style="cursor:pointer;" title="Load different PDF">
+                Change PDF
+                <input type="file" accept="application/pdf" onchange="handlePdfDeleteFile(this.files[0])" hidden>
+              </label>
+            </div>
+          </div>
+
+          <!-- Settings Panel -->
+          <aside class="settings-panel">
+            <div class="panel-header">
+              <h3>Delete Settings</h3>
+              <p>Configure which pages to delete and set output filename.</p>
+            </div>
+
+            <!-- Custom Page Numbers / Ranges to Delete -->
+            <div class="form-group">
+              <label for="pdf-delete-range-input" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Pages to Delete</span>
+                <span class="badge-pill" style="font-size:10px; background:var(--white); border:1px solid var(--line); color:var(--muted);">e.g. 2, 4-5</span>
+              </label>
+              <input type="text" id="pdf-delete-range-input" class="input-text" placeholder="e.g. 2, 4-6" oninput="onPdfDeleteRangeInput(this.value)" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid var(--line); border-radius:var(--radius-sm); font-weight:600; color:var(--ink);">
+              <small style="font-size:11px; color:var(--muted); margin-top:4px; display:block;">Enter comma-separated page numbers or ranges to delete.</small>
+            </div>
+
+            <!-- Quick Selection Presets -->
+            <div class="form-group">
+              <label class="form-label">Quick Delete Helpers</label>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                <button type="button" class="btn-secondary" style="margin:0; padding:8px 10px; font-size:12px; font-weight:600;" onclick="setPdfDeleteFilter('first')">
+                  Delete First Page
+                </button>
+                <button type="button" class="btn-secondary" style="margin:0; padding:8px 10px; font-size:12px; font-weight:600;" onclick="setPdfDeleteFilter('last')">
+                  Delete Last Page
+                </button>
+                <button type="button" class="btn-secondary" style="margin:0; padding:8px 10px; font-size:12px; font-weight:600;" onclick="setPdfDeleteFilter('odd')">
+                  Delete Odd Pages
+                </button>
+                <button type="button" class="btn-secondary" style="margin:0; padding:8px 10px; font-size:12px; font-weight:600;" onclick="setPdfDeleteFilter('even')">
+                  Delete Even Pages
+                </button>
+              </div>
+            </div>
+
+            <!-- Output Filename -->
+            <div class="form-group">
+              <label for="pdf-delete-output-name">Output PDF Filename</label>
+              <input type="text" id="pdf-delete-output-name" class="input-text" value="edited_document.pdf" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid var(--line); border-radius:var(--radius-sm); font-weight:600; color:var(--ink);">
+            </div>
+
+            <!-- Summary Card -->
+            <div class="card" style="background:var(--soft); padding:12px 14px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Total Pages:</span>
+                <strong id="pdf-delete-stat-total" style="color:var(--ink);">0 Pages</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Pages to Remove:</span>
+                <strong id="pdf-delete-stat-deleted" style="color:#b91c1c;">0 Pages</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+                <span style="color:var(--muted);">Remaining in Output:</span>
+                <strong id="pdf-delete-stat-remaining" style="color:#2d6a4f;">0 Pages</strong>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Action Buttons -->
+            <button id="btn-pdf-delete-execute" class="btn-primary" onclick="executePdfDelete(true)" disabled style="background:#b91c1c; border-color:#991b1b; color:#fff;">
+              🗑️ Remove Pages & Download PDF
+            </button>
+            <button id="btn-pdf-delete-preview" class="btn-secondary" onclick="executePdfDelete(false)" disabled>
+              👁 Preview Remaining Pages in New Tab
+            </button>
+          </aside>
+        </div>
+      </section>
+
+
       <!-- Floating Global History Toolbar (Undo / Redo) -->
       <div id="floating-history-bar" class="floating-history-bar">
         <button id="btn-global-undo" class="history-btn" title="Undo (⌘Z / Ctrl+Z)" onclick="handleGlobalUndo()" disabled>
@@ -2580,7 +3535,12 @@
     </main>
   </div>
 
-  <script src="js/engine.js"></script>
-  <script src="js/app.js"></script>
+  <!-- PDF.js, PDF-Lib and JSZip for client-side PDF processing & ZIP bundling (Local Vendor Scripts) -->
+  <script src="js/vendor/pdf.worker.min.js"></script>
+  <script src="js/vendor/pdf.min.js"></script>
+  <script src="js/vendor/pdf-lib.min.js"></script>
+  <script src="js/vendor/jszip.min.js"></script>
+  <script src="js/engine.js?v=2.2"></script>
+  <script src="js/app.js?v=2.2"></script>
 </body>
 </html>

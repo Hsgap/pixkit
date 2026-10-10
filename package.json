@@ -1,0 +1,18 @@
+{
+  "name": "pixkit",
+  "version": "1.0.0",
+  "description": "Minimal Image Studio and Document Tools",
+  "scripts": {
+    "build": "echo 'Static web ready'",
+    "prepare:mobile": "rm -rf www && mkdir -p www && cp index.html studio.html manifest.json www/ && cp -R styles js icons www/",
+    "build:apk": "npm run prepare:mobile && npx cap sync android && cd android && JAVA_HOME=/Users/rishi/Library/Java/JavaVirtualMachines/jbr-21.0.11/Contents/Home ANDROID_HOME=$HOME/Library/Android/sdk ./gradlew assembleDebug && cp app/build/outputs/apk/debug/app-debug.apk ../pixkit-debug.apk"
+  },
+  "keywords": [],
+  "author": "PixKit",
+  "license": "MIT",
+  "devDependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3"
+  }
+}
