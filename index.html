@@ -10,6 +10,13 @@
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://hsgap.github.io/pixkit/">
 
+  <!-- Favicons for Google Search, Browsers, and PWA -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="icon" type="image/png" sizes="48x48" href="icons/icon-48.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+  <link rel="shortcut icon" href="favicon.ico">
+
   <!-- Open Graph / Facebook / WhatsApp -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://hsgap.github.io/pixkit/">
@@ -27,20 +34,29 @@
 
   <!-- Schema.org JSON-LD -->
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "PixKit",
-    "url": "https://hsgap.github.io/pixkit/",
-    "description": "100% client-side image editor and PDF manipulation tools running entirely in your browser with complete privacy.",
-    "applicationCategory": "MultimediaApplication, UtilitiesApplication",
-    "operatingSystem": "All",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
+  [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "PixKit",
+      "alternateName": ["PixKit Studio", "PixKit App"],
+      "url": "https://hsgap.github.io/pixkit/"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "PixKit",
+      "url": "https://hsgap.github.io/pixkit/",
+      "description": "100% client-side image editor and PDF manipulation tools running entirely in your browser with complete privacy.",
+      "applicationCategory": "MultimediaApplication, UtilitiesApplication",
+      "operatingSystem": "All",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
     }
-  }
+  ]
   </script>
 
   <!-- Google tag (gtag.js) -->
