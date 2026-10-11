@@ -55,6 +55,52 @@
         "price": "0",
         "priceCurrency": "USD"
       }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I merge PDF files for free without uploading them to a server?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Open PixKit's Merge PDF tool, select your PDF documents, arrange them in your desired order, and click Merge & Download. All processing runs 100% locally in your web browser with zero server uploads."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I convert PDF pages into high-resolution JPG or PNG images?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Open PixKit's PDF to Images tool, select your PDF file, choose your preferred format (JPG, PNG, or WEBP) and DPI resolution up to 300 DPI, and download pages individually or as a complete ZIP package."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How can I compress images and PDF files without losing quality?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "PixKit includes dedicated client-side compression engines for both photos (JPG, PNG, WEBP) and PDF documents with real-time file size previews and quality controls."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I rotate or remove unwanted pages from a PDF document?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use PixKit's Rotate PDF tool to turn pages 90 or 180 degrees permanently, or use Delete PDF Pages to selectively remove blank, duplicate, or unwanted pages."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is PixKit safe and private for sensitive personal photos and contracts?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, PixKit is 100% private. PixKit runs entirely inside your browser using client-side WebAssembly, Canvas, and Web Workers. None of your files or images are ever uploaded to any external server."
+          }
+        }
+      ]
     }
   ]
   </script>
@@ -109,25 +155,30 @@
       padding: 0;
     }
 
-    body, html {
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
       width: 100%;
-      height: 100%;
-      overflow: hidden;
+      min-height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
       background-color: var(--paper);
       font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       color: var(--ink);
-      user-select: none;
+      user-select: auto;
       transition: background-color 0.8s ease, color 0.8s ease;
     }
 
     #canvas-container {
-      position: absolute;
+      position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
       z-index: 1;
-      cursor: crosshair;
+      pointer-events: none;
     }
 
     canvas {
@@ -138,7 +189,7 @@
 
     /* Ambient Soft Vignette */
     .bg-ambient-vignette {
-      position: absolute;
+      position: fixed;
       inset: 0;
       pointer-events: none;
       z-index: 2;
@@ -246,15 +297,15 @@
 
     /* Center Hero Brand Display */
     .hero-stage {
-      position: absolute;
-      inset: 0;
+      position: relative;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       z-index: 5;
       pointer-events: none;
-      padding: 24px;
+      padding: 32px 24px;
       text-align: center;
     }
 
@@ -527,17 +578,308 @@
       }
     }
 
-    @media (max-width: 768px) {
-      .center-brand-logo {
-        gap: 14px;
-      }
-      .controls-dock {
-        flex-wrap: wrap;
-        border-radius: 20px;
-        bottom: 12px;
-        width: 92%;
-        justify-content: center;
-      }
+    /* Scroll down indicator */
+    .scroll-down-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 28px;
+      padding: 10px 20px;
+      border-radius: 9999px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--muted);
+      text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--shadow-subtle);
+      pointer-events: auto;
+      cursor: pointer;
+    }
+    .scroll-down-hint:hover {
+      color: var(--ink);
+      border-color: var(--line-strong);
+      transform: translateY(2px);
+      background: var(--soft);
+    }
+
+    /* SEO Showcase Container */
+    .seo-wrapper {
+      position: relative;
+      z-index: 10;
+      background: var(--paper);
+      border-top: 1px solid var(--line);
+      padding: 80px 24px 60px;
+    }
+
+    .seo-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .seo-section-header {
+      text-align: center;
+      max-width: 780px;
+      margin: 0 auto 56px;
+    }
+
+    .seo-pill-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      background: var(--lime);
+      color: #121310;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .seo-heading {
+      font-size: clamp(28px, 4.5vw, 44px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--ink);
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+
+    .seo-lead {
+      font-size: clamp(15px, 2vw, 17px);
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .seo-category-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .seo-category-title .cat-badge {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 4px 10px;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 9999px;
+      color: var(--muted);
+    }
+
+    .seo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 20px;
+      margin-bottom: 64px;
+    }
+
+    .seo-tool-card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--shadow-subtle);
+      position: relative;
+    }
+
+    .seo-tool-card:hover {
+      border-color: var(--line-strong);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-card);
+    }
+
+    .seo-tool-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: var(--ink);
+      margin-bottom: 16px;
+      transition: background 0.2s ease;
+    }
+
+    .seo-tool-card:hover .seo-tool-icon {
+      background: var(--lime);
+      color: #121310;
+      border-color: var(--lime);
+    }
+
+    .seo-tool-name {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .seo-tool-desc {
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 18px;
+      flex-grow: 1;
+    }
+
+    .seo-tool-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--ink);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Privacy Banner */
+    .seo-privacy-banner {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 44px 32px;
+      text-align: center;
+      margin-bottom: 72px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .seo-privacy-banner h3 {
+      font-size: clamp(22px, 3vw, 28px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+
+    .seo-privacy-banner p {
+      font-size: 15px;
+      color: var(--muted);
+      max-width: 700px;
+      margin: 0 auto 24px;
+      line-height: 1.6;
+    }
+
+    .seo-privacy-points {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px 28px;
+    }
+
+    .seo-point {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ink);
+    }
+
+    .seo-point i {
+      color: #16a34a;
+    }
+
+    /* FAQ Accordion */
+    .seo-faq-wrap {
+      max-width: 840px;
+      margin: 0 auto 80px;
+    }
+
+    .seo-faq-item {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      margin-bottom: 12px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+
+    .seo-faq-item[open] {
+      border-color: var(--line-strong);
+      box-shadow: var(--shadow-subtle);
+    }
+
+    .seo-faq-item summary {
+      padding: 20px 24px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ink);
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      user-select: none;
+    }
+
+    .seo-faq-item summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .seo-faq-item summary i {
+      font-size: 12px;
+      color: var(--muted);
+      transition: transform 0.25s ease;
+    }
+
+    .seo-faq-item[open] summary i {
+      transform: rotate(180deg);
+    }
+
+    .seo-faq-content {
+      padding: 0 24px 22px;
+      font-size: 14.5px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    /* SEO Footer */
+    .seo-footer {
+      border-top: 1px solid var(--line);
+      padding-top: 40px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .seo-footer-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .seo-footer-links a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .seo-footer-links a:hover {
+      color: var(--ink);
     }
   </style>
 </head>
@@ -575,15 +917,256 @@
       <a href="studio.html" class="enter-studio-link" onclick="launchStudioWithSavedWork(event)">
         Launch Studio <i class="fa-solid fa-arrow-right" style="font-size: 11px;"></i>
       </a>
+
+      <!-- Smooth Scroll Button to Explore All Tools -->
+      <a href="#all-tools" class="scroll-down-hint">
+        Explore All 14 Free Tools <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+      </a>
     </div>
   </main>
 
+  <!-- Complete SEO Showcase & Knowledge Base Section -->
+  <section id="all-tools" class="seo-wrapper">
+    <div class="seo-inner">
+      
+      <!-- Section Header -->
+      <header class="seo-section-header">
+        <span class="seo-pill-tag">✳ 100% Free &amp; Private</span>
+        <h1 class="seo-heading">Free Online Image &amp; PDF Tools</h1>
+        <p class="seo-lead">
+          Fast, client-side utility suite designed for speed and total privacy. 
+          No file size limits. No cloud uploads. Every photo and document is processed 100% locally in your browser.
+        </p>
+      </header>
+
+      <!-- Category 1: PDF Document Tools -->
+      <div class="seo-category-title">
+        <span>📄 PDF &amp; Document Tools</span>
+        <span class="cat-badge">7 Free Utilities</span>
+      </div>
+      <div class="seo-grid">
+        
+        <!-- Merge PDF -->
+        <a href="studio.html#/tool/doc-merge-pdf" class="seo-tool-card" onclick="launchStudioWithSavedWork(event, '#/tool/doc-merge-pdf')">
+          <div class="seo-tool-icon"><i class="fa-solid fa-layer-group"></i></div>
+          <h2 class="seo-tool-name">Merge PDF Online Free</h2>
+          <p class="seo-tool-desc">Combine multiple PDF documents into a single organized file with easy drag-and-drop reordering. Zero server uploads.</p>
+          <div class="seo-tool-action">Launch Merge PDF <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <!-- PDF to Image -->
+        <a href="studio.html#/tool/doc-pdf-to-img" class="seo-tool-card" onclick="launchStudioWithSavedWork(event, '#/tool/doc-pdf-to-img')">
+          <div class="seo-tool-icon"><i class="fa-solid fa-file-image"></i></div>
+          <h2 class="seo-tool-name">PDF to Image Converter</h2>
+          <p class="seo-tool-desc">Convert PDF pages into high-resolution JPG or PNG images with custom DPI settings (up to 300 DPI) and ZIP export.</p>
+          <div class="seo-tool-action">Launch PDF to Images <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <!-- Images to PDF -->
+        <a href="studio.html#/tool/doc-img-to-pdf" class="seo-tool-card" onclick="launchStudioWithSavedWork(event, '#/tool/doc-img-to-pdf')">
+          <div class="seo-tool-icon"><i class="fa-solid fa-file-pdf"></i></div>
+          <h2 class="seo-tool-name">Images to PDF Converter</h2>
+          <p class="seo-tool-desc">Convert multiple JPG, PNG, or WEBP photos into a single clean PDF document with custom margins and page formats.</p>
+          <div class="seo-tool-action">Launch Images to PDF <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <!-- Split PDF -->
+        <a href="studio.html#/tool/doc-split-pdf" class="seo-tool-card" onclick="launchStudioWithSavedWork(event, '#/tool/doc-split-pdf')">
+          <div class="seo-tool-icon"><i class="fa-solid fa-scissors"></i></div>
+          <h2 class="seo-tool-name">Split PDF &amp; Extract Pages</h2>
+          <p class="seo-tool-desc">Extract specific page ranges, split multipage documents, or isolate individual pages into clean separate PDFs.</p>
+          <div class="seo-tool-action">Launch Split PDF <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <!-- Compress PDF -->
+        <a href="studio.html#/tool/doc-compress-pdf" class="seo-tool-card" onclick="launchStudioWithSavedWork(event, '#/tool/doc-compress-pdf')">
+          <div class="seo-tool-icon"><i class="fa-solid fa-file-zipper"></i></div>
+          <h2 class="seo-tool-name">Compress PDF File Size</h2>
+          <p class="seo-tool-desc">Reduce PDF file size efficiently with smart DPI downsampling, grayscale conversion, and JPEG compression in your browser.</p>
+          <div class="seo-tool-action">Launch Compress PDF <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <!-- Rotate PDF -->
+        <a href="studio.html#/tool/doc-rotate-pdf" class="seo-tool-card" onclick="launchStudioWithSavedWork(event, '#/tool/doc-rotate-pdf')">
+          <div class="seo-tool-icon"><i class="fa-solid fa-rotate-right"></i></div>
+          <h2 class="seo-tool-name">Rotate PDF Pages Online</h2>
+          <p class="seo-tool-desc">Rotate individual pages or all pages 90°, 180°, or 270° clockwise with lossless native PDF dictionary rotation.</p>
+          <div class="seo-tool-action">Launch Rotate PDF <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <!-- Delete PDF Pages -->
+        <a href="studio.html#/tool/doc-delete-pdf" class="seo-tool-card" onclick="launchStudioWithSavedWork(event, '#/tool/doc-delete-pdf')">
+          <div class="seo-tool-icon"><i class="fa-solid fa-trash-can"></i></div>
+          <h2 class="seo-tool-name">Delete &amp; Remove PDF Pages</h2>
+          <p class="seo-tool-desc">Selectively remove blank, duplicate, or unwanted pages from any PDF document with instant visual page selection.</p>
+          <div class="seo-tool-action">Launch Delete Pages <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+      </div>
+
+      <!-- Category 2: Image Editing & Photo Tools -->
+      <div class="seo-category-title">
+        <span>🖼️ Image Editing &amp; Optimization Tools</span>
+        <span class="cat-badge">7 Free Utilities</span>
+      </div>
+      <div class="seo-grid">
+        
+        <!-- Image Resizer -->
+        <a href="studio.html#/tool/resize" class="seo-tool-card" onclick="launchStudioWithSavedWork(event, '#/tool/resize')">
+          <div class="seo-tool-icon"><i class="fa-solid fa-arrows-up-down-left-right"></i></div>
+          <h2 class="seo-tool-name">Free Image Resizer</h2>
+          <p class="seo-tool-desc">Resize photos and images by exact pixel dimensions (width/height) or percentage scaling with aspect ratio locking.</p>
+          <div class="seo-tool-action">Launch Resizer <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <!-- Image Cropper -->
+        <a href="studio.html#/tool/crop" class="seo-tool-card" onclick="launchStudioWithSavedWork(event, '#/tool/crop')">
+          <div class="seo-tool-icon"><i class="fa-solid fa-crop-simple"></i></div>
+          <h2 class="seo-tool-name">Free Image Cropper</h2>
+          <p class="seo-tool-desc">Crop images with 8-point marquee handles or one-click social aspect ratios: 1:1 square, 16:9 widescreen, 4:5 portrait.</p>
+          <div class="seo-tool-action">Launch Crop Tool <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <!-- Image Compressor -->
+        <a href="studio.html#/tool/compress" class="seo-tool-card" onclick="launchStudioWithSavedWork(event, '#/tool/compress')">
+          <div class="seo-tool-icon"><i class="fa-solid fa-compress"></i></div>
+          <h2 class="seo-tool-name">Image Compressor (JPG, PNG, WEBP)</h2>
+          <p class="seo-tool-desc">Compress photos to smaller file sizes with live split preview, percentage reduction stats, and quality sliders.</p>
+          <div class="seo-tool-action">Launch Compressor <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <!-- Format Converter -->
+        <a href="studio.html#/tool/convert" class="seo-tool-card" onclick="launchStudioWithSavedWork(event, '#/tool/convert')">
+          <div class="seo-tool-icon"><i class="fa-solid fa-repeat"></i></div>
+          <h2 class="seo-tool-name">Image Format Converter</h2>
+          <p class="seo-tool-desc">Convert images instantly between PNG, JPG, and WEBP formats with transparency retention and custom quality settings.</p>
+          <div class="seo-tool-action">Launch Converter <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <!-- HEIC Converter -->
+        <a href="studio.html#/tool/heic" class="seo-tool-card" onclick="launchStudioWithSavedWork(event, '#/tool/heic')">
+          <div class="seo-tool-icon"><i class="fa-brands fa-apple"></i></div>
+          <h2 class="seo-tool-name">HEIC to JPG Converter</h2>
+          <p class="seo-tool-desc">Convert Apple iPhone HEIC and HEIF photos to universal JPG or PNG format directly in your browser without uploading.</p>
+          <div class="seo-tool-action">Launch HEIC Converter <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <!-- Photo Adjustments -->
+        <a href="studio.html#/tool/adjust" class="seo-tool-card" onclick="launchStudioWithSavedWork(event, '#/tool/adjust')">
+          <div class="seo-tool-icon"><i class="fa-solid fa-sliders"></i></div>
+          <h2 class="seo-tool-name">Photo Adjustments &amp; Filters</h2>
+          <p class="seo-tool-desc">Fine-tune exposure, brightness, contrast, saturation, color temperature, and apply curated retro vintage photo filters.</p>
+          <div class="seo-tool-action">Launch Adjustments <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+        <!-- Blur & Redact -->
+        <a href="studio.html#/tool/blur" class="seo-tool-card" onclick="launchStudioWithSavedWork(event, '#/tool/blur')">
+          <div class="seo-tool-icon"><i class="fa-solid fa-eye-slash"></i></div>
+          <h2 class="seo-tool-name">Blur &amp; Privacy Redaction</h2>
+          <p class="seo-tool-desc">Protect your privacy by applying Gaussian blur to sensitive faces, license plates, addresses, and confidential data.</p>
+          <div class="seo-tool-action">Launch Blur Tool <i class="fa-solid fa-arrow-right"></i></div>
+        </a>
+
+      </div>
+
+      <!-- Privacy Manifesto Banner -->
+      <div class="seo-privacy-banner">
+        <h3>🔒 100% Client-Side Privacy — Zero Server Uploads</h3>
+        <p>
+          Unlike traditional online PDF and image converters that upload your sensitive documents to remote cloud servers, 
+          PixKit processes everything locally in your web browser using HTML5 Canvas, WebAssembly, and native Web Workers.
+        </p>
+        <div class="seo-privacy-points">
+          <div class="seo-point"><i class="fa-solid fa-check"></i> Files never leave your device</div>
+          <div class="seo-point"><i class="fa-solid fa-check"></i> No account registration required</div>
+          <div class="seo-point"><i class="fa-solid fa-check"></i> Works completely offline as a PWA</div>
+          <div class="seo-point"><i class="fa-solid fa-check"></i> No file size limits or paywalls</div>
+        </div>
+      </div>
+
+      <!-- FAQ Section -->
+      <div class="seo-section-header" style="margin-bottom: 36px;">
+        <span class="seo-pill-tag">❓ Knowledge Base</span>
+        <h2 class="seo-heading" style="font-size: clamp(24px, 3.5vw, 36px);">Frequently Asked Questions</h2>
+        <p class="seo-lead">Everything you need to know about using PixKit for free image and PDF processing.</p>
+      </div>
+
+      <div class="seo-faq-wrap">
+        
+        <details class="seo-faq-item">
+          <summary>
+            <span>How do I merge PDF files for free without uploading them to a third-party server?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </summary>
+          <div class="seo-faq-content">
+            Click on <strong>Merge PDF</strong>, drop all your PDF documents into the workspace, drag the files to order them, and click <strong>Merge &amp; Download</strong>. Because PixKit runs entirely in your browser using WebAssembly, none of your documents are ever transmitted to any external server.
+          </div>
+        </details>
+
+        <details class="seo-faq-item">
+          <summary>
+            <span>How do I convert PDF pages into high-resolution JPG or PNG images?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </summary>
+          <div class="seo-faq-content">
+            Open the <strong>PDF to Images</strong> tool, select your PDF file, choose your preferred format (JPG, PNG, or WEBP) and DPI resolution (72 DPI for web, up to 300 DPI for print), and download pages individually or as a complete ZIP package.
+          </div>
+        </details>
+
+        <details class="seo-faq-item">
+          <summary>
+            <span>How does in-browser image compression work without losing quality?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </summary>
+          <div class="seo-faq-content">
+            PixKit analyzes your image matrix locally and optimizes high-frequency pixel data without altering visible color fidelity. You can adjust the visual quality slider with a real-time side-by-side preview before exporting.
+          </div>
+        </details>
+
+        <details class="seo-faq-item">
+          <summary>
+            <span>Can I rotate or delete specific pages from a PDF document?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </summary>
+          <div class="seo-faq-content">
+            Yes! Use <strong>Rotate PDF</strong> to turn portrait or landscape pages 90° or 180° clockwise with lossless rotation, or use <strong>Delete PDF Pages</strong> to click on unwanted pages and export a clean PDF with those pages removed.
+          </div>
+        </details>
+
+        <details class="seo-faq-item">
+          <summary>
+            <span>Is PixKit completely free to use?</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </summary>
+          <div class="seo-faq-content">
+            Yes, PixKit is 100% free with no subscriptions, watermarks, or artificial file limits. You can install it on your Mac, Windows, or Android device as an offline Progressive Web App (PWA).
+          </div>
+        </details>
+
+      </div>
+
+      <!-- SEO Footer -->
+      <footer class="seo-footer">
+        <div>
+          <strong>PixKit</strong> — The Minimal, Private In-Browser Image &amp; Document Studio.
+        </div>
+        <div class="seo-footer-links">
+          <a href="studio.html#/edit">Edit Image</a>
+          <a href="studio.html#/convert">Convert</a>
+          <a href="studio.html#/document">Document Tools</a>
+          <a href="https://github.com/Hsgap/pixkit" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </footer>
+
+    </div>
+  </section>
+
   <script>
-    function launchStudioWithSavedWork(event) {
+    function launchStudioWithSavedWork(event, directRoute) {
       if (event) event.preventDefault();
       localStorage.setItem('pixkit_entered', 'true');
-      const lastRoute = localStorage.getItem('pixkit_last_route') || '#/home';
-      const cleanRoute = lastRoute.startsWith('#') ? lastRoute : '#' + lastRoute;
+      const route = directRoute || localStorage.getItem('pixkit_last_route') || '#/home';
+      const cleanRoute = route.startsWith('#') ? route : '#' + route;
       window.location.href = 'studio.html' + cleanRoute;
     }
     /**
