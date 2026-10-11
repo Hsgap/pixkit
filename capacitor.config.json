@@ -1,8 +1,0 @@
-{
-  "appId": "com.pixkit.studio",
-  "appName": "PixKit",
-  "webDir": "www",
-  "server": {
-    "androidScheme": "https"
-  }
-}
