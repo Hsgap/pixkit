@@ -59,7 +59,25 @@
 
     gtag('config', 'G-BB278TWE52');
   </script>
-  <link rel="stylesheet" href="styles/main.css">
+  <script>
+    try {
+      // Clear legacy localStorage lock so entrance can play when opening the site
+      localStorage.removeItem('pixkit_dock_entrance_seen');
+      
+      var isReload = false;
+      var navEntries = window.performance && performance.getEntriesByType ? performance.getEntriesByType('navigation') : null;
+      if (navEntries && navEntries.length > 0) {
+        isReload = navEntries[0].type === 'reload';
+      } else if (window.performance && window.performance.navigation) {
+        isReload = window.performance.navigation.type === 1;
+      }
+      
+      if (isReload) {
+        document.documentElement.classList.add('dock-intro-seen');
+      }
+    } catch (_) {}
+  </script>
+  <link rel="stylesheet" href="styles/main.css?v=5.7">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FBFBF8">
 </head>
@@ -669,6 +687,180 @@
             <div class="tool-row-right">
               <span class="tool-tag">Page Editor</span>
               <div class="tool-arrow">→</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- RECENT FILES DEDICATED VIEW (Accessible via Floating Dock)     -->
+      <!-- ============================================================== -->
+      <section class="view" id="recent-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Studio · Library</div>
+            <h1>Recent Files</h1>
+            <p>Reopen previously edited images, inspect metadata, or continue where you left off.</p>
+          </div>
+          <div class="recent-page-header-actions">
+            <button class="back-btn" onclick="showView('home')">
+              <span>←</span> Back to Home
+            </button>
+            <div class="recent-page-btns-row">
+              <button class="btn-secondary" id="clear-recent-page-btn" onclick="clearAllRecentFiles()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18m-2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                Clear History
+              </button>
+              <button class="btn-primary" onclick="triggerGlobalUpload()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Open New Image
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Filter Pills & Search Bar -->
+        <div class="recent-controls-bar" id="recentControlsBar" style="display: none;">
+          <div class="recent-filter-pills" role="tablist" aria-label="Filter recent files by category">
+            <button class="recent-filter-pill active" data-cat="all" onclick="setRecentCategoryFilter('all')" role="tab" aria-selected="true">
+              <span>All</span>
+              <span class="pill-count" id="count-all">0</span>
+            </button>
+            <button class="recent-filter-pill" data-cat="edit" onclick="setRecentCategoryFilter('edit')" role="tab" aria-selected="false">
+              <span>Edit Images</span>
+              <span class="pill-count" id="count-edit">0</span>
+            </button>
+            <button class="recent-filter-pill" data-cat="convert" onclick="setRecentCategoryFilter('convert')" role="tab" aria-selected="false">
+              <span>Convert</span>
+              <span class="pill-count" id="count-convert">0</span>
+            </button>
+            <button class="recent-filter-pill" data-cat="pdf" onclick="setRecentCategoryFilter('pdf')" role="tab" aria-selected="false">
+              <span>PDF</span>
+              <span class="pill-count" id="count-pdf">0</span>
+            </button>
+          </div>
+
+          <div class="recent-search-wrap">
+            <span class="recent-search-icon" aria-hidden="true">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </span>
+            <input type="text" id="recent-search-input" class="recent-search-input" placeholder="Search by filename or format..." oninput="handleRecentSearch(this.value)" aria-label="Search recent files" />
+            <button class="recent-search-clear" id="recent-search-clear" onclick="clearRecentSearch()" title="Clear search" aria-label="Clear search">✕</button>
+          </div>
+        </div>
+
+        <!-- Dynamic Container for Active Session & Recent Files Grid -->
+        <div id="recent-files-page-container">
+          <!-- Populated dynamically by renderRecentFilesPage() -->
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- STUDIO SETTINGS DEDICATED VIEW (Accessible via Floating Dock)   -->
+      <!-- ============================================================== -->
+      <section class="view" id="settings-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Studio · Preferences</div>
+            <h1>Studio Settings</h1>
+            <p>Workspace options, appearance styling, and zero-server privacy verification.</p>
+          </div>
+          <button class="back-btn" onclick="showView('home')">
+            <span>←</span> Back to Home
+          </button>
+        </div>
+
+        <div class="settings-cards-grid">
+          <div class="settings-panel-card">
+            <div class="settings-card-header">
+              <div class="settings-card-icon">🎨</div>
+              <div>
+                <h3>Theme & Appearance</h3>
+                <p>Customize the workspace visual styling</p>
+              </div>
+            </div>
+            <div class="settings-card-body">
+              <div class="settings-row">
+                <div>
+                  <strong>Color Theme</strong>
+                  <div class="settings-help">Switch between natural warm paper and deep studio dark theme</div>
+                </div>
+                <div class="settings-theme-pills">
+                  <button class="settings-pill-btn active" id="settings-theme-light" onclick="setAppTheme('light')">☀️ Light</button>
+                  <button class="settings-pill-btn" id="settings-theme-dark" onclick="setAppTheme('dark')">🌙 Dark</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-panel-card">
+            <div class="settings-card-header">
+              <div class="settings-card-icon">🔒</div>
+              <div>
+                <h3>Zero-Server Privacy Guarantee</h3>
+                <p>How PixKit protects your sensitive photos and docs</p>
+              </div>
+            </div>
+            <div class="settings-card-body">
+              <div class="privacy-bullet">
+                <span class="bullet-check">✓</span>
+                <div>
+                  <strong>100% In-Browser Execution</strong>
+                  <div class="settings-help">Every pixel is transformed via client-side Canvas and WebAssembly. No photos are ever uploaded to any cloud server.</div>
+                </div>
+              </div>
+              <div class="privacy-bullet">
+                <span class="bullet-check">✓</span>
+                <div>
+                  <strong>Local Storage Only</strong>
+                  <div class="settings-help">Your recent files list and preferences are saved only inside your personal browser storage.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-panel-card">
+            <div class="settings-card-header">
+              <div class="settings-card-icon">⌨️</div>
+              <div>
+                <h3>Keyboard Shortcuts</h3>
+                <p>Speed up your image manipulation workflow</p>
+              </div>
+            </div>
+            <div class="settings-card-body">
+              <div class="settings-row">
+                <span>View Shortcuts Guide</span>
+                <button class="btn-secondary" style="padding:6px 14px; font-size:12px;" onclick="toggleShortcutsModal(true)">Open Guide (Shift + ?)</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-panel-card">
+            <div class="settings-card-header">
+              <div class="settings-card-icon">⚡</div>
+              <div>
+                <h3>Real-Time Active Users</h3>
+                <p>Live creators currently working in PixKit</p>
+              </div>
+            </div>
+            <div class="settings-card-body">
+              <div class="settings-row">
+                <div>
+                  <strong>Active Now</strong>
+                  <div class="settings-help">Live in-browser sessions synchronized across tabs &amp; devices</div>
+                </div>
+                <div class="settings-presence-pill" id="settingsActiveUsersWidget" title="Click to test live speed roll">
+                  <span class="settings-presence-dot"></span>
+                  <span class="speed-counter-number" id="settingsSpeedCounterNumber">
+                    <span class="speed-digit-slot"><span class="speed-digit-char active">1</span></span>
+                  </span>
+                  <span class="settings-presence-unit">online</span>
+                </div>
+              </div>
+              <div class="settings-row" style="font-size: 11.5px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 10px; margin-top: 2px;">
+                <span>Sync Interval</span>
+                <span class="settings-presence-rate">Every 5 seconds</span>
+              </div>
             </div>
           </div>
         </div>
@@ -3586,15 +3778,66 @@
         </div>
       </div>
 
+      <!-- (Recent Files and Settings have their own dedicated full views accessible via the Floating Dock) -->
     </main>
   </div>
+
+  <!-- Aceternity UI Vertical Floating Dock (Left Edge, Centered Vertically) -->
+  <aside class="floating-dock-wrapper" id="floatingDockWrapper" aria-label="Quick Actions Dock">
+    <nav class="floating-dock-container" id="floatingDockNav">
+      <!-- Dynamic Elastic SVG Membrane Backdrop -->
+      <svg class="dock-elastic-canvas" id="dockElasticCanvas" aria-hidden="true">
+        <defs>
+          <clipPath id="dockElasticClip">
+            <path id="dockElasticPathClip" d="M 0.00 32.00 C 0.41 28.35, 0.87 23.53, 2.44 19.75 C 4.00 15.98, 6.49 12.26, 9.37 9.37 C 12.26 6.49, 15.98 4.00, 19.75 2.44 C 23.53 0.87, 27.92 0.00, 32.00 0.00 C 36.08 -0.00, 40.47 0.87, 44.25 2.44 C 48.02 4.00, 51.74 6.49, 54.63 9.37 C 57.51 12.26, 60.00 15.98, 61.56 19.75 C 63.13 23.53, 63.59 28.35, 64.00 32.00 C 64.41 35.65, 64.00 38.44, 64.00 41.67 C 64.00 44.89, 64.00 48.11, 64.00 51.33 C 64.00 54.56, 64.00 57.78, 64.00 61.00 C 64.00 64.22, 64.00 67.44, 64.00 70.67 C 64.00 73.89, 64.00 77.11, 64.00 80.33 C 64.00 83.56, 64.00 86.78, 64.00 90.00 C 64.00 93.22, 64.00 96.44, 64.00 99.67 C 64.00 102.89, 64.00 106.11, 64.00 109.33 C 64.00 112.56, 64.00 115.78, 64.00 119.00 C 64.00 122.22, 64.00 125.44, 64.00 128.67 C 64.00 131.89, 64.00 135.11, 64.00 138.33 C 64.00 141.56, 64.41 144.35, 64.00 148.00 C 63.59 151.65, 63.13 156.47, 61.56 160.25 C 60.00 164.02, 57.51 167.74, 54.63 170.63 C 51.74 173.51, 48.02 176.00, 44.25 177.56 C 40.47 179.13, 36.08 180.00, 32.00 180.00 C 27.92 180.00, 23.53 179.13, 19.75 177.56 C 15.98 176.00, 12.26 173.51, 9.37 170.63 C 6.49 167.74, 4.00 164.02, 2.44 160.25 C 0.87 156.47, 0.41 151.65, 0.00 148.00 C -0.41 144.35, 0.00 141.56, 0.00 138.33 C 0.00 135.11, 0.00 131.89, 0.00 128.67 C 0.00 125.44, 0.00 122.22, 0.00 119.00 C 0.00 115.78, 0.00 112.56, 0.00 109.33 C 0.00 106.11, 0.00 102.89, 0.00 99.67 C 0.00 96.44, 0.00 93.22, 0.00 90.00 C 0.00 86.78, 0.00 83.56, 0.00 80.33 C 0.00 77.11, 0.00 73.89, 0.00 70.67 C 0.00 67.44, 0.00 64.22, 0.00 61.00 C 0.00 57.78, 0.00 54.56, 0.00 51.33 C 0.00 48.11, 0.00 44.89, 0.00 41.67 C 0.00 38.44, -0.41 35.65, 0.00 32.00 Z" />
+          </clipPath>
+        </defs>
+        <path id="dockElasticPath" class="dock-elastic-path" d="M 0.00 32.00 C 0.41 28.35, 0.87 23.53, 2.44 19.75 C 4.00 15.98, 6.49 12.26, 9.37 9.37 C 12.26 6.49, 15.98 4.00, 19.75 2.44 C 23.53 0.87, 27.92 0.00, 32.00 0.00 C 36.08 -0.00, 40.47 0.87, 44.25 2.44 C 48.02 4.00, 51.74 6.49, 54.63 9.37 C 57.51 12.26, 60.00 15.98, 61.56 19.75 C 63.13 23.53, 63.59 28.35, 64.00 32.00 C 64.41 35.65, 64.00 38.44, 64.00 41.67 C 64.00 44.89, 64.00 48.11, 64.00 51.33 C 64.00 54.56, 64.00 57.78, 64.00 61.00 C 64.00 64.22, 64.00 67.44, 64.00 70.67 C 64.00 73.89, 64.00 77.11, 64.00 80.33 C 64.00 83.56, 64.00 86.78, 64.00 90.00 C 64.00 93.22, 64.00 96.44, 64.00 99.67 C 64.00 102.89, 64.00 106.11, 64.00 109.33 C 64.00 112.56, 64.00 115.78, 64.00 119.00 C 64.00 122.22, 64.00 125.44, 64.00 128.67 C 64.00 131.89, 64.00 135.11, 64.00 138.33 C 64.00 141.56, 64.41 144.35, 64.00 148.00 C 63.59 151.65, 63.13 156.47, 61.56 160.25 C 60.00 164.02, 57.51 167.74, 54.63 170.63 C 51.74 173.51, 48.02 176.00, 44.25 177.56 C 40.47 179.13, 36.08 180.00, 32.00 180.00 C 27.92 180.00, 23.53 179.13, 19.75 177.56 C 15.98 176.00, 12.26 173.51, 9.37 170.63 C 6.49 167.74, 4.00 164.02, 2.44 160.25 C 0.87 156.47, 0.41 151.65, 0.00 148.00 C -0.41 144.35, 0.00 141.56, 0.00 138.33 C 0.00 135.11, 0.00 131.89, 0.00 128.67 C 0.00 125.44, 0.00 122.22, 0.00 119.00 C 0.00 115.78, 0.00 112.56, 0.00 109.33 C 0.00 106.11, 0.00 102.89, 0.00 99.67 C 0.00 96.44, 0.00 93.22, 0.00 90.00 C 0.00 86.78, 0.00 83.56, 0.00 80.33 C 0.00 77.11, 0.00 73.89, 0.00 70.67 C 0.00 67.44, 0.00 64.22, 0.00 61.00 C 0.00 57.78, 0.00 54.56, 0.00 51.33 C 0.00 48.11, 0.00 44.89, 0.00 41.67 C 0.00 38.44, -0.41 35.65, 0.00 32.00 Z" />
+      </svg>
+
+      <!-- Home -->
+      <button class="floating-dock-item active" id="dock-btn-home" data-title="Home" onclick="showView('home')" title="Home" aria-label="Home">
+        <div class="dock-icon-inner">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <span class="dock-tooltip">Home</span>
+      </button>
+
+      <!-- Recent Files (Dedicated View) -->
+      <button class="floating-dock-item" id="dock-btn-recent" data-title="Recent Files" onclick="showView('recent')" title="Recent Files" aria-label="Recent Files">
+        <div class="dock-icon-inner">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <circle cx="12" cy="14" r="3"/>
+            <polyline points="12 12 12 14 13.5 15"/>
+          </svg>
+        </div>
+        <span class="dock-tooltip">Recent Files</span>
+      </button>
+
+      <!-- Settings (Dedicated View) -->
+      <button class="floating-dock-item" id="dock-btn-settings" data-title="Settings" onclick="showView('settings')" title="Settings" aria-label="Settings">
+        <div class="dock-icon-inner">
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </div>
+        <span class="dock-tooltip">Settings</span>
+      </button>
+    </nav>
+  </aside>
 
   <!-- PDF.js, PDF-Lib and JSZip for client-side PDF processing & ZIP bundling (Local Vendor Scripts) -->
   <script src="js/vendor/pdf.worker.min.js"></script>
   <script src="js/vendor/pdf.min.js"></script>
   <script src="js/vendor/pdf-lib.min.js"></script>
   <script src="js/vendor/jszip.min.js"></script>
-  <script src="js/engine.js?v=2.2"></script>
-  <script src="js/app.js?v=2.2"></script>
+  <script src="js/engine.js?v=2.3"></script>
+  <script src="js/app.js?v=5.7"></script>
 </body>
 </html>

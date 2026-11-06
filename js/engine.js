@@ -66,6 +66,7 @@ class PixKitEngine {
 
   // Load from File / Blob (with automatic HEIC decoding)
   async loadFromFile(file) {
+    this.isSampleArtwork = false;
     this.filename = file.name || 'image.jpg';
     this.fileType = this.detectMimeType(file);
     this.fileSize = file.size || 0;
@@ -114,6 +115,7 @@ class PixKitEngine {
 
   // Load directly from an existing Canvas element (e.g. extracted PDF page)
   loadFromCanvas(sourceCanvas, name = 'extracted-page.png') {
+    this.isSampleArtwork = false;
     this.filename = name;
     this.fileType = 'image/png';
     this.fileSize = 0;
@@ -143,6 +145,7 @@ class PixKitEngine {
 
   // High-Resolution Default Sample Image
   generateSampleArtwork(width = 1600, height = 1200) {
+    this.isSampleArtwork = true;
     this.filename = 'mountain-view.jpg';
     this.fileType = 'image/jpeg';
     this.fileSize = 2450000;

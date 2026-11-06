@@ -853,33 +853,294 @@
       line-height: 1.65;
     }
 
-    /* SEO Footer */
-    .seo-footer {
+    /* ==========================================================================
+       Aceternity UI: Simple Footer With Four Grids
+       https://ui.aceternity.com/blocks/footers/simple-footer-with-four-grids
+       ========================================================================== */
+    .aceternity-footer {
       border-top: 1px solid var(--line);
-      padding-top: 40px;
+      padding: 72px 0 24px;
+      margin-top: 60px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .aceternity-footer-top {
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
       justify-content: space-between;
-      gap: 20px;
+      align-items: flex-start;
+      gap: 56px;
+      margin-bottom: 48px;
+    }
+
+    /* Left Brand Column */
+    .aceternity-footer-brand {
+      flex: 1.1;
+      max-width: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .aceternity-brand-lockup {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--ink);
+      user-select: none;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      width: fit-content;
+    }
+
+    .aceternity-brand-lockup:hover {
+      transform: translateY(-1px);
+    }
+
+    .aceternity-brand-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: var(--lime);
+      color: #121310;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(215, 243, 106, 0.35);
+      transition: transform 0.25s ease;
+    }
+
+    .aceternity-brand-lockup:hover .aceternity-brand-icon {
+      transform: rotate(15deg) scale(1.08);
+    }
+
+    .aceternity-brand-name {
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+
+    .aceternity-copyright {
       font-size: 13px;
       color: var(--muted);
+      line-height: 1.5;
     }
 
-    .seo-footer-links {
+    .aceternity-tagline {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 2px;
+    }
+
+    /* Right Four Grids Navigation */
+    .aceternity-footer-grids {
+      flex: 2.2;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 36px;
+    }
+
+    .aceternity-grid-col {
       display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
+      flex-direction: column;
     }
 
-    .seo-footer-links a {
+    .aceternity-grid-title {
+      font-family: 'Manrope', sans-serif;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 16px;
+      letter-spacing: -0.01em;
+    }
+
+    .aceternity-grid-links {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .aceternity-grid-links a {
+      font-size: 13px;
       color: var(--muted);
       text-decoration: none;
+      transition: color 0.15s ease, transform 0.15s ease;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    .aceternity-grid-links a:hover {
+      color: var(--ink);
+      transform: translateX(2px);
+    }
+
+    /* Big Aceternity Interactive Watermark Brand Name at Bottom */
+    .aceternity-footer-watermark {
+      width: 100%;
+      text-align: center;
+      padding-top: 40px;
+      padding-bottom: 10px;
+      user-select: none;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    /* Ambient top fade overlay on watermark */
+    .aceternity-footer-watermark::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(180deg, var(--paper) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .aceternity-watermark-canvas {
+      display: block;
+      width: 100%;
+      max-width: 1200px;
+      height: clamp(80px, 14vw, 190px);
+      user-select: none;
+      touch-action: none;
+      position: relative;
+      z-index: 1;
+      cursor: crosshair;
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 960px) {
+      .aceternity-footer-top {
+        flex-direction: column;
+        gap: 40px;
+      }
+      .aceternity-footer-brand {
+        max-width: 100%;
+      }
+      .aceternity-footer-grids {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 32px;
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .aceternity-footer-grids {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      .aceternity-footer {
+        padding: 50px 0 16px;
+      }
+    }
+
+    /* ==========================================================================
+       Aceternity UI Interaction: Speed Counter (Minimalist Inline Active Users)
+       https://ui.aceternity.com/interactions/speed-counter
+       ========================================================================== */
+    .footer-active-users {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.5;
+      user-select: none;
+      width: fit-content;
       transition: color 0.2s ease;
     }
 
-    .seo-footer-links a:hover {
+    .footer-active-users .active-users-label {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 15px;
+    }
+
+    .speed-counter-number {
+      display: inline-flex;
+      align-items: center;
+      font-family: 'Manrope', -apple-system, sans-serif;
+      font-size: 15.5px;
+      font-weight: 700;
+      line-height: 1;
       color: var(--ink);
+      font-variant-numeric: tabular-nums;
+      min-height: 20px;
+      letter-spacing: -0.01em;
+    }
+
+    /* Individual Speed Digit Slot with Horizontal Motion Blur */
+    .speed-digit-slot {
+      display: inline-block;
+      overflow: hidden;
+      height: 20px;
+      line-height: 20px;
+      position: relative;
+      width: 10px;
+      text-align: center;
+    }
+
+    .speed-digit-char {
+      display: block;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), 
+                  filter 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+                  opacity 0.18s ease;
+      will-change: transform, filter, opacity;
+    }
+
+    /* High-velocity horizontal motion blur states */
+    .speed-digit-char.racing-in,
+    .speed-digit-char.racing-in-right {
+      transform: translateX(120%) scaleX(1.3);
+      filter: blur(3.5px);
+      opacity: 0;
+    }
+
+    .speed-digit-char.racing-in-left {
+      transform: translateX(-120%) scaleX(1.3);
+      filter: blur(3.5px);
+      opacity: 0;
+    }
+
+    .speed-digit-char.active {
+      transform: translateX(0) scaleX(1);
+      filter: blur(0px);
+      opacity: 1;
+    }
+
+    .speed-digit-char.racing-out,
+    .speed-digit-char.racing-out-left {
+      transform: translateX(-120%) scaleX(1.3);
+      filter: blur(3.5px);
+      opacity: 0;
+    }
+
+    .speed-digit-char.racing-out-right {
+      transform: translateX(120%) scaleX(1.3);
+      filter: blur(3.5px);
+      opacity: 0;
     }
   </style>
 </head>
@@ -1145,16 +1406,79 @@
 
       </div>
 
-      <!-- SEO Footer -->
-      <footer class="seo-footer">
-        <div>
-          <strong>PixKit</strong> — The Minimal, Private In-Browser Image &amp; Document Studio.
+      <!-- Aceternity UI: Simple Footer With Four Grids -->
+      <footer class="aceternity-footer">
+        <div class="aceternity-footer-top">
+          <!-- Left: Brand, Copyright & Mission -->
+          <div class="aceternity-footer-brand">
+            <a href="studio.html" class="aceternity-brand-lockup" onclick="launchStudioWithSavedWork(event)" title="Launch PixKit Studio">
+              <div class="aceternity-brand-icon">✳</div>
+              <span class="aceternity-brand-name">PixKit</span>
+            </a>
+            <p class="aceternity-copyright">© copyright PixKit Studio 2026. All rights reserved.</p>
+            <p class="aceternity-tagline">100% private, in-browser image &amp; document studio with zero server tracking.</p>
+
+            <!-- Clean Minimalist Inline Active Users Counter -->
+            <p class="footer-active-users" id="liveSpeedCounterWidget" title="Active users in-browser right now">
+              <span class="active-users-label">Active users:</span>
+              <span class="speed-counter-number" id="speedCounterNumber"><span class="speed-digit-slot"><span class="speed-digit-char active">1</span></span></span>
+            </p>
+          </div>
+
+          <!-- Right: Four Grids (Pages, Tools, Legal, Register) -->
+          <div class="aceternity-footer-grids">
+            <!-- Grid 1: Pages -->
+            <div class="aceternity-grid-col">
+              <h4 class="aceternity-grid-title">Pages</h4>
+              <ul class="aceternity-grid-links">
+                <li><a href="#all-tools">All 14 Tools</a></li>
+                <li><a href="studio.html#/home" onclick="launchStudioWithSavedWork(event, '#/home')">Studio Home</a></li>
+                <li><a href="studio.html#/edit" onclick="launchStudioWithSavedWork(event, '#/edit')">Edit Images</a></li>
+                <li><a href="studio.html#/convert" onclick="launchStudioWithSavedWork(event, '#/convert')">Convert Formats</a></li>
+                <li><a href="studio.html#/document" onclick="launchStudioWithSavedWork(event, '#/document')">PDF &amp; Documents</a></li>
+              </ul>
+            </div>
+
+            <!-- Grid 2: Tools -->
+            <div class="aceternity-grid-col">
+              <h4 class="aceternity-grid-title">Tools</h4>
+              <ul class="aceternity-grid-links">
+                <li><a href="studio.html#/edit" onclick="launchStudioWithSavedWork(event, '#/edit')">Resize &amp; Crop</a></li>
+                <li><a href="studio.html#/edit" onclick="launchStudioWithSavedWork(event, '#/edit')">Compress Image</a></li>
+                <li><a href="studio.html#/convert" onclick="launchStudioWithSavedWork(event, '#/convert')">HEIC to JPG</a></li>
+                <li><a href="studio.html#/document" onclick="launchStudioWithSavedWork(event, '#/document')">PDF to Images</a></li>
+                <li><a href="studio.html#/document" onclick="launchStudioWithSavedWork(event, '#/document')">Merge &amp; Split PDF</a></li>
+              </ul>
+            </div>
+
+            <!-- Grid 3: Legal -->
+            <div class="aceternity-grid-col">
+              <h4 class="aceternity-grid-title">Legal</h4>
+              <ul class="aceternity-grid-links">
+                <li><a href="#privacy-guarantee">Privacy Policy</a></li>
+                <li><a href="studio.html#/settings" onclick="launchStudioWithSavedWork(event, '#/settings')">Zero-Server Shield</a></li>
+                <li><a href="studio.html#/settings" onclick="launchStudioWithSavedWork(event, '#/settings')">Local Storage Only</a></li>
+                <li><a href="https://github.com/Hsgap/pixkit/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a></li>
+              </ul>
+            </div>
+
+            <!-- Grid 4: Register -->
+            <div class="aceternity-grid-col">
+              <h4 class="aceternity-grid-title">Register</h4>
+              <ul class="aceternity-grid-links">
+                <li><a href="studio.html" onclick="launchStudioWithSavedWork(event)">Launch Studio</a></li>
+                <li><a href="studio.html#/recent" onclick="launchStudioWithSavedWork(event, '#/recent')">Recent Files</a></li>
+                <li><a href="studio.html#/settings" onclick="launchStudioWithSavedWork(event, '#/settings')">Studio Settings</a></li>
+                <li><a href="https://github.com/Hsgap/pixkit" target="_blank" rel="noopener"><i class="fa-brands fa-github" style="margin-right: 4px;"></i> GitHub</a></li>
+              </ul>
+            </div>
+          </div>
         </div>
-        <div class="seo-footer-links">
-          <a href="studio.html#/edit">Edit Image</a>
-          <a href="studio.html#/convert">Convert</a>
-          <a href="studio.html#/document">Document Tools</a>
-          <a href="https://github.com/Hsgap/pixkit" target="_blank" rel="noopener">GitHub</a>
+
+        <!-- Big Aceternity Interactive Watermark Brand Name at Bottom -->
+        <div class="aceternity-footer-watermark" id="watermarkContainer" aria-label="PixKit Studio">
+          <canvas id="watermarkCanvas" class="aceternity-watermark-canvas"></canvas>
+          <span class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">PixKit Studio</span>
         </div>
       </footer>
 
@@ -1769,6 +2093,543 @@
       }
 
       render();
+    })();
+
+    /**
+     * Interactive Paintbrush Watermark Effect (Aceternity Custom Paint)
+     * Moving the cursor over the watermark acts like a paintbrush, revealing vibrant
+     * PixKit signature lime green (#D7F36A) strictly inside the letterforms.
+     * After 6 seconds of inactivity, the painted green smoothly dissolves (2.5s) back to subtle black.
+     */
+    (function initWatermarkPaintbrush() {
+      const container = document.getElementById('watermarkContainer');
+      const canvas = document.getElementById('watermarkCanvas');
+      if (!canvas || !container) return;
+
+      const ctx = canvas.getContext('2d');
+      const brushCanvas = document.createElement('canvas');
+      const brushCtx = brushCanvas.getContext('2d');
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+
+      let dpr = 1;
+      let width = 0;
+      let height = 0;
+      let fontSize = 0;
+      let fontString = '';
+      let centerX = 0;
+      let centerY = 0;
+
+      let lastMouse = null;
+      let hasPainted = false;
+      let brushFadeOpacity = 1.0;
+      let idleTimer = null;
+      let isFading = false;
+      let fadeAnimId = null;
+
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = Math.floor(rect.width * dpr);
+        height = Math.floor(rect.height * dpr);
+
+        if (width <= 0 || height <= 0) return;
+
+        canvas.width = width;
+        canvas.height = height;
+        brushCanvas.width = width;
+        brushCanvas.height = height;
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+
+        // Calculate responsive font size to fill ~94% of canvas width nicely
+        fontSize = height * 0.95;
+        fontString = `800 ${fontSize}px 'Manrope', -apple-system, sans-serif`;
+        ctx.font = fontString;
+        if ('letterSpacing' in ctx) ctx.letterSpacing = '-0.05em';
+
+        const metrics = ctx.measureText('PixKit Studio');
+        if (metrics.width > width * 0.94) {
+          fontSize = fontSize * ((width * 0.94) / metrics.width);
+          fontString = `800 ${fontSize}px 'Manrope', -apple-system, sans-serif`;
+        }
+
+        centerX = width / 2;
+        centerY = height * 0.54;
+
+        redraw();
+      }
+
+      function redraw() {
+        if (!width || !height) return;
+
+        ctx.clearRect(0, 0, width, height);
+
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+        // 1. Draw Base Subtle Watermark Text with Top-Fade Gradient
+        ctx.save();
+        ctx.font = fontString;
+        if ('letterSpacing' in ctx) ctx.letterSpacing = '-0.05em';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        const baseGrad = ctx.createLinearGradient(0, centerY - fontSize * 0.5, 0, centerY + fontSize * 0.5);
+        if (isDark) {
+          baseGrad.addColorStop(0, 'rgba(18, 19, 16, 0)');
+          baseGrad.addColorStop(0.35, 'rgba(255, 255, 255, 0.03)');
+          baseGrad.addColorStop(1, 'rgba(255, 255, 255, 0.14)');
+        } else {
+          baseGrad.addColorStop(0, 'rgba(251, 251, 248, 0)');
+          baseGrad.addColorStop(0.35, 'rgba(0, 0, 0, 0.03)');
+          baseGrad.addColorStop(1, 'rgba(0, 0, 0, 0.12)');
+        }
+
+        ctx.fillStyle = baseGrad;
+        ctx.fillText('PixKit Studio', centerX, centerY);
+        ctx.restore();
+
+        // 2. Draw Painted Lime Green Layer (Clipped to brush strokes via source-in)
+        if (hasPainted && brushFadeOpacity > 0.005) {
+          tempCtx.clearRect(0, 0, width, height);
+
+          // Draw the brush trail with current fade opacity
+          tempCtx.globalAlpha = brushFadeOpacity;
+          tempCtx.drawImage(brushCanvas, 0, 0);
+          tempCtx.globalAlpha = 1.0;
+
+          // Composite 'source-in': keeps the text ONLY where the brush trail exists!
+          tempCtx.globalCompositeOperation = 'source-in';
+          tempCtx.font = fontString;
+          if ('letterSpacing' in tempCtx) tempCtx.letterSpacing = '-0.05em';
+          tempCtx.textAlign = 'center';
+          tempCtx.textBaseline = 'middle';
+
+          // Glow shadow pass
+          tempCtx.shadowColor = 'rgba(215, 243, 106, 0.75)';
+          tempCtx.shadowBlur = 28 * dpr;
+          tempCtx.fillStyle = '#D7F36A';
+          tempCtx.fillText('PixKit Studio', centerX, centerY);
+
+          // Crisp solid fill pass
+          tempCtx.shadowBlur = 0;
+          tempCtx.fillStyle = '#D7F36A';
+          tempCtx.fillText('PixKit Studio', centerX, centerY);
+
+          // Restore normal composition
+          tempCtx.globalCompositeOperation = 'source-over';
+
+          // Stamp onto main canvas
+          ctx.drawImage(tempCanvas, 0, 0);
+        }
+      }
+
+      function drawBrushCircle(x, y, radius) {
+        const radGrad = brushCtx.createRadialGradient(x, y, 0, x, y, radius);
+        radGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+        radGrad.addColorStop(0.65, 'rgba(255, 255, 255, 0.85)');
+        radGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+        brushCtx.fillStyle = radGrad;
+        brushCtx.beginPath();
+        brushCtx.arc(x, y, radius, 0, Math.PI * 2);
+        brushCtx.fill();
+      }
+
+      function handlePaintMove(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        const x = (clientX - rect.left) * dpr;
+        const y = (clientY - rect.top) * dpr;
+
+        // If currently fading out, cancel fade and restore full brightness
+        if (isFading) {
+          cancelAnimationFrame(fadeAnimId);
+          isFading = false;
+        }
+        brushFadeOpacity = 1.0;
+        hasPainted = true;
+
+        const brushRadius = Math.max(18 * dpr, fontSize * 0.18);
+
+        if (!lastMouse) {
+          lastMouse = { x, y };
+          drawBrushCircle(x, y, brushRadius);
+        } else {
+          // Smooth interpolation between mouse ticks
+          const dist = Math.hypot(x - lastMouse.x, y - lastMouse.y);
+          const steps = Math.max(1, Math.ceil(dist / (4 * dpr)));
+          for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            const ix = lastMouse.x + (x - lastMouse.x) * t;
+            const iy = lastMouse.y + (y - lastMouse.y) * t;
+            drawBrushCircle(ix, iy, brushRadius);
+          }
+          lastMouse = { x, y };
+        }
+
+        redraw();
+
+        // Reset the 6-second timer
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => {
+          startFadeOut();
+        }, 6000); // 6 seconds!
+      }
+
+      function startFadeOut() {
+        if (!hasPainted || isFading) return;
+        isFading = true;
+        const fadeDuration = 2500; // Smooth 2.5 seconds fade animation
+        const startTime = performance.now();
+        const startOpacity = brushFadeOpacity;
+
+        function animateFade(now) {
+          if (!isFading) return;
+          const elapsed = now - startTime;
+          const progress = Math.min(1, elapsed / fadeDuration);
+
+          // Cubic ease-out
+          const ease = 1 - Math.pow(1 - progress, 3);
+          brushFadeOpacity = Math.max(0, startOpacity * (1 - ease));
+
+          redraw();
+
+          if (progress < 1) {
+            fadeAnimId = requestAnimationFrame(animateFade);
+          } else {
+            // Fade completed: reset buffers
+            brushCtx.clearRect(0, 0, width, height);
+            brushFadeOpacity = 1.0;
+            hasPainted = false;
+            isFading = false;
+            redraw();
+          }
+        }
+
+        fadeAnimId = requestAnimationFrame(animateFade);
+      }
+
+      // Mouse events
+      canvas.addEventListener('mousemove', (e) => {
+        handlePaintMove(e.clientX, e.clientY);
+      });
+
+      canvas.addEventListener('mouseleave', () => {
+        lastMouse = null;
+      });
+
+      // Touch events (mobile / tablets)
+      canvas.addEventListener('touchmove', (e) => {
+        if (e.touches && e.touches[0]) {
+          handlePaintMove(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: true });
+
+      canvas.addEventListener('touchend', () => {
+        lastMouse = null;
+      });
+
+      // Window resize listener
+      window.addEventListener('resize', () => {
+        resize();
+      });
+
+      // Redraw when theme changes
+      const observer = new MutationObserver(() => {
+        redraw();
+      });
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+      // Init watermark canvas immediately and when fonts ready
+      resize();
+      setTimeout(resize, 60);
+      setTimeout(resize, 200);
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(resize);
+      }
+    })();
+
+    // ---------------------------------------------------------------
+    // Aceternity UI Speed Counter Micro-Interaction & Realtime Presence
+    // ---------------------------------------------------------------
+    (function initAceternitySpeedCounter() {
+      const container = document.getElementById('speedCounterNumber');
+      const widget = document.getElementById('liveSpeedCounterWidget');
+      if (!container || !widget) return;
+
+      // Unique session ID for this browser tab / device
+      const tabId = 'tab_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now();
+      const PRESENCE_KEY = 'pixkit_active_sessions';
+      const CHANNEL_NAME = 'pixkit_presence_v1';
+      let broadcastChannel = null;
+      if (typeof BroadcastChannel !== 'undefined') {
+        try {
+          broadcastChannel = new BroadcastChannel(CHANNEL_NAME);
+        } catch (e) {
+          console.warn('BroadcastChannel not supported', e);
+        }
+      }
+
+      // Track real active local browser tabs (with 7s heartbeat expiration)
+      function updateLocalTabHeartbeat() {
+        try {
+          const raw = localStorage.getItem(PRESENCE_KEY);
+          let sessions = raw ? JSON.parse(raw) : {};
+          const now = Date.now();
+          // Filter out expired tabs (> 7 seconds old)
+          const activeSessions = {};
+          for (const id in sessions) {
+            if (now - sessions[id] < 7000) {
+              activeSessions[id] = sessions[id];
+            }
+          }
+          activeSessions[tabId] = now;
+          localStorage.setItem(PRESENCE_KEY, JSON.stringify(activeSessions));
+          return Object.keys(activeSessions).length;
+        } catch (e) {
+          return 1;
+        }
+      }
+
+      function removeCurrentTab() {
+        try {
+          const raw = localStorage.getItem(PRESENCE_KEY);
+          let remaining = 1;
+          if (raw) {
+            let sessions = JSON.parse(raw);
+            delete sessions[tabId];
+            localStorage.setItem(PRESENCE_KEY, JSON.stringify(sessions));
+            remaining = Math.max(1, Object.keys(sessions).length);
+          }
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon('/api/presence/leave', JSON.stringify({ session_id: tabId }));
+          }
+          if (broadcastChannel) {
+            broadcastChannel.postMessage({ type: 'tab_closed', count: remaining });
+          }
+        } catch (e) {}
+      }
+
+      // Query real-time active users (Server API + Local Multi-Tab fallback)
+      async function syncRealPresence() {
+        const localCount = updateLocalTabHeartbeat();
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 2000);
+          const res = await fetch('/api/presence', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: tabId }),
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+
+          if (res.ok) {
+            const data = await res.json();
+            if (typeof data.active_users === 'number') {
+              return Math.max(1, data.active_users);
+            }
+          }
+        } catch (e) {
+          // Static server or offline PWA mode — use exact active local tabs
+        }
+        return Math.max(1, localCount);
+      }
+
+      // State tracking
+      let currentNumber = 1;
+      let targetNumber = 1;
+      let hasTriggeredScrollRoll = false;
+
+      /**
+       * Render digits into the container with motion-blur transition
+       * @param {number} num - The number to display
+       * @param {boolean} animate - Whether to apply high-velocity sideways blur
+       * @param {'left'|'right'} direction - Motion direction ('left' for forward/increase, 'right' for decrease)
+       */
+      function setDisplayNumber(num, animate = true, direction = 'left') {
+        const strVal = String(num);
+        const targetLen = strVal.length;
+
+        // Ensure we have exact slot elements
+        let slots = Array.from(container.querySelectorAll('.speed-digit-slot'));
+        
+        // If length changed or slots empty, rebuild slots
+        if (slots.length !== targetLen) {
+          container.innerHTML = '';
+          for (let i = 0; i < targetLen; i++) {
+            const slot = document.createElement('span');
+            slot.className = 'speed-digit-slot';
+            const charSpan = document.createElement('span');
+            charSpan.className = 'speed-digit-char active';
+            charSpan.textContent = strVal[i];
+            slot.appendChild(charSpan);
+            container.appendChild(slot);
+          }
+          currentNumber = num;
+          return;
+        }
+
+        // For each digit slot, check if character changed
+        for (let i = 0; i < targetLen; i++) {
+          const slot = slots[i];
+          const newChar = strVal[i];
+          const activeChar = slot.querySelector('.speed-digit-char.active');
+
+          if (!activeChar) {
+            slot.innerHTML = `<span class="speed-digit-char active">${newChar}</span>`;
+            continue;
+          }
+
+          if (activeChar.textContent !== newChar) {
+            if (!animate) {
+              activeChar.textContent = newChar;
+              continue;
+            }
+
+            // Aceternity UI Speed-Counter Motion Blur Transition:
+            // 1. Mark existing active character to race out with sideways velocity blur
+            activeChar.classList.remove('active');
+            const outClass = direction === 'right' ? 'racing-out-right' : 'racing-out-left';
+            activeChar.classList.add(outClass);
+
+            // 2. Create new incoming character starting at opposite edge with blur
+            const inClass = direction === 'right' ? 'racing-in-left' : 'racing-in-right';
+            const incoming = document.createElement('span');
+            incoming.className = `speed-digit-char ${inClass}`;
+            incoming.textContent = newChar;
+            slot.appendChild(incoming);
+
+            // 3. Trigger next frame transition to active (snaps crisp, blur drops to 0)
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                incoming.classList.remove(inClass);
+                incoming.classList.add('active');
+              });
+            });
+
+            // 4. Clean up exited element after animation
+            setTimeout(() => {
+              if (activeChar.parentNode === slot) {
+                slot.removeChild(activeChar);
+              }
+            }, 260);
+          }
+        }
+
+        currentNumber = num;
+      }
+
+      /**
+       * Entrance animation: starts at 0 and rapidly races up with velocity blur
+       * matching https://ui.aceternity.com/interactions/speed-counter
+       */
+      function playEntranceSpeedRoll(target) {
+        if (target <= 0) {
+          setDisplayNumber(target, false);
+          return;
+        }
+
+        // Generate rapid acceleration step milestones
+        const steps = [];
+        const countSteps = Math.min(10, Math.max(5, Math.floor(target / 4)));
+        for (let i = 1; i <= countSteps; i++) {
+          const progress = i / countSteps;
+          // Ease-out cubic curve so it speeds at start and snaps crisply at end
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const val = Math.max(1, Math.min(target, Math.round(eased * target)));
+          if (!steps.includes(val)) steps.push(val);
+        }
+        if (steps[steps.length - 1] !== target) steps.push(target);
+
+        // Display initial 0
+        setDisplayNumber(0, false);
+
+        // Rapid stepped frames with decreasing delay
+        let stepIdx = 0;
+        function nextStep() {
+          if (stepIdx >= steps.length) return;
+          const val = steps[stepIdx];
+          setDisplayNumber(val, true, 'left');
+          stepIdx++;
+          if (stepIdx < steps.length) {
+            const delay = 40 + Math.floor(Math.pow((stepIdx / steps.length), 2) * 55);
+            setTimeout(nextStep, delay);
+          }
+        }
+
+        setTimeout(nextStep, 150);
+      }
+
+      // Initial state: display real presence immediately
+      syncRealPresence().then((count) => {
+        setDisplayNumber(count, false);
+      });
+
+      // Intersection Observer: Trigger entrance animation when user scrolls to footer
+      const observer = new IntersectionObserver(async (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !hasTriggeredScrollRoll) {
+            hasTriggeredScrollRoll = true;
+            targetNumber = await syncRealPresence();
+            playEntranceSpeedRoll(targetNumber);
+          }
+        }
+      }, {
+        threshold: 0.15,
+        rootMargin: '0px 0px 50px 0px'
+      });
+
+      observer.observe(widget);
+
+      // Real-time update loop: runs every 5 seconds with 100% real active user data
+      setInterval(async () => {
+        const next = await syncRealPresence();
+        if (hasTriggeredScrollRoll) {
+          if (next !== currentNumber) {
+            const dir = next > currentNumber ? 'left' : 'right';
+            setDisplayNumber(next, true, dir);
+            if (broadcastChannel) {
+              broadcastChannel.postMessage({ type: 'presence_sync', count: next });
+            }
+          }
+        } else {
+          targetNumber = next;
+        }
+      }, 5000);
+
+      // Instant synchronization when other tabs open or close
+      if (broadcastChannel) {
+        broadcastChannel.onmessage = (event) => {
+          if (event.data && typeof event.data.count === 'number' && hasTriggeredScrollRoll) {
+            const next = event.data.count;
+            if (next !== currentNumber) {
+              const dir = next > currentNumber ? 'left' : 'right';
+              setDisplayNumber(next, true, dir);
+            }
+          }
+        };
+      }
+
+      // Clean up tab on exit
+      window.addEventListener('beforeunload', removeCurrentTab);
+      window.addEventListener('pagehide', removeCurrentTab);
+
+      // Interactive: click counter to re-trigger live speed counter roll
+      widget.addEventListener('click', async () => {
+        const latest = await syncRealPresence();
+        playEntranceSpeedRoll(latest);
+      });
+
+      // In case footer is already in view on direct link / hash navigation
+      setTimeout(async () => {
+        const rect = widget.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0 && !hasTriggeredScrollRoll) {
+          hasTriggeredScrollRoll = true;
+          targetNumber = await syncRealPresence();
+          playEntranceSpeedRoll(targetNumber);
+        }
+      }, 300);
     })();
   </script>
 </body>
