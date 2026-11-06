@@ -1217,80 +1217,47 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ==============================================================
-  // STUDIO SETTINGS REAL-TIME PRESENCE COUNTER & SPEED COUNTER
+  // STUDIO SETTINGS REAL-TIME PRESENCE COUNTER & SPEED COUNTER (FIREBASE)
   // ==============================================================
   (function initStudioSettingsPresence() {
     const container = document.getElementById('settingsSpeedCounterNumber');
     const widget = document.getElementById('settingsActiveUsersWidget');
     if (!container) return;
 
-    const tabId = 'tab_studio_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now();
-    const PRESENCE_KEY = 'pixkit_active_sessions';
-    const CHANNEL_NAME = 'pixkit_presence_v1';
-    let broadcastChannel = null;
-    if (typeof BroadcastChannel !== 'undefined') {
-      try { broadcastChannel = new BroadcastChannel(CHANNEL_NAME); } catch (e) {}
-    }
-
-    function updateLocalTabHeartbeat() {
-      try {
-        const raw = localStorage.getItem(PRESENCE_KEY);
-        let sessions = raw ? JSON.parse(raw) : {};
-        const now = Date.now();
-        const activeSessions = {};
-        for (const id in sessions) {
-          if (now - sessions[id] < 7000) activeSessions[id] = sessions[id];
-        }
-        activeSessions[tabId] = now;
-        localStorage.setItem(PRESENCE_KEY, JSON.stringify(activeSessions));
-        return Object.keys(activeSessions).length;
-      } catch (e) {
-        return 1;
+    // 1. Hardware-level Device Fingerprinting
+    // Deduplicates all tabs in Brave, Chrome, etc. on the SAME physical computer/phone to 1 user!
+    function getDeviceFingerprint() {
+      let storedId = null;
+      try { storedId = localStorage.getItem('pixkit_dev_id'); } catch(e) {}
+      
+      const hwSignature = [
+        screen.width,
+        screen.height,
+        screen.colorDepth,
+        (Intl.DateTimeFormat().resolvedOptions().timeZone || 'utc'),
+        (navigator.hardwareConcurrency || 4),
+        (navigator.platform || '')
+      ].join('__');
+      
+      let hash = 0;
+      for (let i = 0; i < hwSignature.length; i++) {
+        hash = ((hash << 5) - hash) + hwSignature.charCodeAt(i);
+        hash |= 0;
       }
+      const hwKey = 'dev_' + Math.abs(hash).toString(36);
+
+      if (!storedId) {
+        storedId = hwKey;
+        try { localStorage.setItem('pixkit_dev_id', storedId); } catch(e) {}
+      }
+      return storedId;
     }
 
-    function removeCurrentTab() {
-      try {
-        const raw = localStorage.getItem(PRESENCE_KEY);
-        let remaining = 1;
-        if (raw) {
-          let sessions = JSON.parse(raw);
-          delete sessions[tabId];
-          localStorage.setItem(PRESENCE_KEY, JSON.stringify(sessions));
-          remaining = Math.max(1, Object.keys(sessions).length);
-        }
-        if (navigator.sendBeacon) {
-          navigator.sendBeacon('/api/presence/leave', JSON.stringify({ session_id: tabId }));
-        }
-        if (broadcastChannel) {
-          broadcastChannel.postMessage({ type: 'tab_closed', count: remaining });
-        }
-      } catch (e) {}
-    }
-
-    async function syncRealPresence() {
-      const localCount = updateLocalTabHeartbeat();
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 2000);
-        const res = await fetch('/api/presence', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ session_id: tabId }),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        if (res.ok) {
-          const data = await res.json();
-          if (typeof data.active_users === 'number') {
-            return Math.max(1, data.active_users);
-          }
-        }
-      } catch (e) {}
-      return Math.max(1, localCount);
-    }
+    const deviceId = getDeviceFingerprint();
+    const tabId = 'tab_studio_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now();
 
     let currentNumber = 1;
+    let targetNumber = 1;
 
     function setDisplayNumber(num, animate = true, direction = 'left') {
       const strVal = String(num);
@@ -1383,49 +1350,70 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(nextStep, 100);
     }
 
-    // Initial render
-    syncRealPresence().then(count => {
-      setDisplayNumber(count, false);
-    });
-
-    // 5-second real-time sync interval
-    setInterval(async () => {
-      const next = await syncRealPresence();
-      if (next !== currentNumber) {
-        const dir = next > currentNumber ? 'left' : 'right';
-        setDisplayNumber(next, true, dir);
-        if (broadcastChannel) broadcastChannel.postMessage({ type: 'presence_sync', count: next });
-      }
-    }, 5000);
-
-    // Multi-tab broadcast channel listener
-    if (broadcastChannel) {
-      broadcastChannel.onmessage = (event) => {
-        if (event.data && typeof event.data.count === 'number') {
-          const next = event.data.count;
-          if (next !== currentNumber) {
-            const dir = next > currentNumber ? 'left' : 'right';
-            setDisplayNumber(next, true, dir);
-          }
-        }
+    // Initialize Firebase Realtime Presence
+    try {
+      const firebaseConfig = {
+        apiKey: "AIzaSyDCueyN5HjZWuCFuXbVcV5v27QhM3jC0vw",
+        authDomain: "pixkit-a7862.firebaseapp.com",
+        databaseURL: "https://pixkit-a7862-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "pixkit-a7862",
+        storageBucket: "pixkit-a7862.firebasestorage.app",
+        messagingSenderId: "704646920606",
+        appId: "1:704646920606:web:f50077d6ab0a913bb2fe8f"
       };
+
+      if (typeof firebase !== 'undefined') {
+        if (!firebase.apps || !firebase.apps.length) {
+          firebase.initializeApp(firebaseConfig);
+        }
+        const rtdb = firebase.database();
+
+        const connectedRef = rtdb.ref(".info/connected");
+        const deviceTabRef = rtdb.ref(`presence/${deviceId}/${tabId}`);
+        const allPresenceRef = rtdb.ref("presence");
+
+        connectedRef.on("value", (snap) => {
+          if (snap.val() === true) {
+            deviceTabRef.onDisconnect().remove();
+            deviceTabRef.set(firebase.database.ServerValue.TIMESTAMP);
+          }
+        });
+
+        allPresenceRef.on("value", (snapshot) => {
+          let activeDevices = 0;
+          const data = snapshot.val();
+          if (data && typeof data === 'object') {
+            for (const dId in data) {
+              if (data[dId] && typeof data[dId] === 'object' && Object.keys(data[dId]).length > 0) {
+                activeDevices++;
+              }
+            }
+          }
+          const liveCount = Math.max(1, activeDevices);
+          targetNumber = liveCount;
+          if (liveCount !== currentNumber) {
+            const dir = liveCount > currentNumber ? 'left' : 'right';
+            setDisplayNumber(liveCount, true, dir);
+          }
+        });
+
+        window.addEventListener('beforeunload', () => { deviceTabRef.remove(); });
+        window.addEventListener('pagehide', () => { deviceTabRef.remove(); });
+      }
+    } catch (err) {
+      console.warn('Firebase Realtime Presence:', err);
     }
 
     // Interactive click to re-trigger speed counter roll
     if (widget) {
-      widget.addEventListener('click', async () => {
-        const latest = await syncRealPresence();
-        playEntranceSpeedRoll(latest);
+      widget.addEventListener('click', () => {
+        playEntranceSpeedRoll(targetNumber);
       });
     }
 
-    window.addEventListener('beforeunload', removeCurrentTab);
-    window.addEventListener('pagehide', removeCurrentTab);
-
     // Expose for route trigger
-    window.triggerSettingsSpeedRoll = async function() {
-      const latest = await syncRealPresence();
-      playEntranceSpeedRoll(latest);
+    window.triggerSettingsSpeedRoll = function() {
+      playEntranceSpeedRoll(targetNumber);
     };
   })();
 

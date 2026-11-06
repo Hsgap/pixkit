@@ -1485,6 +1485,10 @@
     </div>
   </section>
 
+  <!-- Firebase Realtime Global Presence SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
   <script>
     function launchStudioWithSavedWork(event, directRoute) {
       if (event) event.preventDefault();
@@ -2350,111 +2354,56 @@
     })();
 
     // ---------------------------------------------------------------
-    // Aceternity UI Speed Counter Micro-Interaction & Realtime Presence
+    // Aceternity UI Speed Counter & Global Realtime Presence (Firebase)
     // ---------------------------------------------------------------
     (function initAceternitySpeedCounter() {
       const container = document.getElementById('speedCounterNumber');
       const widget = document.getElementById('liveSpeedCounterWidget');
       if (!container || !widget) return;
 
-      // Unique session ID for this browser tab / device
+      // 1. Hardware-level Device Fingerprinting
+      // Deduplicates all tabs in Brave, Chrome, etc. on the SAME physical computer/phone to 1 user!
+      function getDeviceFingerprint() {
+        let storedId = null;
+        try { storedId = localStorage.getItem('pixkit_dev_id'); } catch(e) {}
+        
+        const hwSignature = [
+          screen.width,
+          screen.height,
+          screen.colorDepth,
+          (Intl.DateTimeFormat().resolvedOptions().timeZone || 'utc'),
+          (navigator.hardwareConcurrency || 4),
+          (navigator.platform || '')
+        ].join('__');
+        
+        let hash = 0;
+        for (let i = 0; i < hwSignature.length; i++) {
+          hash = ((hash << 5) - hash) + hwSignature.charCodeAt(i);
+          hash |= 0;
+        }
+        const hwKey = 'dev_' + Math.abs(hash).toString(36);
+
+        if (!storedId) {
+          storedId = hwKey;
+          try { localStorage.setItem('pixkit_dev_id', storedId); } catch(e) {}
+        }
+        return storedId;
+      }
+
+      const deviceId = getDeviceFingerprint();
       const tabId = 'tab_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now();
-      const PRESENCE_KEY = 'pixkit_active_sessions';
-      const CHANNEL_NAME = 'pixkit_presence_v1';
-      let broadcastChannel = null;
-      if (typeof BroadcastChannel !== 'undefined') {
-        try {
-          broadcastChannel = new BroadcastChannel(CHANNEL_NAME);
-        } catch (e) {
-          console.warn('BroadcastChannel not supported', e);
-        }
-      }
-
-      // Track real active local browser tabs (with 7s heartbeat expiration)
-      function updateLocalTabHeartbeat() {
-        try {
-          const raw = localStorage.getItem(PRESENCE_KEY);
-          let sessions = raw ? JSON.parse(raw) : {};
-          const now = Date.now();
-          // Filter out expired tabs (> 7 seconds old)
-          const activeSessions = {};
-          for (const id in sessions) {
-            if (now - sessions[id] < 7000) {
-              activeSessions[id] = sessions[id];
-            }
-          }
-          activeSessions[tabId] = now;
-          localStorage.setItem(PRESENCE_KEY, JSON.stringify(activeSessions));
-          return Object.keys(activeSessions).length;
-        } catch (e) {
-          return 1;
-        }
-      }
-
-      function removeCurrentTab() {
-        try {
-          const raw = localStorage.getItem(PRESENCE_KEY);
-          let remaining = 1;
-          if (raw) {
-            let sessions = JSON.parse(raw);
-            delete sessions[tabId];
-            localStorage.setItem(PRESENCE_KEY, JSON.stringify(sessions));
-            remaining = Math.max(1, Object.keys(sessions).length);
-          }
-          if (navigator.sendBeacon) {
-            navigator.sendBeacon('/api/presence/leave', JSON.stringify({ session_id: tabId }));
-          }
-          if (broadcastChannel) {
-            broadcastChannel.postMessage({ type: 'tab_closed', count: remaining });
-          }
-        } catch (e) {}
-      }
-
-      // Query real-time active users (Server API + Local Multi-Tab fallback)
-      async function syncRealPresence() {
-        const localCount = updateLocalTabHeartbeat();
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 2000);
-          const res = await fetch('/api/presence', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ session_id: tabId }),
-            signal: controller.signal
-          });
-          clearTimeout(timeoutId);
-
-          if (res.ok) {
-            const data = await res.json();
-            if (typeof data.active_users === 'number') {
-              return Math.max(1, data.active_users);
-            }
-          }
-        } catch (e) {
-          // Static server or offline PWA mode — use exact active local tabs
-        }
-        return Math.max(1, localCount);
-      }
 
       // State tracking
       let currentNumber = 1;
       let targetNumber = 1;
       let hasTriggeredScrollRoll = false;
 
-      /**
-       * Render digits into the container with motion-blur transition
-       * @param {number} num - The number to display
-       * @param {boolean} animate - Whether to apply high-velocity sideways blur
-       * @param {'left'|'right'} direction - Motion direction ('left' for forward/increase, 'right' for decrease)
-       */
+      // Digits motion blur renderer
       function setDisplayNumber(num, animate = true, direction = 'left') {
         const strVal = String(num);
         const targetLen = strVal.length;
-
-        // Ensure we have exact slot elements
         let slots = Array.from(container.querySelectorAll('.speed-digit-slot'));
-        
-        // If length changed or slots empty, rebuild slots
+
         if (slots.length !== targetLen) {
           container.innerHTML = '';
           for (let i = 0; i < targetLen; i++) {
@@ -2470,7 +2419,6 @@
           return;
         }
 
-        // For each digit slot, check if character changed
         for (let i = 0; i < targetLen; i++) {
           const slot = slots[i];
           const newChar = strVal[i];
@@ -2487,20 +2435,16 @@
               continue;
             }
 
-            // Aceternity UI Speed-Counter Motion Blur Transition:
-            // 1. Mark existing active character to race out with sideways velocity blur
             activeChar.classList.remove('active');
             const outClass = direction === 'right' ? 'racing-out-right' : 'racing-out-left';
             activeChar.classList.add(outClass);
 
-            // 2. Create new incoming character starting at opposite edge with blur
             const inClass = direction === 'right' ? 'racing-in-left' : 'racing-in-right';
             const incoming = document.createElement('span');
             incoming.className = `speed-digit-char ${inClass}`;
             incoming.textContent = newChar;
             slot.appendChild(incoming);
 
-            // 3. Trigger next frame transition to active (snaps crisp, blur drops to 0)
             requestAnimationFrame(() => {
               requestAnimationFrame(() => {
                 incoming.classList.remove(inClass);
@@ -2508,44 +2452,30 @@
               });
             });
 
-            // 4. Clean up exited element after animation
             setTimeout(() => {
-              if (activeChar.parentNode === slot) {
-                slot.removeChild(activeChar);
-              }
+              if (activeChar.parentNode === slot) slot.removeChild(activeChar);
             }, 260);
           }
         }
-
         currentNumber = num;
       }
 
-      /**
-       * Entrance animation: starts at 0 and rapidly races up with velocity blur
-       * matching https://ui.aceternity.com/interactions/speed-counter
-       */
       function playEntranceSpeedRoll(target) {
         if (target <= 0) {
           setDisplayNumber(target, false);
           return;
         }
-
-        // Generate rapid acceleration step milestones
         const steps = [];
-        const countSteps = Math.min(10, Math.max(5, Math.floor(target / 4)));
+        const countSteps = Math.min(8, Math.max(4, Math.floor(target / 4)));
         for (let i = 1; i <= countSteps; i++) {
           const progress = i / countSteps;
-          // Ease-out cubic curve so it speeds at start and snaps crisply at end
           const eased = 1 - Math.pow(1 - progress, 3);
           const val = Math.max(1, Math.min(target, Math.round(eased * target)));
           if (!steps.includes(val)) steps.push(val);
         }
         if (steps[steps.length - 1] !== target) steps.push(target);
 
-        // Display initial 0
         setDisplayNumber(0, false);
-
-        // Rapid stepped frames with decreasing delay
         let stepIdx = 0;
         function nextStep() {
           if (stepIdx >= steps.length) return;
@@ -2557,21 +2487,74 @@
             setTimeout(nextStep, delay);
           }
         }
-
-        setTimeout(nextStep, 150);
+        setTimeout(nextStep, 100);
       }
 
-      // Initial state: display real presence immediately
-      syncRealPresence().then((count) => {
-        setDisplayNumber(count, false);
-      });
+      // Initialize Firebase Global Presence
+      try {
+        const firebaseConfig = {
+          apiKey: "AIzaSyDCueyN5HjZWuCFuXbVcV5v27QhM3jC0vw",
+          authDomain: "pixkit-a7862.firebaseapp.com",
+          databaseURL: "https://pixkit-a7862-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "pixkit-a7862",
+          storageBucket: "pixkit-a7862.firebasestorage.app",
+          messagingSenderId: "704646920606",
+          appId: "1:704646920606:web:f50077d6ab0a913bb2fe8f"
+        };
+
+        if (typeof firebase !== 'undefined') {
+          if (!firebase.apps || !firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+          }
+          const rtdb = firebase.database();
+
+          const connectedRef = rtdb.ref(".info/connected");
+          const deviceTabRef = rtdb.ref(`presence/${deviceId}/${tabId}`);
+          const allPresenceRef = rtdb.ref("presence");
+
+          connectedRef.on("value", (snap) => {
+            if (snap.val() === true) {
+              deviceTabRef.onDisconnect().remove();
+              deviceTabRef.set(firebase.database.ServerValue.TIMESTAMP);
+            }
+          });
+
+          // Listen to the count of UNIQUE active devices worldwide in real-time!
+          allPresenceRef.on("value", (snapshot) => {
+            let activeDevices = 0;
+            const data = snapshot.val();
+            if (data && typeof data === 'object') {
+              for (const dId in data) {
+                if (data[dId] && typeof data[dId] === 'object' && Object.keys(data[dId]).length > 0) {
+                  activeDevices++;
+                }
+              }
+            }
+            const liveCount = Math.max(1, activeDevices);
+            targetNumber = liveCount;
+
+            if (hasTriggeredScrollRoll) {
+              if (liveCount !== currentNumber) {
+                const dir = liveCount > currentNumber ? 'left' : 'right';
+                setDisplayNumber(liveCount, true, dir);
+              }
+            } else {
+              setDisplayNumber(liveCount, false);
+            }
+          });
+
+          window.addEventListener('beforeunload', () => { deviceTabRef.remove(); });
+          window.addEventListener('pagehide', () => { deviceTabRef.remove(); });
+        }
+      } catch (err) {
+        console.warn('Firebase Realtime Presence:', err);
+      }
 
       // Intersection Observer: Trigger entrance animation when user scrolls to footer
-      const observer = new IntersectionObserver(async (entries) => {
+      const observer = new IntersectionObserver((entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting && !hasTriggeredScrollRoll) {
             hasTriggeredScrollRoll = true;
-            targetNumber = await syncRealPresence();
             playEntranceSpeedRoll(targetNumber);
           }
         }
@@ -2582,51 +2565,16 @@
 
       observer.observe(widget);
 
-      // Real-time update loop: runs every 5 seconds with 100% real active user data
-      setInterval(async () => {
-        const next = await syncRealPresence();
-        if (hasTriggeredScrollRoll) {
-          if (next !== currentNumber) {
-            const dir = next > currentNumber ? 'left' : 'right';
-            setDisplayNumber(next, true, dir);
-            if (broadcastChannel) {
-              broadcastChannel.postMessage({ type: 'presence_sync', count: next });
-            }
-          }
-        } else {
-          targetNumber = next;
-        }
-      }, 5000);
-
-      // Instant synchronization when other tabs open or close
-      if (broadcastChannel) {
-        broadcastChannel.onmessage = (event) => {
-          if (event.data && typeof event.data.count === 'number' && hasTriggeredScrollRoll) {
-            const next = event.data.count;
-            if (next !== currentNumber) {
-              const dir = next > currentNumber ? 'left' : 'right';
-              setDisplayNumber(next, true, dir);
-            }
-          }
-        };
-      }
-
-      // Clean up tab on exit
-      window.addEventListener('beforeunload', removeCurrentTab);
-      window.addEventListener('pagehide', removeCurrentTab);
-
       // Interactive: click counter to re-trigger live speed counter roll
-      widget.addEventListener('click', async () => {
-        const latest = await syncRealPresence();
-        playEntranceSpeedRoll(latest);
+      widget.addEventListener('click', () => {
+        playEntranceSpeedRoll(targetNumber);
       });
 
       // In case footer is already in view on direct link / hash navigation
-      setTimeout(async () => {
+      setTimeout(() => {
         const rect = widget.getBoundingClientRect();
         if (rect.top < window.innerHeight && rect.bottom > 0 && !hasTriggeredScrollRoll) {
           hasTriggeredScrollRoll = true;
-          targetNumber = await syncRealPresence();
           playEntranceSpeedRoll(targetNumber);
         }
       }, 300);
