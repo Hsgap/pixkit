@@ -3605,20 +3605,37 @@ body.dock-is-dragging * {
    ========================================================================== */
 .settings-cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-  gap: 20px;
-  margin-top: 10px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-top: 14px;
+}
+
+@media (max-width: 900px) {
+  .settings-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 }
 
 .settings-panel-card {
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
-  padding: 24px;
+  padding: 24px 28px;
   display: flex;
   flex-direction: column;
   gap: 18px;
   box-shadow: var(--shadow-subtle);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.settings-panel-card:hover {
+  border-color: var(--accent-lime-border, rgba(215, 243, 106, 0.4));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+.settings-panel-card.full-width {
+  grid-column: 1 / -1;
 }
 
 .settings-card-header {
@@ -3662,7 +3679,8 @@ body.dock-is-dragging * {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 0;
+  gap: 24px;
+  padding: 14px 0;
   border-bottom: 1px solid var(--line);
   font-size: 13px;
 }
@@ -3672,11 +3690,70 @@ body.dock-is-dragging * {
   padding-bottom: 0;
 }
 
+.settings-row-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.settings-row-label strong {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
 .settings-help {
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--muted);
+  line-height: 1.45;
   margin-top: 2px;
-  max-width: 280px;
+}
+
+.settings-row-action {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.settings-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 18px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill, 9999px);
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.settings-action-btn:hover {
+  background: var(--ink);
+  color: var(--white);
+  border-color: var(--ink);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .settings-action-btn {
+  background: #1c1d18;
+  border-color: #2e3028;
+  color: #f0f2ea;
+}
+
+[data-theme="dark"] .settings-action-btn:hover {
+  background: #D7F36A;
+  color: #0c0d0e;
+  border-color: #D7F36A;
 }
 
 .settings-theme-pills {
@@ -3693,7 +3770,7 @@ body.dock-is-dragging * {
   background: transparent;
   border: none;
   color: var(--muted);
-  padding: 5px 12px;
+  padding: 6px 14px;
   border-radius: var(--radius-pill);
   font-size: 12px;
   font-weight: 600;
