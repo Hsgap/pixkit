@@ -81,7 +81,7 @@
       }
     } catch (_) {}
   </script>
-  <link rel="stylesheet" href="styles/main.css?v=5.8">
+  <link rel="stylesheet" href="styles/main.css?v=5.9">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FBFBF8">
 </head>
@@ -833,14 +833,14 @@
               <div class="settings-card-icon">⌨️</div>
               <div>
                 <h3>Keyboard Shortcuts</h3>
-                <p>Speed up your image manipulation workflow</p>
+                <p>Global hotkeys across Edit, Convert, and PDF Document suites</p>
               </div>
             </div>
             <div class="settings-card-body">
               <div class="settings-row">
                 <div class="settings-row-label">
                   <strong>Shortcuts Cheat Sheet</strong>
-                  <div class="settings-help">Quick hotkeys for cropping, zooming, undo, and tool navigation</div>
+                  <div class="settings-help">Switch tools, navigate suites, toggle theme, and undo/redo without touching the mouse</div>
                 </div>
                 <div class="settings-row-action">
                   <button class="settings-action-btn" onclick="toggleShortcutsModal(true)">
@@ -3732,91 +3732,225 @@
 
       <!-- Keyboard Shortcuts Modal Dialog -->
       <div id="shortcuts-modal" class="modal-backdrop" onclick="handleShortcutsBackdropClick(event)">
-        <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-shortcuts-title">
+        <div class="modal-dialog shortcuts-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-shortcuts-title">
           <div class="modal-header">
             <div class="modal-title-group">
               <span class="modal-icon">⌨️</span>
               <div>
                 <h3 id="modal-shortcuts-title">Keyboard Shortcuts</h3>
-                <p>Quick studio controls and keyboard navigation</p>
+                <p>Quick studio controls, suite navigation, and instant tool hotkeys</p>
               </div>
             </div>
             <button class="modal-close-btn" onclick="toggleShortcutsModal(false)" title="Close (Esc)" aria-label="Close shortcuts dialog">✕</button>
           </div>
 
-          <div class="modal-body">
-            <!-- Section 1: Navigation & General -->
-            <div class="shortcuts-section">
-              <div class="shortcuts-category-title">Navigation & Studio</div>
-              <div class="shortcut-row">
-                <span>Go back / Close dialog</span>
-                <div class="keys-wrap"><kbd>Esc</kbd></div>
+          <!-- Shortcuts Tabs & Search Bar -->
+          <div class="shortcuts-tabs-bar">
+            <div class="shortcuts-tabs" role="tablist">
+              <button class="shortcuts-tab-btn active" data-tab="all" onclick="filterShortcutsTab('all')">All Shortcuts</button>
+              <button class="shortcuts-tab-btn" data-tab="nav" onclick="filterShortcutsTab('nav')">🧭 Navigation</button>
+              <button class="shortcuts-tab-btn" data-tab="edit" onclick="filterShortcutsTab('edit')">✏️ Edit Suite (1–9)</button>
+              <button class="shortcuts-tab-btn" data-tab="convert" onclick="filterShortcutsTab('convert')">⇄ Convert (1–6)</button>
+              <button class="shortcuts-tab-btn" data-tab="document" onclick="filterShortcutsTab('document')">📄 PDF Tools (1–6)</button>
+            </div>
+            <div class="shortcuts-search-wrap">
+              <i class="fa-solid fa-magnifying-glass shortcuts-search-icon"></i>
+              <input type="text" id="shortcuts-search-input" class="shortcuts-search-input" placeholder="Search shortcuts or tools (e.g. crop, merge, heic, theme, pdf)..." oninput="filterShortcutsSearch(this.value)" autocomplete="off">
+              <button class="shortcuts-search-clear" id="shortcuts-search-clear" onclick="clearShortcutsSearch()" title="Clear search">✕</button>
+            </div>
+          </div>
+
+          <div class="modal-body shortcuts-modal-body">
+            <!-- Section 1: Navigation & Studio Essentials -->
+            <div class="shortcuts-section" data-cat="nav">
+              <div class="shortcuts-category-header">
+                <span class="shortcuts-category-title">🧭 Global Navigation & Essentials</span>
+                <span class="shortcuts-category-badge">Global</span>
               </div>
-              <div class="shortcut-row">
-                <span>Open Shortcuts helper</span>
-                <div class="keys-wrap"><kbd>?</kbd> <span class="or">or</span> <kbd>⇧</kbd><kbd>/</kbd></div>
-              </div>
-              <div class="shortcut-row">
-                <span>Open new image file</span>
-                <div class="keys-wrap"><kbd>⌘</kbd><kbd>O</kbd> <span class="or">or</span> <kbd>Ctrl</kbd><kbd>O</kbd></div>
-              </div>
-              <div class="shortcut-row">
-                <span>Quick download / save</span>
-                <div class="keys-wrap"><kbd>⌘</kbd><kbd>S</kbd> <span class="or">or</span> <kbd>Ctrl</kbd><kbd>S</kbd></div>
+              <div class="shortcuts-rows-grid">
+                <div class="shortcut-row">
+                  <span>Go back / Close active tool or dialog</span>
+                  <div class="keys-wrap"><kbd>Esc</kbd></div>
+                </div>
+                <div class="shortcut-row">
+                  <span>Open Shortcuts Cheat Sheet</span>
+                  <div class="keys-wrap"><kbd>?</kbd> <span class="or">or</span> <kbd>⇧</kbd><kbd>/</kbd></div>
+                </div>
+                <div class="shortcut-row">
+                  <span>Toggle Theme (Light / Dark)</span>
+                  <div class="keys-wrap"><kbd>T</kbd></div>
+                </div>
+                <div class="shortcut-row">
+                  <span>Open / Upload file (Image or PDF)</span>
+                  <div class="keys-wrap"><kbd>U</kbd> <span class="or">or</span> <kbd>⌘</kbd><kbd>O</kbd></div>
+                </div>
+                <div class="shortcut-row">
+                  <span>Quick Download / Save image</span>
+                  <div class="keys-wrap"><kbd>⌘</kbd><kbd>S</kbd> <span class="or">or</span> <kbd>Ctrl</kbd><kbd>S</kbd></div>
+                </div>
+                <div class="shortcut-row">
+                  <span>Undo edit action</span>
+                  <div class="keys-wrap"><kbd>⌘</kbd><kbd>Z</kbd> <span class="or">or</span> <kbd>Ctrl</kbd><kbd>Z</kbd></div>
+                </div>
+                <div class="shortcut-row">
+                  <span>Redo edit action</span>
+                  <div class="keys-wrap"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>Z</kbd> <span class="or">or</span> <kbd>Ctrl</kbd><kbd>Y</kbd></div>
+                </div>
+                <div class="shortcut-row">
+                  <span>Jump to Home View</span>
+                  <div class="keys-wrap"><kbd>G</kbd> <span class="then">then</span> <kbd>H</kbd></div>
+                </div>
+                <div class="shortcut-row">
+                  <span>Jump to Edit Image Suite</span>
+                  <div class="keys-wrap"><kbd>G</kbd> <span class="then">then</span> <kbd>E</kbd></div>
+                </div>
+                <div class="shortcut-row">
+                  <span>Jump to Convert Suite</span>
+                  <div class="keys-wrap"><kbd>G</kbd> <span class="then">then</span> <kbd>C</kbd></div>
+                </div>
+                <div class="shortcut-row">
+                  <span>Jump to PDF Document Suite</span>
+                  <div class="keys-wrap"><kbd>G</kbd> <span class="then">then</span> <kbd>D</kbd></div>
+                </div>
+                <div class="shortcut-row">
+                  <span>Jump to Recent Files</span>
+                  <div class="keys-wrap"><kbd>G</kbd> <span class="then">then</span> <kbd>R</kbd></div>
+                </div>
+                <div class="shortcut-row">
+                  <span>Jump to Studio Settings</span>
+                  <div class="keys-wrap"><kbd>G</kbd> <span class="then">then</span> <kbd>S</kbd></div>
+                </div>
               </div>
             </div>
 
-            <!-- Section 2: History & Edits -->
-            <div class="shortcuts-section">
-              <div class="shortcuts-category-title">History & Edits</div>
-              <div class="shortcut-row">
-                <span>Undo edit</span>
-                <div class="keys-wrap"><kbd>⌘</kbd><kbd>Z</kbd> <span class="or">or</span> <kbd>Ctrl</kbd><kbd>Z</kbd></div>
+            <!-- Section 2: Edit Suite (Image Editing) -->
+            <div class="shortcuts-section" data-cat="edit">
+              <div class="shortcuts-category-header">
+                <span class="shortcuts-category-title">✏️ Edit Suite (9 Tools)</span>
+                <span class="shortcuts-category-badge">Keys 1–9 or E then 1–9</span>
               </div>
-              <div class="shortcut-row">
-                <span>Redo edit</span>
-                <div class="keys-wrap"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>Z</kbd> <span class="or">or</span> <kbd>Ctrl</kbd><kbd>Y</kbd></div>
-              </div>
-            </div>
-
-            <!-- Section 3: Quick Tool Switcher -->
-            <div class="shortcuts-section">
-              <div class="shortcuts-category-title">Quick Tool Switcher (Number Keys)</div>
               <div class="shortcuts-grid">
-                <div class="shortcut-pill" onclick="openToolWorkspace('resize'); toggleShortcutsModal(false);">
-                  <kbd>1</kbd> <span>Resize</span>
+                <div class="shortcut-pill" onclick="openToolWorkspace('resize'); toggleShortcutsModal(false);" title="Open Resize Tool">
+                  <div class="pill-left"><kbd>1</kbd> <span class="pill-icon">📐</span> <span class="pill-name">Resize</span></div>
+                  <span class="pill-arrow">↗</span>
                 </div>
-                <div class="shortcut-pill" onclick="openToolWorkspace('crop'); toggleShortcutsModal(false);">
-                  <kbd>2</kbd> <span>Crop</span>
+                <div class="shortcut-pill" onclick="openToolWorkspace('crop'); toggleShortcutsModal(false);" title="Open Crop Tool">
+                  <div class="pill-left"><kbd>2</kbd> <span class="pill-icon">✂️</span> <span class="pill-name">Crop</span></div>
+                  <span class="pill-arrow">↗</span>
                 </div>
-                <div class="shortcut-pill" onclick="openToolWorkspace('rotate'); toggleShortcutsModal(false);">
-                  <kbd>3</kbd> <span>Rotate</span>
+                <div class="shortcut-pill" onclick="openToolWorkspace('rotate'); toggleShortcutsModal(false);" title="Open Rotate Tool">
+                  <div class="pill-left"><kbd>3</kbd> <span class="pill-icon">🔄</span> <span class="pill-name">Rotate</span></div>
+                  <span class="pill-arrow">↗</span>
                 </div>
-                <div class="shortcut-pill" onclick="openToolWorkspace('compress'); toggleShortcutsModal(false);">
-                  <kbd>4</kbd> <span>Compress</span>
+                <div class="shortcut-pill" onclick="openToolWorkspace('compress'); toggleShortcutsModal(false);" title="Open Compress Tool">
+                  <div class="pill-left"><kbd>4</kbd> <span class="pill-icon">🗜️</span> <span class="pill-name">Compress</span></div>
+                  <span class="pill-arrow">↗</span>
                 </div>
-                <div class="shortcut-pill" onclick="openToolWorkspace('adjust'); toggleShortcutsModal(false);">
-                  <kbd>5</kbd> <span>Adjust</span>
+                <div class="shortcut-pill" onclick="openToolWorkspace('adjust'); toggleShortcutsModal(false);" title="Open Adjust Tool">
+                  <div class="pill-left"><kbd>5</kbd> <span class="pill-icon">🎛️</span> <span class="pill-name">Adjust</span></div>
+                  <span class="pill-arrow">↗</span>
                 </div>
-                <div class="shortcut-pill" onclick="openToolWorkspace('filters'); toggleShortcutsModal(false);">
-                  <kbd>6</kbd> <span>Filters</span>
+                <div class="shortcut-pill" onclick="openToolWorkspace('filters'); toggleShortcutsModal(false);" title="Open Filters Tool">
+                  <div class="pill-left"><kbd>6</kbd> <span class="pill-icon">🎨</span> <span class="pill-name">Filters</span></div>
+                  <span class="pill-arrow">↗</span>
                 </div>
-                <div class="shortcut-pill" onclick="openToolWorkspace('text'); toggleShortcutsModal(false);">
-                  <kbd>7</kbd> <span>Text</span>
+                <div class="shortcut-pill" onclick="openToolWorkspace('text'); toggleShortcutsModal(false);" title="Open Text Tool">
+                  <div class="pill-left"><kbd>7</kbd> <span class="pill-icon">✏️</span> <span class="pill-name">Text</span></div>
+                  <span class="pill-arrow">↗</span>
                 </div>
-                <div class="shortcut-pill" onclick="openToolWorkspace('draw'); toggleShortcutsModal(false);">
-                  <kbd>8</kbd> <span>Draw</span>
+                <div class="shortcut-pill" onclick="openToolWorkspace('draw'); toggleShortcutsModal(false);" title="Open Draw Tool">
+                  <div class="pill-left"><kbd>8</kbd> <span class="pill-icon">🖌️</span> <span class="pill-name">Draw</span></div>
+                  <span class="pill-arrow">↗</span>
                 </div>
-                <div class="shortcut-pill" onclick="openToolWorkspace('blur'); toggleShortcutsModal(false);">
-                  <kbd>9</kbd> <span>Blur</span>
+                <div class="shortcut-pill" onclick="openToolWorkspace('blur'); toggleShortcutsModal(false);" title="Open Blur Tool">
+                  <div class="pill-left"><kbd>9</kbd> <span class="pill-icon">💧</span> <span class="pill-name">Blur</span></div>
+                  <span class="pill-arrow">↗</span>
                 </div>
               </div>
+            </div>
+
+            <!-- Section 3: Convert Suite (6 Tools) -->
+            <div class="shortcuts-section" data-cat="convert">
+              <div class="shortcuts-category-header">
+                <span class="shortcuts-category-title">⇄ Convert Suite (6 Tools)</span>
+                <span class="shortcuts-category-badge">Keys 1–6 in Convert or C then 1–6</span>
+              </div>
+              <div class="shortcuts-grid">
+                <div class="shortcut-pill" onclick="openToolWorkspace('convert-format'); toggleShortcutsModal(false);" title="Open Format Converter">
+                  <div class="pill-left"><kbd>1</kbd> <span class="pill-icon">⇄</span> <span class="pill-name">Format Converter</span></div>
+                  <span class="pill-arrow">↗</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('convert-heic'); toggleShortcutsModal(false);" title="Open HEIC Converter">
+                  <div class="pill-left"><kbd>2</kbd> <span class="pill-icon">📱</span> <span class="pill-name">HEIC Converter</span></div>
+                  <span class="pill-arrow">↗</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('convert-svg'); toggleShortcutsModal(false);" title="Open SVG Converter">
+                  <div class="pill-left"><kbd>3</kbd> <span class="pill-icon">📐</span> <span class="pill-name">SVG Converter</span></div>
+                  <span class="pill-arrow">↗</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('convert-ico'); toggleShortcutsModal(false);" title="Open Favicon Generator">
+                  <div class="pill-left"><kbd>4</kbd> <span class="pill-icon">⭐</span> <span class="pill-name">Favicon Generator</span></div>
+                  <span class="pill-arrow">↗</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('convert-base64'); toggleShortcutsModal(false);" title="Open Base64 Converter">
+                  <div class="pill-left"><kbd>5</kbd> <span class="pill-icon">⚡</span> <span class="pill-name">Base64 Converter</span></div>
+                  <span class="pill-arrow">↗</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('convert-pdf'); toggleShortcutsModal(false);" title="Open Images to PDF">
+                  <div class="pill-left"><kbd>6</kbd> <span class="pill-icon">📄</span> <span class="pill-name">Images to PDF</span></div>
+                  <span class="pill-arrow">↗</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 4: PDF & Document Suite (6 Tools) -->
+            <div class="shortcuts-section" data-cat="document">
+              <div class="shortcuts-category-header">
+                <span class="shortcuts-category-title">📄 PDF Document Suite (6 Tools)</span>
+                <span class="shortcuts-category-badge">Keys 1–6 in PDF or D then 1–6</span>
+              </div>
+              <div class="shortcuts-grid">
+                <div class="shortcut-pill" onclick="openToolWorkspace('doc-pdf-to-images'); toggleShortcutsModal(false);" title="Open PDF to Images">
+                  <div class="pill-left"><kbd>1</kbd> <span class="pill-icon">🖼️</span> <span class="pill-name">PDF to Images</span></div>
+                  <span class="pill-arrow">↗</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('doc-merge-pdf'); toggleShortcutsModal(false);" title="Open Merge PDF">
+                  <div class="pill-left"><kbd>2</kbd> <span class="pill-icon">📑</span> <span class="pill-name">Merge PDF</span></div>
+                  <span class="pill-arrow">↗</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('doc-split-pdf'); toggleShortcutsModal(false);" title="Open Split PDF">
+                  <div class="pill-left"><kbd>3</kbd> <span class="pill-icon">✂️</span> <span class="pill-name">Split PDF</span></div>
+                  <span class="pill-arrow">↗</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('doc-compress-pdf'); toggleShortcutsModal(false);" title="Open Compress PDF">
+                  <div class="pill-left"><kbd>4</kbd> <span class="pill-icon">🗜️</span> <span class="pill-name">Compress PDF</span></div>
+                  <span class="pill-arrow">↗</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('doc-rotate-pdf'); toggleShortcutsModal(false);" title="Open Rotate PDF">
+                  <div class="pill-left"><kbd>5</kbd> <span class="pill-icon">🔄</span> <span class="pill-name">Rotate PDF</span></div>
+                  <span class="pill-arrow">↗</span>
+                </div>
+                <div class="shortcut-pill" onclick="openToolWorkspace('doc-delete-pdf'); toggleShortcutsModal(false);" title="Open Delete PDF Pages">
+                  <div class="pill-left"><kbd>6</kbd> <span class="pill-icon">🗑️</span> <span class="pill-name">Delete PDF Pages</span></div>
+                  <span class="pill-arrow">↗</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty Search Results State -->
+            <div id="shortcuts-search-empty" class="shortcuts-search-empty" style="display:none;">
+              <span style="font-size:32px;">🔍</span>
+              <strong>No matching shortcuts found</strong>
+              <p>Try searching for words like "pdf", "crop", "save", "convert", or "theme".</p>
             </div>
           </div>
 
           <div class="modal-footer">
-            <small style="color:var(--muted)">✨ Your image & edits are automatically saved in your browser.</small>
-            <button class="btn-secondary" style="padding:6px 16px; font-size:12px;" onclick="toggleShortcutsModal(false)">Close</button>
+            <div class="shortcuts-footer-hint">
+              <span class="footer-hint-icon">💡</span>
+              <span><strong>Pro Tip:</strong> Press <kbd>G</kbd> then <kbd>H</kbd>/<kbd>E</kbd>/<kbd>C</kbd>/<kbd>D</kbd> to jump suites instantly from anywhere.</span>
+            </div>
+            <button class="btn-secondary" style="padding:7px 18px; font-size:12px; font-weight:600;" onclick="toggleShortcutsModal(false)">Close (Esc)</button>
           </div>
         </div>
       </div>
@@ -3875,6 +4009,9 @@
     </nav>
   </aside>
 
+  <!-- Keyboard Shortcut Sequence Floating HUD Indicator -->
+  <div id="shortcut-sequence-hud" class="shortcut-sequence-hud" aria-live="polite"></div>
+
   <!-- PDF.js, PDF-Lib and JSZip for client-side PDF processing & ZIP bundling (Local Vendor Scripts) -->
   <script src="js/vendor/pdf.worker.min.js"></script>
   <script src="js/vendor/pdf.min.js"></script>
@@ -3884,6 +4021,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <script src="js/engine.js?v=2.3"></script>
-  <script src="js/app.js?v=5.8"></script>
+  <script src="js/app.js?v=5.9"></script>
 </body>
 </html>

@@ -841,6 +841,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!modal) return;
     if (open) {
       modal.classList.add('active');
+      // Reset filter to 'all' and clear search
+      window.filterShortcutsTab('all');
+      setTimeout(() => {
+        const searchInput = document.getElementById('shortcuts-search-input');
+        if (searchInput) searchInput.focus();
+      }, 100);
     } else {
       modal.classList.remove('active');
     }
@@ -850,6 +856,92 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.id === 'shortcuts-modal') {
       window.toggleShortcutsModal(false);
     }
+  };
+
+  // --- Keyboard Shortcuts Modal Filtering & Search ---
+  window.filterShortcutsTab = function(tabName) {
+    document.querySelectorAll('.shortcuts-tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+
+    const searchInput = document.getElementById('shortcuts-search-input');
+    if (searchInput) {
+      searchInput.value = '';
+      const clearBtn = document.getElementById('shortcuts-search-clear');
+      if (clearBtn) clearBtn.style.display = 'none';
+    }
+
+    const sections = document.querySelectorAll('#shortcuts-modal .shortcuts-section');
+    const emptyState = document.getElementById('shortcuts-search-empty');
+    if (emptyState) emptyState.style.display = 'none';
+
+    sections.forEach(sec => {
+      const cat = sec.dataset.cat;
+      const items = sec.querySelectorAll('.shortcut-row, .shortcut-pill');
+      items.forEach(item => item.style.display = '');
+
+      if (tabName === 'all' || cat === tabName) {
+        sec.style.display = '';
+      } else {
+        sec.style.display = 'none';
+      }
+    });
+  };
+
+  window.filterShortcutsSearch = function(query) {
+    const q = (query || '').toLowerCase().trim();
+    const clearBtn = document.getElementById('shortcuts-search-clear');
+    if (clearBtn) clearBtn.style.display = q ? 'block' : 'none';
+
+    // If typing query, reset tab buttons visually to "all" to indicate multi-suite search
+    if (q) {
+      document.querySelectorAll('.shortcuts-tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === 'all');
+      });
+    }
+
+    const sections = document.querySelectorAll('#shortcuts-modal .shortcuts-section');
+    let totalMatches = 0;
+
+    sections.forEach(sec => {
+      let sectionMatches = 0;
+      const items = sec.querySelectorAll('.shortcut-row, .shortcut-pill');
+      items.forEach(item => {
+        if (!q) {
+          item.style.display = '';
+          sectionMatches++;
+        } else {
+          const text = item.textContent.toLowerCase();
+          if (text.includes(q)) {
+            item.style.display = '';
+            sectionMatches++;
+          } else {
+            item.style.display = 'none';
+          }
+        }
+      });
+
+      if (sectionMatches > 0) {
+        sec.style.display = '';
+        totalMatches += sectionMatches;
+      } else {
+        sec.style.display = 'none';
+      }
+    });
+
+    const emptyState = document.getElementById('shortcuts-search-empty');
+    if (emptyState) {
+      emptyState.style.display = (q && totalMatches === 0) ? 'flex' : 'none';
+    }
+  };
+
+  window.clearShortcutsSearch = function() {
+    const input = document.getElementById('shortcuts-search-input');
+    if (input) {
+      input.value = '';
+      input.focus();
+    }
+    window.filterShortcutsSearch('');
   };
 
   // --- Aceternity UI Floating Dock Navigation ---
@@ -2235,13 +2327,58 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('pointercancel', handlePointerUp);
   }
 
-  // --- Comprehensive Global Keyboard Shortcuts Suite ---
+  // --- Comprehensive Multi-Suite Global Keyboard Shortcuts Engine ---
+  let pendingSequencePrefix = null;
+  let pendingSequenceTimer = null;
+
+  function showSequenceHud(htmlContent) {
+    let hud = document.getElementById('shortcut-sequence-hud');
+    if (!hud) {
+      hud = document.createElement('div');
+      hud.id = 'shortcut-sequence-hud';
+      hud.className = 'shortcut-sequence-hud';
+      document.body.appendChild(hud);
+    }
+    hud.innerHTML = htmlContent;
+    hud.classList.remove('flash-success');
+    hud.classList.add('active');
+
+    clearTimeout(pendingSequenceTimer);
+    pendingSequenceTimer = setTimeout(() => {
+      hud.classList.remove('active');
+      pendingSequencePrefix = null;
+    }, 1500);
+  }
+
+  function flashSequenceHudSuccess(message) {
+    const hud = document.getElementById('shortcut-sequence-hud');
+    if (hud) {
+      hud.innerHTML = `<span>✓ ${message}</span>`;
+      hud.classList.add('flash-success', 'active');
+      clearTimeout(pendingSequenceTimer);
+      pendingSequenceTimer = setTimeout(() => {
+        hud.classList.remove('active', 'flash-success');
+        pendingSequencePrefix = null;
+      }, 900);
+    }
+  }
+
+  function hideSequenceHud() {
+    const hud = document.getElementById('shortcut-sequence-hud');
+    if (hud) {
+      hud.classList.remove('active', 'flash-success');
+    }
+    clearTimeout(pendingSequenceTimer);
+    pendingSequencePrefix = null;
+  }
+
   window.addEventListener('keydown', (e) => {
     const activeEl = document.activeElement;
     const isTyping = activeEl && (['INPUT', 'TEXTAREA', 'SELECT'].includes(activeEl.tagName) || activeEl.isContentEditable);
 
-    // 1. Escape: Close modal, return from tool to edit, or return to home
+    // 1. Escape: Context-aware Back / Dismiss
     if (e.key === 'Escape') {
+      hideSequenceHud();
       const modal = document.getElementById('shortcuts-modal');
       if (modal && modal.classList.contains('active')) {
         e.preventDefault();
@@ -2255,78 +2392,285 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       if (activeTool) {
         e.preventDefault();
-        window.showView('edit');
+        if (activeTool.startsWith('doc-') || (activeTool === 'convert-pdf' && lastCategoryOrigin === 'document')) {
+          window.showView('document');
+        } else if (activeTool.startsWith('convert-')) {
+          window.showView('convert');
+        } else {
+          window.showView('edit');
+        }
         return;
       }
-      if (currentView === 'edit') {
+      if (currentView === 'edit' || currentView === 'convert' || currentView === 'document') {
         e.preventDefault();
         window.showView('home');
         return;
       }
     }
 
-    // 2. Question mark '?' or Shift+'/' -> Toggle Shortcuts Dialog
-    if ((e.key === '?' || (e.shiftKey && e.key === '/')) && !isTyping) {
+    // Never handle navigation or action shortcuts while user is typing in form controls
+    if (isTyping) return;
+
+    // 2. Open / Close Shortcuts Cheat Sheet Modal: '?' or Shift+'/'
+    if ((e.key === '?' || (e.shiftKey && e.key === '/')) && !e.metaKey && !e.ctrlKey && !e.altKey) {
       e.preventDefault();
+      hideSequenceHud();
       const modal = document.getElementById('shortcuts-modal');
       const isCurrentlyActive = modal && modal.classList.contains('active');
       window.toggleShortcutsModal(!isCurrentlyActive);
       return;
     }
 
-    // 3. Cmd+O / Ctrl+O: Open File Picker
+    // 3. Cmd+O / Ctrl+O: Open File Picker (Images or Documents)
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'o') {
+      e.preventDefault();
+      hideSequenceHud();
+      const picker = document.querySelector('.global-file-picker');
+      if (picker) picker.click();
+      return;
+    }
+
+    // 4. Cmd+S / Ctrl+S: Quick Export / Save Image
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      hideSequenceHud();
+      if (engine && engine.activeCanvas) {
+        engine.download('jpg', 0.92);
+        showToast('Quick downloaded image ⚡');
+      } else {
+        showToast('No active image to download');
+      }
+      return;
+    }
+
+    // 5. Cmd+Z / Ctrl+Z (Undo) and Cmd+Shift+Z / Cmd+Y / Ctrl+Y (Redo)
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      hideSequenceHud();
+      if (e.shiftKey) {
+        window.handleGlobalRedo();
+      } else {
+        window.handleGlobalUndo();
+      }
+      return;
+    } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'y') {
+      e.preventDefault();
+      hideSequenceHud();
+      window.handleGlobalRedo();
+      return;
+    }
+
+    // Check if browser modifiers are held - don't intercept system shortcuts
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+    const lowerKey = e.key.toLowerCase();
+
+    // 6. Handle Sequence Prefix Second Key
+    if (pendingSequencePrefix) {
+      const prefix = pendingSequencePrefix;
+
+      if (prefix === 'g') {
+        const suiteNavMap = {
+          'h': { view: 'home', name: 'Home 🏠' },
+          'e': { view: 'edit', name: 'Edit Suite ✏️' },
+          'c': { view: 'convert', name: 'Convert Suite ⇄' },
+          'd': { view: 'document', name: 'Document Suite 📄' },
+          'r': { view: 'recent', name: 'Recent Files 🕒' },
+          's': { view: 'settings', name: 'Settings ⚙️' }
+        };
+        const target = suiteNavMap[lowerKey];
+        if (target) {
+          e.preventDefault();
+          flashSequenceHudSuccess(`Jumped to ${target.name}`);
+          window.showView(target.view);
+          return;
+        }
+      } else if (prefix === 'c') {
+        const convertMap = {
+          '1': { tool: 'convert-format', name: 'Format Converter' },
+          '2': { tool: 'convert-heic', name: 'HEIC Converter' },
+          '3': { tool: 'convert-svg', name: 'SVG Converter' },
+          '4': { tool: 'convert-ico', name: 'Favicon Generator' },
+          '5': { tool: 'convert-base64', name: 'Base64 Converter' },
+          '6': { tool: 'convert-pdf', name: 'Image to PDF' }
+        };
+        const target = convertMap[lowerKey];
+        if (target) {
+          e.preventDefault();
+          flashSequenceHudSuccess(`Opening ${target.name} ⇄`);
+          window.openToolWorkspace(target.tool);
+          return;
+        }
+      } else if (prefix === 'd') {
+        const docMap = {
+          '1': { tool: 'doc-pdf-to-images', name: 'PDF to Images' },
+          '2': { tool: 'doc-merge-pdf', name: 'Merge PDF' },
+          '3': { tool: 'doc-split-pdf', name: 'Split PDF' },
+          '4': { tool: 'doc-compress-pdf', name: 'Compress PDF' },
+          '5': { tool: 'doc-rotate-pdf', name: 'Rotate PDF' },
+          '6': { tool: 'doc-delete-pdf', name: 'Delete PDF Pages' }
+        };
+        const target = docMap[lowerKey];
+        if (target) {
+          e.preventDefault();
+          flashSequenceHudSuccess(`Opening ${target.name} 📄`);
+          window.openToolWorkspace(target.tool);
+          return;
+        }
+      } else if (prefix === 'e') {
+        const editMap = {
+          '1': { tool: 'resize', name: 'Resize' },
+          '2': { tool: 'crop', name: 'Crop' },
+          '3': { tool: 'rotate', name: 'Rotate' },
+          '4': { tool: 'compress', name: 'Compress' },
+          '5': { tool: 'adjust', name: 'Adjust' },
+          '6': { tool: 'filters', name: 'Filters' },
+          '7': { tool: 'text', name: 'Text' },
+          '8': { tool: 'draw', name: 'Draw' },
+          '9': { tool: 'blur', name: 'Blur' }
+        };
+        const target = editMap[lowerKey];
+        if (target) {
+          e.preventDefault();
+          flashSequenceHudSuccess(`Opening ${target.name} ✏️`);
+          window.openToolWorkspace(target.tool);
+          return;
+        }
+      }
+
+      // If invalid second key, clear pending sequence
+      hideSequenceHud();
+    }
+
+    // 7. Initiate Two-Key Sequences (G, C, D, E)
+    if (lowerKey === 'g') {
+      e.preventDefault();
+      pendingSequencePrefix = 'g';
+      showSequenceHud(`
+        <strong style="color:#E3FF4D;">G</strong> ➜ Jump to:
+        <span><kbd>H</kbd> Home</span> ·
+        <span><kbd>E</kbd> Edit</span> ·
+        <span><kbd>C</kbd> Convert</span> ·
+        <span><kbd>D</kbd> PDF</span> ·
+        <span><kbd>R</kbd> Recent</span> ·
+        <span><kbd>S</kbd> Settings</span>
+      `);
+      return;
+    } else if (lowerKey === 'c') {
+      e.preventDefault();
+      pendingSequencePrefix = 'c';
+      showSequenceHud(`
+        <strong style="color:#E3FF4D;">C</strong> ➜ Convert:
+        <span><kbd>1</kbd> Format</span> ·
+        <span><kbd>2</kbd> HEIC</span> ·
+        <span><kbd>3</kbd> SVG</span> ·
+        <span><kbd>4</kbd> ICO</span> ·
+        <span><kbd>5</kbd> Base64</span> ·
+        <span><kbd>6</kbd> PDF</span>
+      `);
+      return;
+    } else if (lowerKey === 'd') {
+      e.preventDefault();
+      pendingSequencePrefix = 'd';
+      showSequenceHud(`
+        <strong style="color:#E3FF4D;">D</strong> ➜ PDF Tools:
+        <span><kbd>1</kbd> To Img</span> ·
+        <span><kbd>2</kbd> Merge</span> ·
+        <span><kbd>3</kbd> Split</span> ·
+        <span><kbd>4</kbd> Compress</span> ·
+        <span><kbd>5</kbd> Rotate</span> ·
+        <span><kbd>6</kbd> Delete</span>
+      `);
+      return;
+    } else if (lowerKey === 'e') {
+      e.preventDefault();
+      pendingSequencePrefix = 'e';
+      showSequenceHud(`
+        <strong style="color:#E3FF4D;">E</strong> ➜ Edit Tools:
+        <span><kbd>1</kbd> Resize</span> ·
+        <span><kbd>2</kbd> Crop</span> ·
+        <span><kbd>3</kbd> Rotate</span> ·
+        <span><kbd>4</kbd> Compress</span> ·
+        <span><kbd>5</kbd> Adjust</span> ·
+        <span><kbd>6</kbd> Filters</span> ·
+        <span><kbd>7</kbd> Text</span> ·
+        <span><kbd>8</kbd> Draw</span> ·
+        <span><kbd>9</kbd> Blur</span>
+      `);
+      return;
+    }
+
+    // 8. Single Key Quick Utilities: T (Theme), U (Upload)
+    if (lowerKey === 't') {
+      e.preventDefault();
+      if (typeof window.toggleThemeAnimated === 'function') {
+        window.toggleThemeAnimated();
+      }
+      return;
+    } else if (lowerKey === 'u') {
       e.preventDefault();
       const picker = document.querySelector('.global-file-picker');
       if (picker) picker.click();
       return;
     }
 
-    // 4. Cmd+S / Ctrl+S: Quick Export / Download Image
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's') {
-      e.preventDefault();
-      engine.download('jpg', 0.92);
-      showToast('Quick downloaded image ⚡');
-      return;
-    }
+    // 9. Context-Aware Number Keys (1-9)
+    if (e.key >= '1' && e.key <= '9') {
+      const isConvertContext = currentView === 'convert' || (activeTool && activeTool.startsWith('convert-') && activeTool !== 'convert-pdf');
+      const isDocContext = currentView === 'document' || (activeTool && (activeTool.startsWith('doc-') || (activeTool === 'convert-pdf' && lastCategoryOrigin === 'document')));
 
-    // 5. Cmd+Z / Ctrl+Z (Undo) and Cmd+Shift+Z / Cmd+Y / Ctrl+Y (Redo)
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') {
-      if (!isTyping) {
-        e.preventDefault();
-        if (e.shiftKey) {
-          window.handleGlobalRedo();
-        } else {
-          window.handleGlobalUndo();
+      if (isConvertContext) {
+        const convertMap = {
+          '1': { tool: 'convert-format', name: 'Format Converter' },
+          '2': { tool: 'convert-heic', name: 'HEIC Converter' },
+          '3': { tool: 'convert-svg', name: 'SVG Converter' },
+          '4': { tool: 'convert-ico', name: 'Favicon Generator' },
+          '5': { tool: 'convert-base64', name: 'Base64 Converter' },
+          '6': { tool: 'convert-pdf', name: 'Image to PDF' }
+        };
+        const target = convertMap[e.key];
+        if (target) {
+          e.preventDefault();
+          window.openToolWorkspace(target.tool);
+          showToast(`Opened ${target.name} ⇄`);
+          return;
         }
-      }
-      return;
-    } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'y') {
-      if (!isTyping) {
-        e.preventDefault();
-        window.handleGlobalRedo();
-      }
-      return;
-    }
-
-    // 6. Number Keys 1-9: Quick Tool Switcher (when not typing in form inputs)
-    if (!isTyping && !e.metaKey && !e.ctrlKey && !e.altKey && e.key >= '1' && e.key <= '9') {
-      const toolMap = {
-        '1': 'resize',
-        '2': 'crop',
-        '3': 'rotate',
-        '4': 'compress',
-        '5': 'adjust',
-        '6': 'filters',
-        '7': 'text',
-        '8': 'draw',
-        '9': 'blur'
-      };
-      const selectedTool = toolMap[e.key];
-      if (selectedTool) {
-        e.preventDefault();
-        window.openToolWorkspace(selectedTool);
-        showToast(`Opened ${selectedTool.toUpperCase()} tool`);
+      } else if (isDocContext) {
+        const docMap = {
+          '1': { tool: 'doc-pdf-to-images', name: 'PDF to Images' },
+          '2': { tool: 'doc-merge-pdf', name: 'Merge PDF' },
+          '3': { tool: 'doc-split-pdf', name: 'Split PDF' },
+          '4': { tool: 'doc-compress-pdf', name: 'Compress PDF' },
+          '5': { tool: 'doc-rotate-pdf', name: 'Rotate PDF' },
+          '6': { tool: 'doc-delete-pdf', name: 'Delete PDF Pages' }
+        };
+        const target = docMap[e.key];
+        if (target) {
+          e.preventDefault();
+          window.openToolWorkspace(target.tool);
+          showToast(`Opened ${target.name} 📄`);
+          return;
+        }
+      } else {
+        // Default (Edit Suite, Home, or active Image Edit Tool)
+        const editMap = {
+          '1': { tool: 'resize', name: 'Resize' },
+          '2': { tool: 'crop', name: 'Crop' },
+          '3': { tool: 'rotate', name: 'Rotate' },
+          '4': { tool: 'compress', name: 'Compress' },
+          '5': { tool: 'adjust', name: 'Adjust' },
+          '6': { tool: 'filters', name: 'Filters' },
+          '7': { tool: 'text', name: 'Text' },
+          '8': { tool: 'draw', name: 'Draw' },
+          '9': { tool: 'blur', name: 'Blur' }
+        };
+        const target = editMap[e.key];
+        if (target) {
+          e.preventDefault();
+          window.openToolWorkspace(target.tool);
+          showToast(`Opened ${target.name} tool ✏️`);
+          return;
+        }
       }
     }
   });
