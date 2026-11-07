@@ -1728,6 +1728,21 @@ button {
   color: var(--lime);
 }
 
+.calibrating-pulse {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-style: italic;
+  font-weight: 500;
+  animation: pulseOpacity 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes pulseOpacity {
+  0% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
 .radio-pill-group {
   display: grid;
   grid-template-columns: 1fr 1fr;

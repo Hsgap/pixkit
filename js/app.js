@@ -3129,6 +3129,44 @@ document.addEventListener('DOMContentLoaded', () => {
     recalculateCompression();
   };
 
+  // --- Calibration State Tracking & UI Feedback ---
+  let activeCalibrationId = 0;
+  let calibrationTimer = null;
+
+  function setCalibratingUI(isCalibrating) {
+    const qualText = document.getElementById('calibrated-quality-text');
+    const dimsText = document.getElementById('calibrated-dims-text');
+    const sizeText = document.getElementById('calibrated-size-text');
+    const finalEl = document.getElementById('compress-final-size');
+    const badge = document.getElementById('compress-savings-badge');
+    const stat = document.getElementById('compress-stat');
+
+    if (isCalibrating) {
+      if (qualText) qualText.innerHTML = '<span class="calibrating-pulse">Auto-tuning quality...</span>';
+      if (dimsText) dimsText.innerHTML = '<span class="calibrating-pulse">Optimizing resolution...</span>';
+      if (sizeText) sizeText.innerHTML = '<span class="calibrating-pulse">Calibrating...</span>';
+      if (finalEl) finalEl.innerHTML = '<span class="calibrating-pulse">Calibrating...</span>';
+      if (badge) badge.style.display = 'none';
+      if (stat) stat.textContent = 'Auto-calibrating optimal compression...';
+    }
+  }
+
+  function scheduleCalibration(delay = 140) {
+    if (calibrationTimer) clearTimeout(calibrationTimer);
+    setCalibratingUI(true);
+    calibrationTimer = setTimeout(() => {
+      calibrateCompressTarget();
+    }, delay);
+  }
+
+  window.onTargetSizeInput = function() {
+    scheduleCalibration(160);
+  };
+
+  window.onTargetUnitChange = function() {
+    scheduleCalibration(20);
+  };
+
   window.setQuickTargetSize = function(val, unit) {
     const input = document.getElementById('compress-target-val');
     const select = document.getElementById('compress-target-unit');
@@ -3139,10 +3177,13 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.classList.toggle('active', btn.textContent.trim() === `${val} ${unit}`);
     });
 
-    calibrateCompressTarget();
+    scheduleCalibration(20);
   };
 
   window.calibrateCompressTarget = async function() {
+    const thisId = ++activeCalibrationId;
+    setCalibratingUI(true);
+
     const input = document.getElementById('compress-target-val');
     const select = document.getElementById('compress-target-unit');
     let val = parseFloat(input?.value || 200);
@@ -3153,8 +3194,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const format = getCompressFormat();
 
     const result = await engine.autoCalibrateCompression(targetBytes, format);
-    compressCalibratedResult = result;
+    if (thisId !== activeCalibrationId) return;
 
+    compressCalibratedResult = result;
     renderCompressedCanvas(result.canvas);
 
     const qualText = document.getElementById('calibrated-quality-text');
@@ -3163,7 +3205,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (qualText) qualText.textContent = `${result.quality}%`;
     if (dimsText) dimsText.textContent = `${result.width} × ${result.height} px (${Math.round(result.scale * 100)}% res)`;
-    if (sizeText) sizeText.textContent = PixKitEngine.formatBytes(result.blob.size);
+    if (sizeText) sizeText.textContent = `${PixKitEngine.formatBytes(result.blob.size)} (Target: ${val} ${unit})`;
 
     updateCompressSummaryStats(result.blob.size, result.width, result.height);
   };
@@ -3265,7 +3307,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.recalculateCompression = function() {
     if (compressMode === 'target') {
-      calibrateCompressTarget();
+      scheduleCalibration(30);
     } else if (compressMode === 'pixels') {
       updateCompressPxLive();
     } else {
@@ -3284,24 +3326,37 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateCompressSummaryStats(finalBytes, finalW, finalH) {
-    const origBytes = engine.fileSize || 2400000;
-    const savings = Math.max(0, Math.round(((origBytes - finalBytes) / origBytes) * 100));
-
+    const origBytes = engine.fileSize || 0;
     const origEl = document.getElementById('compress-orig-size');
     const finalEl = document.getElementById('compress-final-size');
     const badge = document.getElementById('compress-savings-badge');
     const stat = document.getElementById('compress-stat');
 
-    if (origEl) origEl.textContent = PixKitEngine.formatBytes(origBytes);
+    if (origEl) origEl.textContent = PixKitEngine.formatBytes(origBytes || finalBytes);
     if (finalEl) finalEl.textContent = `${PixKitEngine.formatBytes(finalBytes)} (${finalW} × ${finalH} px)`;
-    
-    if (badge) {
-      badge.textContent = `↓ ${savings}% Savings`;
-      badge.style.display = savings > 0 ? 'inline-block' : 'none';
-    }
 
-    if (stat) {
-      stat.textContent = `${PixKitEngine.formatBytes(finalBytes)} · ${finalW} × ${finalH} px (${savings}% smaller)`;
+    if (origBytes > 0 && finalBytes < origBytes) {
+      const savings = Math.max(1, Math.round(((origBytes - finalBytes) / origBytes) * 100));
+      if (badge) {
+        badge.textContent = `↓ ${savings}% Savings`;
+        badge.style.display = 'inline-block';
+      }
+      if (stat) {
+        stat.textContent = `${PixKitEngine.formatBytes(finalBytes)} · ${finalW} × ${finalH} px (${savings}% smaller)`;
+      }
+    } else if (origBytes > 0 && finalBytes >= origBytes) {
+      if (badge) {
+        badge.textContent = `✓ Optimal (${PixKitEngine.formatBytes(finalBytes)})`;
+        badge.style.display = 'inline-block';
+      }
+      if (stat) {
+        stat.textContent = `${PixKitEngine.formatBytes(finalBytes)} · ${finalW} × ${finalH} px (Optimal quality)`;
+      }
+    } else {
+      if (badge) badge.style.display = 'none';
+      if (stat) {
+        stat.textContent = `${PixKitEngine.formatBytes(finalBytes)} · ${finalW} × ${finalH} px`;
+      }
     }
   }
 

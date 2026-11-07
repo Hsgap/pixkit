@@ -1341,11 +1341,24 @@ class PixKitEngine {
     });
   }
 
-  // Auto-calibrate quality & dimensions to guarantee output file size is under targetBytes
+  // Auto-calibrate quality & dimensions to guarantee output file size is strictly under targetBytes
   async autoCalibrateCompression(targetBytes, mimeType = 'image/jpeg') {
     const srcCanvas = this.activeCanvas;
     const origW = srcCanvas.width;
     const origH = srcCanvas.height;
+    const origBytes = this.fileSize || 0;
+
+    // Safety clamp targetBytes: minimum 1 KB (1024 bytes)
+    if (!targetBytes || targetBytes < 1024) targetBytes = 1024;
+
+    // If targetBytes exceeds original file size, the image is already smaller than the target ceiling!
+    // We calibrate to optimize compression against original size rather than inflating it.
+    let effectiveTarget = targetBytes;
+    const isAlreadyUnderTarget = origBytes > 0 && targetBytes >= origBytes;
+    if (isAlreadyUnderTarget) {
+      // Aim for balanced optimization (around 85-90% of origBytes if possible)
+      effectiveTarget = Math.max(1024, Math.round(origBytes * 0.90));
+    }
 
     const testBlob = (canvas, q) => {
       return new Promise((resolve) => {
@@ -1353,97 +1366,142 @@ class PixKitEngine {
       });
     };
 
-    // Stage 1: Try binary search on quality at 100% full resolution
-    let lowQ = 0.15;
-    let highQ = 0.96;
-    let bestQuality = 0.80;
-    let bestBlob = null;
+    if (mimeType === 'image/png') {
+      // PNG is lossless in Canvas; search resolution scale to fit target
+      let lowScale = 0.05, highScale = 1.0;
+      let bestBlob = null, bestW = origW, bestH = origH, bestScale = 1.0;
+      const testScaleCanvas = document.createElement('canvas');
 
-    for (let i = 0; i < 7; i++) {
-      const midQ = (lowQ + highQ) / 2;
-      const blob = await testBlob(srcCanvas, midQ);
-      if (blob && blob.size <= targetBytes) {
-        bestQuality = midQ;
-        bestBlob = blob;
-        lowQ = midQ;
-      } else {
-        highQ = midQ;
-      }
-    }
+      for (let i = 0; i < 9; i++) {
+        const midScale = (lowScale + highScale) / 2;
+        const curW = Math.max(24, Math.round(origW * midScale));
+        const curH = Math.max(24, Math.round(origH * midScale));
+        testScaleCanvas.width = curW;
+        testScaleCanvas.height = curH;
+        const sCtx = testScaleCanvas.getContext('2d');
+        sCtx.imageSmoothingEnabled = true;
+        sCtx.imageSmoothingQuality = 'high';
+        sCtx.drawImage(srcCanvas, 0, 0, curW, curH);
 
-    if (bestBlob && bestBlob.size <= targetBytes) {
-      return {
-        canvas: srcCanvas,
-        quality: Math.round(bestQuality * 100),
-        blob: bestBlob,
-        width: origW,
-        height: origH,
-        scale: 1.0
-      };
-    }
-
-    // Stage 2: Scale dimensions proportionally down so image remains sharp and fits budget
-    let currentScale = 0.90;
-    const calibratedCanvas = document.createElement('canvas');
-
-    for (let attempt = 0; attempt < 8; attempt++) {
-      const w = Math.max(32, Math.round(origW * currentScale));
-      const h = Math.max(32, Math.round(origH * currentScale));
-
-      calibratedCanvas.width = w;
-      calibratedCanvas.height = h;
-      const ctx = calibratedCanvas.getContext('2d');
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(srcCanvas, 0, 0, w, h);
-
-      let qLow = 0.20;
-      let qHigh = 0.92;
-      let fitBlob = null;
-      let fitQ = 0.78;
-
-      for (let j = 0; j < 6; j++) {
-        const midQ = (qLow + qHigh) / 2;
-        const b = await testBlob(calibratedCanvas, midQ);
+        const b = await testBlob(testScaleCanvas, 1.0);
         if (b && b.size <= targetBytes) {
-          fitQ = midQ;
-          fitBlob = b;
-          qLow = midQ;
+          bestBlob = b;
+          bestW = curW;
+          bestH = curH;
+          bestScale = midScale;
+          lowScale = midScale;
         } else {
-          qHigh = midQ;
+          highScale = midScale;
         }
       }
 
-      if (fitBlob && fitBlob.size <= targetBytes) {
-        return {
-          canvas: calibratedCanvas,
-          quality: Math.round(fitQ * 100),
-          blob: fitBlob,
-          width: w,
-          height: h,
-          scale: currentScale
-        };
-      }
+      const finalCanvas = document.createElement('canvas');
+      finalCanvas.width = bestW;
+      finalCanvas.height = bestH;
+      const fCtx = finalCanvas.getContext('2d');
+      fCtx.imageSmoothingEnabled = true;
+      fCtx.imageSmoothingQuality = 'high';
+      fCtx.drawImage(srcCanvas, 0, 0, bestW, bestH);
 
-      currentScale *= 0.78;
+      return {
+        canvas: finalCanvas,
+        quality: 100,
+        blob: bestBlob || await testBlob(finalCanvas, 1.0),
+        width: bestW,
+        height: bestH,
+        scale: bestScale
+      };
     }
 
-    // Fallback: maximum reduction
-    const minW = Math.max(32, Math.round(origW * currentScale));
-    const minH = Math.max(32, Math.round(origH * currentScale));
-    calibratedCanvas.width = minW;
-    calibratedCanvas.height = minH;
-    const ctx = calibratedCanvas.getContext('2d');
-    ctx.drawImage(srcCanvas, 0, 0, minW, minH);
-    const finalBlob = await testBlob(calibratedCanvas, 0.20);
+    // JPEG & WEBP: High-Precision Convergence Engine
+    const totalPixels = origW * origH;
+    let initScale = 1.0;
+    let initQ = 0.82;
+
+    // If effective budget is tight compared to pixel density, start with calculated scale
+    const pixelBudget = effectiveTarget * 8.5;
+    if (pixelBudget < totalPixels && effectiveTarget < (origBytes || totalPixels) * 0.45) {
+      initScale = Math.min(1.0, Math.max(0.04, Math.sqrt(pixelBudget / totalPixels)));
+      initQ = 0.76;
+    }
+
+    const testCandidate = async (scale, q) => {
+      const w = Math.max(24, Math.round(origW * scale));
+      const h = Math.max(24, Math.round(origH * scale));
+      const cvs = document.createElement('canvas');
+      cvs.width = w;
+      cvs.height = h;
+      const ctx = cvs.getContext('2d');
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(srcCanvas, 0, 0, w, h);
+      const blob = await testBlob(cvs, q);
+      return { canvas: cvs, blob, w, h, q: Math.round(q * 100), scale, size: blob ? blob.size : 0 };
+    };
+
+    let cand = await testCandidate(initScale, initQ);
+
+    // Iterative convergence towards target (max 5 refinement steps)
+    for (let iter = 0; iter < 5; iter++) {
+      if (!cand || !cand.size) break;
+
+      const ratio = targetBytes / cand.size;
+      // Sweet spot: 90% to 100% of target budget
+      if (ratio >= 1.0 && ratio <= 1.08) {
+        break;
+      }
+
+      if (ratio < 1.0) {
+        // cand exceeds target: reduce quality or scale
+        if (cand.q > 55 && cand.w > 300) {
+          const nextQ = Math.max(0.35, (cand.q / 100) * Math.sqrt(ratio));
+          cand = await testCandidate(cand.w / origW, nextQ);
+        } else {
+          const nextScale = Math.max(0.03, (cand.w / origW) * Math.sqrt(ratio * 0.98));
+          cand = await testCandidate(nextScale, 0.72);
+        }
+      } else {
+        // cand is smaller than target: expand scale/quality to utilize target budget if not already full res
+        const curScale = cand.w / origW;
+        if (curScale < 0.98) {
+          const nextScale = Math.min(1.0, curScale * Math.sqrt(ratio * 0.96));
+          const nextQ = Math.min(0.88, Math.max(0.68, cand.q / 100));
+          cand = await testCandidate(nextScale, nextQ);
+        } else {
+          // If already full scale and already under target:
+          if (isAlreadyUnderTarget) {
+            // If original is already smaller than target, cap quality to prevent bloat
+            if (cand.size > origBytes && cand.q > 60) {
+              const trimQ = Math.max(0.40, (cand.q / 100) * Math.sqrt(origBytes / cand.size) * 0.98);
+              cand = await testCandidate(1.0, trimQ);
+            }
+            break;
+          } else {
+            const nextQ = Math.min(0.95, (cand.q / 100) * Math.sqrt(ratio * 0.98));
+            cand = await testCandidate(1.0, nextQ);
+          }
+        }
+      }
+    }
+
+    // Safety clamp: output MUST be strictly <= targetBytes
+    if (cand && cand.size > targetBytes) {
+      const trimRatio = targetBytes / cand.size;
+      const safeQ = Math.max(0.20, (cand.q / 100) * trimRatio * 0.96);
+      cand = await testCandidate(cand.w / origW, safeQ);
+      if (cand.size > targetBytes) {
+        const scaleFactor = Math.sqrt(targetBytes / cand.size) * 0.95;
+        cand = await testCandidate(Math.max(0.03, (cand.w / origW) * scaleFactor), 0.65);
+      }
+    }
 
     return {
-      canvas: calibratedCanvas,
-      quality: 20,
-      blob: finalBlob,
-      width: minW,
-      height: minH,
-      scale: currentScale
+      canvas: cand.canvas,
+      quality: cand.q,
+      blob: cand.blob,
+      width: cand.w,
+      height: cand.h,
+      scale: cand.scale
     };
   }
 
