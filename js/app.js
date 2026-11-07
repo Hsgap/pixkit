@@ -3346,11 +3346,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else if (origBytes > 0 && finalBytes >= origBytes) {
       if (badge) {
-        badge.textContent = `✓ Optimal (${PixKitEngine.formatBytes(finalBytes)})`;
+        badge.textContent = `✓ Target Met (${PixKitEngine.formatBytes(finalBytes)})`;
         badge.style.display = 'inline-block';
       }
       if (stat) {
-        stat.textContent = `${PixKitEngine.formatBytes(finalBytes)} · ${finalW} × ${finalH} px (Optimal quality)`;
+        stat.textContent = `${PixKitEngine.formatBytes(finalBytes)} · ${finalW} × ${finalH} px (Target met)`;
       }
     } else {
       if (badge) badge.style.display = 'none';
