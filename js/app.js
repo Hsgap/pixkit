@@ -13,6 +13,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // Mark that user has entered the studio on this browser
   localStorage.setItem('pixkit_entered', 'true');
 
+  // Strip .html and # from browser address bar immediately for clean branding
+  try {
+    const cleanBaseInit = window.location.pathname.replace(/\/studio\.html\/?$/, '/studio').replace(/\.html$/, '') || '/studio';
+    if (window.location.pathname.endsWith('.html') || window.location.hash === '#/home' || window.location.hash === '#') {
+      window.history.replaceState({ route: window.location.hash || '#/home' }, '', cleanBaseInit);
+    }
+  } catch (_) {}
+
   // Initialize theme from localStorage or system preference
   const savedTheme = localStorage.getItem('pixkit-theme') || 
     (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -472,18 +480,37 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ==============================================================
-  // SPA HASH ROUTING & BROWSER NAVIGATION HISTORY
+  // CLEAN SPA ROUTING & BROWSER NAVIGATION (No .html, No # in URL)
   // ==============================================================
-  function navigateTo(route, push = true) {
-    if (push && location.hash !== route) {
-      history.pushState({ route }, '', route);
-    } else if (!push) {
-      history.replaceState({ route }, '', route);
-    }
-    handleRoute(route);
+  function getCleanStudioBase() {
+    return window.location.pathname.replace(/\/studio\.html\/?$/, '/studio').replace(/\.html$/, '') || '/studio';
   }
 
-  function handleRoute(hashString) {
+  function cleanCurrentUrl(targetRoute) {
+    try {
+      const cleanBase = getCleanStudioBase();
+      if (window.location.pathname.endsWith('.html') || window.location.hash) {
+        window.history.replaceState({ route: targetRoute || location.hash || localStorage.getItem('pixkit_last_route') || '#/home' }, '', cleanBase);
+      }
+    } catch (_) {}
+  }
+
+  function navigateTo(route, push = true) {
+    const cleanBase = getCleanStudioBase();
+    if (push) {
+      history.pushState({ route }, '', cleanBase);
+    } else {
+      history.replaceState({ route }, '', cleanBase);
+    }
+    handleRoute(route, true);
+  }
+
+  function handleRoute(hashString, cleanUrl = true) {
+    const targetStored = localStorage.getItem('pixkit_target_route');
+    if (targetStored) {
+      localStorage.removeItem('pixkit_target_route');
+      hashString = targetStored;
+    }
     const raw = hashString || location.hash || localStorage.getItem('pixkit_last_route') || '#/home';
     const clean = raw.replace(/^#\/?/, '');
     const parts = clean.split('/');
@@ -508,6 +535,10 @@ document.addEventListener('DOMContentLoaded', () => {
       renderViewDirect('home');
     }
     persistCurrentSession();
+
+    if (cleanUrl) {
+      cleanCurrentUrl(raw);
+    }
   }
 
   function renderViewDirect(viewId) {
@@ -613,14 +644,15 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Browser Navigation Listener (Back / Forward buttons)
-  window.addEventListener('popstate', () => {
+  window.addEventListener('popstate', (e) => {
     // If Shortcuts modal is open, close it first without navigating away
     const modal = document.getElementById('shortcuts-modal');
     if (modal && modal.classList.contains('active')) {
       toggleShortcutsModal(false);
       return;
     }
-    handleRoute(location.hash);
+    const targetRoute = (e.state && e.state.route) ? e.state.route : (location.hash || localStorage.getItem('pixkit_last_route') || '#/home');
+    handleRoute(targetRoute, true);
   });
 
   // --- Global File Upload Handling ---
@@ -947,7 +979,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Aceternity UI Floating Dock Navigation ---
   window.dockNavigateHome = function() {
     window.showView('home');
-    window.location.hash = '#/home';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -9205,5 +9236,6 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(syncMetadata, 60);
       handleRoute(location.hash || '#/home');
     }
+    cleanCurrentUrl();
   });
 });
