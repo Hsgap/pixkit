@@ -3930,6 +3930,18 @@ body.dock-is-dragging * {
   place-items: center;
   font-size: 20px;
   flex-shrink: 0;
+  color: var(--ink);
+  transition: all var(--transition-fast);
+}
+
+.settings-panel-card:hover .settings-card-icon {
+  background: var(--lime-tint);
+  border-color: var(--accent-lime-border);
+  color: var(--accent-olive);
+}
+
+[data-theme="dark"] .settings-panel-card:hover .settings-card-icon {
+  color: var(--lime);
 }
 
 .settings-card-header h3 {
@@ -4002,34 +4014,74 @@ body.dock-is-dragging * {
   font-size: 12.5px;
   font-weight: 600;
   color: var(--ink);
-  background: var(--soft);
+  background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--radius-pill, 9999px);
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(34, 36, 31, 0.05);
 }
 
 .settings-action-btn:hover {
-  background: var(--ink);
-  color: var(--white);
-  border-color: var(--ink);
+  background: var(--soft);
+  color: var(--ink);
+  border-color: var(--line-strong);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(34, 36, 31, 0.08);
+}
+
+.settings-action-btn:active {
+  transform: translateY(0);
+}
+
+.settings-action-btn svg {
+  flex-shrink: 0;
+}
+
+.settings-action-btn kbd {
+  font-size: 10.5px;
+  font-weight: 500;
+  opacity: 0.85;
+  margin-left: 2px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--font-mono, monospace);
+  transition: all 0.2s ease;
+}
+
+.settings-action-btn:hover kbd {
+  background: var(--white);
+  border-color: var(--line-strong);
 }
 
 [data-theme="dark"] .settings-action-btn {
-  background: #1c1d18;
-  border-color: #2e3028;
-  color: #f0f2ea;
+  background: var(--soft);
+  border-color: var(--line);
+  color: var(--ink);
 }
 
 [data-theme="dark"] .settings-action-btn:hover {
-  background: #D7F36A;
-  color: #0c0d0e;
-  border-color: #D7F36A;
+  background: #25281F;
+  border-color: var(--accent-lime-border);
+  color: var(--lime);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .settings-action-btn kbd {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #f0f2ea;
+}
+
+[data-theme="dark"] .settings-action-btn:hover kbd {
+  background: rgba(215, 243, 106, 0.15);
+  border-color: var(--accent-lime-border);
+  color: var(--lime);
 }
 
 .settings-theme-pills {

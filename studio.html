@@ -81,7 +81,7 @@
       }
     } catch (_) {}
   </script>
-  <link rel="stylesheet" href="styles/main.css?v=6.0">
+  <link rel="stylesheet" href="styles/main.css?v=6.1">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FBFBF8">
 </head>
@@ -230,7 +230,12 @@
 
           <div class="cat-feature-card highlight" onclick="showView('document')">
             <div class="cat-card-top">
-              <div class="cat-icon-tile">📄</div>
+              <div class="cat-icon-tile">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </div>
               <span class="cat-pill-badge">7 Tools</span>
             </div>
             <div>
@@ -463,7 +468,12 @@
           <!-- 2. HEIC to JPG -->
           <div class="tool-row-card" onclick="openToolWorkspace('convert-heic')">
             <div class="tool-row-left">
-              <div class="tool-icon-box">📱</div>
+              <div class="tool-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="14" height="20" x="5" y="2" rx="3"/>
+                  <line x1="12" y1="18" x2="12.01" y2="18"/>
+                </svg>
+              </div>
               <div class="tool-row-info">
                 <div class="tool-row-header">
                   <strong>HEIC to JPG</strong>
@@ -535,7 +545,14 @@
           <!-- 6. Image to PDF -->
           <div class="tool-row-card" onclick="openToolWorkspace('convert-pdf')">
             <div class="tool-row-left">
-              <div class="tool-icon-box">📄</div>
+              <div class="tool-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+              </div>
               <div class="tool-row-info">
                 <div class="tool-row-header">
                   <strong>Image to PDF</strong>
@@ -571,7 +588,14 @@
           <!-- 1. Images to PDF -->
           <div class="tool-row-card" onclick="openToolWorkspace('doc-images-to-pdf')">
             <div class="tool-row-left">
-              <div class="tool-icon-box">📑</div>
+              <div class="tool-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <circle cx="10" cy="13" r="1.5"/>
+                  <path d="m8 18 2.5-3 2 2.5 1.5-1.5L16 18"/>
+                </svg>
+              </div>
               <div class="tool-row-info">
                 <div class="tool-row-header">
                   <strong>Images to PDF</strong>
@@ -589,7 +613,13 @@
           <!-- 2. PDF to Images -->
           <div class="tool-row-card" onclick="openToolWorkspace('doc-pdf-to-images')">
             <div class="tool-row-left">
-              <div class="tool-icon-box">🖼️</div>
+              <div class="tool-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                  <circle cx="9" cy="9" r="2"/>
+                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                </svg>
+              </div>
               <div class="tool-row-info">
                 <div class="tool-row-header">
                   <strong>PDF to Images</strong>
@@ -607,7 +637,14 @@
           <!-- 3. Merge PDF -->
           <div class="tool-row-card" onclick="openToolWorkspace('doc-merge-pdf')">
             <div class="tool-row-left">
-              <div class="tool-icon-box">📎</div>
+              <div class="tool-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M8 2H4a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/>
+                  <path d="M12 2h6a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+                  <polyline points="15 2 15 6 19 6"/>
+                  <line x1="16" y1="10" x2="14" y2="10"/>
+                </svg>
+              </div>
               <div class="tool-row-info">
                 <div class="tool-row-header">
                   <strong>Merge PDF</strong>
@@ -625,7 +662,15 @@
           <!-- 4. Split PDF -->
           <div class="tool-row-card" onclick="openToolWorkspace('doc-split-pdf')">
             <div class="tool-row-left">
-              <div class="tool-icon-box">✂️</div>
+              <div class="tool-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="6" cy="6" r="3"/>
+                  <circle cx="6" cy="18" r="3"/>
+                  <line x1="20" y1="4" x2="8.12" y2="15.88"/>
+                  <line x1="14.47" y1="14.48" x2="20" y2="20"/>
+                  <line x1="8.12" y1="8.12" x2="12" y2="12"/>
+                </svg>
+              </div>
               <div class="tool-row-info">
                 <div class="tool-row-header">
                   <strong>Split PDF</strong>
@@ -643,7 +688,15 @@
           <!-- 5. Compress PDF -->
           <div class="tool-row-card" onclick="openToolWorkspace('doc-compress-pdf')">
             <div class="tool-row-left">
-              <div class="tool-icon-box">🗜️</div>
+              <div class="tool-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="16" height="20" x="4" y="2" rx="2"/>
+                  <path d="M12 11V7"/>
+                  <path d="m9 9 3-2 3 2"/>
+                  <path d="M12 17v-4"/>
+                  <path d="m9 15 3 2 3-2"/>
+                </svg>
+              </div>
               <div class="tool-row-info">
                 <div class="tool-row-header">
                   <strong>Compress PDF</strong>
@@ -661,7 +714,12 @@
           <!-- 6. Rotate PDF Pages -->
           <div class="tool-row-card" onclick="openToolWorkspace('doc-rotate-pdf')">
             <div class="tool-row-left">
-              <div class="tool-icon-box">🔄</div>
+              <div class="tool-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.85.99 6.57 2.6L21 8"/>
+                  <polyline points="21 3 21 8 16 8"/>
+                </svg>
+              </div>
               <div class="tool-row-info">
                 <div class="tool-row-header">
                   <strong>Rotate PDF Pages</strong>
@@ -679,7 +737,15 @@
           <!-- 7. Delete PDF Pages -->
           <div class="tool-row-card" onclick="openToolWorkspace('doc-delete-pdf')">
             <div class="tool-row-left">
-              <div class="tool-icon-box">🗑️</div>
+              <div class="tool-icon-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 6h18"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  <line x1="10" y1="11" x2="10" y2="17"/>
+                  <line x1="14" y1="11" x2="14" y2="17"/>
+                </svg>
+              </div>
               <div class="tool-row-info">
                 <div class="tool-row-header">
                   <strong>Delete PDF Pages</strong>
@@ -778,7 +844,15 @@
           <!-- Card 1: Theme & Appearance -->
           <div class="settings-panel-card">
             <div class="settings-card-header">
-              <div class="settings-card-icon">🎨</div>
+              <div class="settings-card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+                  <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+                  <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+                  <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+                  <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z"/>
+                </svg>
+              </div>
               <div>
                 <h3>Theme &amp; Appearance</h3>
                 <p>Customize the workspace visual styling</p>
@@ -792,8 +866,14 @@
                 </div>
                 <div class="settings-row-action">
                   <div class="settings-theme-pills">
-                    <button class="settings-pill-btn active" id="settings-theme-light" onclick="setAppTheme('light')">☀️ Light</button>
-                    <button class="settings-pill-btn" id="settings-theme-dark" onclick="setAppTheme('dark')">🌙 Dark</button>
+                    <button class="settings-pill-btn active" id="settings-theme-light" onclick="setAppTheme('light')">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                      Light
+                    </button>
+                    <button class="settings-pill-btn" id="settings-theme-dark" onclick="setAppTheme('dark')">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                      Dark
+                    </button>
                   </div>
                 </div>
               </div>
@@ -803,7 +883,12 @@
           <!-- Card 2: Zero-Server Privacy Guarantee -->
           <div class="settings-panel-card">
             <div class="settings-card-header">
-              <div class="settings-card-icon">🔒</div>
+              <div class="settings-card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <path d="m9 12 2 2 4-4"/>
+                </svg>
+              </div>
               <div>
                 <h3>Zero-Server Privacy Guarantee</h3>
                 <p>How PixKit protects your sensitive photos and docs</p>
@@ -811,14 +896,18 @@
             </div>
             <div class="settings-card-body">
               <div class="privacy-bullet">
-                <span class="bullet-check">✓</span>
+                <span class="bullet-check">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
                 <div>
                   <strong>100% In-Browser Execution</strong>
                   <div class="settings-help">Every pixel is transformed via client-side Canvas and WebAssembly. No photos are ever uploaded to any cloud server.</div>
                 </div>
               </div>
               <div class="privacy-bullet">
-                <span class="bullet-check">✓</span>
+                <span class="bullet-check">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
                 <div>
                   <strong>Local Storage Only</strong>
                   <div class="settings-help">Your recent files list and preferences are saved only inside your personal browser storage.</div>
@@ -830,7 +919,12 @@
           <!-- Card 3: Keyboard Shortcuts -->
           <div class="settings-panel-card">
             <div class="settings-card-header">
-              <div class="settings-card-icon">⌨️</div>
+              <div class="settings-card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="20" height="16" x="2" y="4" rx="3"/>
+                  <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M7 16h10"/>
+                </svg>
+              </div>
               <div>
                 <h3>Keyboard Shortcuts</h3>
                 <p>Global hotkeys across Edit, Convert, and PDF Document suites</p>
@@ -844,7 +938,11 @@
                 </div>
                 <div class="settings-row-action">
                   <button class="settings-action-btn" onclick="toggleShortcutsModal(true)">
-                    <i class="fa-solid fa-keyboard" style="margin-right:2px;"></i> Open Guide <kbd style="font-size:10.5px; opacity:0.75; margin-left:3px; background:rgba(128,128,128,0.15); padding:1px 5px; border-radius:3px;">Shift + ?</kbd>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect width="20" height="16" x="2" y="4" rx="3"/>
+                      <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M7 16h10"/>
+                    </svg>
+                    Open Guide <kbd>Shift + ?</kbd>
                   </button>
                 </div>
               </div>
@@ -854,7 +952,14 @@
           <!-- Card 4: Real-Time Active Users -->
           <div class="settings-panel-card">
             <div class="settings-card-header">
-              <div class="settings-card-icon">⚡</div>
+              <div class="settings-card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
               <div>
                 <h3>Real-Time Active Users</h3>
                 <p>Live creators currently working in PixKit</p>
@@ -886,7 +991,11 @@
           <!-- Card 5: Support & Feedback (Full-Width Responsive Card) -->
           <div class="settings-panel-card full-width">
             <div class="settings-card-header">
-              <div class="settings-card-icon">✉️</div>
+              <div class="settings-card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                </svg>
+              </div>
               <div>
                 <h3>Support &amp; Feedback</h3>
                 <p>Have a question, feedback, or found a bug? We are here to help!</p>
@@ -899,8 +1008,12 @@
                   <div class="settings-help">Reach out to <span style="color:var(--ink); font-weight:600; font-family:var(--font-mono, monospace);">support.pixkitstudio@gmail.com</span> — we typically respond within 24 hours.</div>
                 </div>
                 <div class="settings-row-action">
-                  <a href="mailto:support.pixkitstudio@gmail.com?subject=PixKit%20Studio%20Support" class="settings-action-btn" style="background:#11130a; color:#D7F36A; border-color:#2a2d23;">
-                    <i class="fa-solid fa-envelope"></i> Send Email
+                  <a href="mailto:support.pixkitstudio@gmail.com?subject=PixKit%20Studio%20Support" class="settings-action-btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect width="20" height="16" x="2" y="4" rx="2"/>
+                      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                    </svg>
+                    Send Email
                   </a>
                 </div>
               </div>
