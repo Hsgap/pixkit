@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Strip .html and # from browser address bar immediately for clean branding
   try {
     const cleanBaseInit = window.location.pathname.replace(/\/studio\.html\/?$/, '/studio').replace(/\.html$/, '') || '/studio';
-    if (window.location.pathname.endsWith('.html') || window.location.hash === '#/home' || window.location.hash === '#') {
+    if (window.location.pathname.endsWith('.html') || window.location.hash) {
       window.history.replaceState({ route: window.location.hash || '#/home' }, '', cleanBaseInit);
     }
   } catch (_) {}
