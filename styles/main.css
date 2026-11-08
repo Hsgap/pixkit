@@ -1669,7 +1669,8 @@ button {
 .quick-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  row-gap: 10px;
+  column-gap: 8px;
 }
 
 .chip-btn {
@@ -2350,17 +2351,31 @@ kbd {
 }
 
 /* Convert Suite & Modern Chips */
+.preset-chips,
+.quick-chips,
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 10px !important;
+  column-gap: 8px !important;
+}
+
 .chip-btn {
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: 999px;
-  padding: 5px 12px;
-  font-size: 11px;
+  padding: 6px 12px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--ink);
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  line-height: 1.2;
 }
 
 .chip-btn:hover {
@@ -2372,6 +2387,44 @@ kbd {
   background: var(--lime);
   color: #121310;
   border-color: var(--accent-lime-border);
+}
+
+/* Tool Action Grids (e.g. 2x2 Quick Rotate, Quick Delete Helpers) */
+.tool-grid-2x2,
+.settings-panel .tool-grid-2x2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 10px !important;
+  column-gap: 8px !important;
+}
+
+.tool-grid-2x2 .btn-secondary,
+.settings-panel .tool-grid-2x2 .btn-secondary {
+  margin: 0 !important;
+  padding: 9px 10px !important;
+  min-height: 38px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Settings panel button layout & vertical separation */
+.settings-panel .btn-primary,
+.settings-panel .btn-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.settings-panel .btn-secondary {
+  margin-top: 10px !important;
 }
 
 .metric-card {
