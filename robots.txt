@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://hsgap.github.io/pixkit/sitemap.xml
+Sitemap: https://pixkit.site/sitemap.xml
