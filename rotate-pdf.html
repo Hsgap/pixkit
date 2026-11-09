@@ -176,8 +176,12 @@
       --tp-stage: #F2F3EC;
       --tp-accent: #111110;
       --tp-accent-hover: #2A2B26;
-      --tp-primary-light: #E7F6E7;
-      --tp-primary: #1C542D;
+      --tp-lime: #D7F36A;
+      --tp-lime-hover: #D0EE5F;
+      --tp-lime-dark: #121310;
+      --tp-accent-green: #6C8C18;
+      --tp-primary-light: #F4FADC;
+      --tp-primary: #121310;
     }
 
     [data-theme="dark"] {
@@ -190,8 +194,12 @@
       --tp-stage: #191A16;
       --tp-accent: #EDEDE8;
       --tp-accent-hover: #FFFFFF;
-      --tp-primary-light: #1E3324;
-      --tp-primary: #5AE88C;
+      --tp-lime: #D7F36A;
+      --tp-lime-hover: #E3FB7C;
+      --tp-lime-dark: #121310;
+      --tp-accent-green: #D7F36A;
+      --tp-primary-light: #242B14;
+      --tp-primary: #D7F36A;
     }
 
     body {
@@ -223,19 +231,45 @@
     .landing-brand {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-family: 'Manrope', sans-serif;
+      gap: 10px;
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
       font-weight: 800;
-      font-size: 20px;
-      letter-spacing: -0.03em;
+      font-size: 21px;
+      letter-spacing: -0.04em;
       color: var(--tp-ink);
       text-decoration: none;
+      user-select: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .landing-brand:hover {
+      opacity: 0.95;
     }
 
     .landing-brand .brand-mark {
-      color: #6EDB8E;
-      font-size: 22px;
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      background: var(--tp-ink);
+      color: var(--tp-bg);
+      display: grid;
+      place-items: center;
+      font-size: 16px;
       line-height: 1;
+      font-weight: 800;
+      box-shadow: 0 2px 8px rgba(34, 36, 31, 0.12);
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    [data-theme="dark"] .landing-brand .brand-mark {
+      background: var(--tp-lime);
+      color: #121310;
+      box-shadow: 0 2px 10px rgba(215, 243, 106, 0.35);
+    }
+
+    .landing-brand:hover .brand-mark {
+      transform: rotate(15deg) scale(1.08);
+      box-shadow: 0 4px 16px rgba(215, 243, 106, 0.45);
     }
 
     .landing-nav-links {
@@ -270,11 +304,12 @@
       padding: 8px 16px;
       border-radius: 999px;
       text-decoration: none;
-      transition: opacity 0.2s ease, transform 0.15s ease;
+      transition: opacity 0.2s ease, transform 0.15s ease, background 0.2s ease, color 0.2s ease;
     }
 
     .landing-launch-btn:hover {
-      opacity: 0.92;
+      background: var(--tp-lime);
+      color: #121310 !important;
       transform: translateY(-1px);
     }
 
@@ -337,16 +372,17 @@
     .tool-pill-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      font-size: 11.5px;
-      font-weight: 600;
+      gap: 7px;
+      font-size: 11px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--tp-primary);
-      background: var(--tp-primary-light);
-      padding: 5px 13px;
+      letter-spacing: 0.06em;
+      color: #121310;
+      background: var(--tp-lime);
+      padding: 6px 14px;
       border-radius: 999px;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 12px rgba(215, 243, 106, 0.25);
     }
 
     .tool-title {
@@ -383,7 +419,7 @@
     }
 
     .dropzone-container:hover, .dropzone-container.drag-active {
-      border-color: #6EDB8E;
+      border-color: var(--tp-lime);
       background: var(--tp-stage);
       transform: translateY(-2px);
       box-shadow: 0 12px 36px rgba(0, 0, 0, 0.06);
@@ -401,12 +437,14 @@
       justify-content: center;
       font-size: 26px;
       color: var(--tp-ink);
-      transition: transform 0.2s;
+      transition: all 0.2s;
     }
 
     .dropzone-container:hover .dropzone-icon-box {
       transform: scale(1.08);
-      background: var(--tp-card);
+      background: var(--tp-lime);
+      color: #121310;
+      border-color: var(--tp-lime);
     }
 
     .dropzone-heading {
@@ -485,7 +523,7 @@
     .pillar-icon {
       font-size: 20px;
       margin-bottom: 12px;
-      color: #6EDB8E;
+      color: var(--tp-accent-green);
     }
 
     .pillar-title {
@@ -546,9 +584,9 @@
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      background: var(--tp-accent);
-      color: var(--tp-bg);
-      font-weight: 700;
+      background: var(--tp-lime);
+      color: #121310;
+      font-weight: 800;
       font-size: 13px;
       display: flex;
       align-items: center;
@@ -654,6 +692,12 @@
       border-color: var(--tp-border-strong);
       transform: translateY(-2px);
       background: var(--tp-stage);
+    }
+
+    .related-tool-card:hover .related-tool-icon {
+      background: var(--tp-lime);
+      color: #121310;
+      border-color: var(--tp-lime);
     }
 
     .related-tool-icon {
@@ -779,12 +823,13 @@
     
     <!-- Top Navigation -->
     <header class="landing-nav">
-      <a href="/" class="landing-brand" title="PixKit Home">
-        <span class="brand-mark">✳</span>pixkit
+      <a href="/" class="landing-brand" title="PixKit Home &amp; Showcase">
+        <span class="brand-mark">✳</span>
+        <span class="brand-name">pixkit</span>
       </a>
       <div class="landing-nav-links">
         <a href="/" class="landing-nav-link"><i class="fa-solid fa-house" style="font-size: 11px; margin-right: 4px;"></i>Home</a>
-        <a href="/#all-tools" class="landing-nav-link">All 14 Tools</a>
+        <a href="/#all-tools" class="landing-nav-link">All 21 Tools</a>
         <a href="studio" class="landing-launch-btn" onclick="openStudioTarget(event, 'doc-rotate-pdf')">
           Launch Studio <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i>
         </a>
@@ -827,9 +872,9 @@
       <input type="file" id="landingFileInput" accept=".pdf,application/pdf" style="display: none;" onchange="handleFilePicked(event)">
 
       <div class="dropzone-formats">
-        <span><i class="fa-solid fa-circle-check" style="color: #6EDB8E;"></i> PDF document (.pdf)</span>
-        <span><i class="fa-solid fa-lock" style="color: #6EDB8E;"></i> Zero Server Uploads</span>
-        <span><i class="fa-solid fa-bolt" style="color: #6EDB8E;"></i> Instant In-Browser Processing</span>
+        <span><i class="fa-solid fa-circle-check" style="color: var(--tp-accent-green);"></i> PDF document (.pdf)</span>
+        <span><i class="fa-solid fa-lock" style="color: var(--tp-accent-green);"></i> Zero Server Uploads</span>
+        <span><i class="fa-solid fa-bolt" style="color: var(--tp-accent-green);"></i> Instant In-Browser Processing</span>
       </div>
     </div>
 
@@ -1004,7 +1049,7 @@
       </div>
       <div class="landing-footer-links">
         <a href="/">Home</a>
-        <a href="/#all-tools">All 14 Tools</a>
+        <a href="/#all-tools">All 21 Tools</a>
         <a href="privacy-policy.html">Privacy Policy</a>
         <a href="studio">Studio</a>
         <a href="mailto:support.pixkitstudio@gmail.com">Contact Support</a>
