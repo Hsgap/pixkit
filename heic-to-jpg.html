@@ -893,41 +893,53 @@
     .landing-footer-artan {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      font-size: 12.5px;
+      gap: 8px;
+      font-size: 13px;
       color: var(--tp-muted);
-    }
-
-    .artan-footer-logo {
-      height: 14px;
-      width: auto;
-      display: inline-block;
-      vertical-align: middle;
-      pointer-events: none;
-      user-select: none;
-    }
-
-    [data-theme="dark"] .artan-footer-logo {
-      filter: brightness(1.22) contrast(1.12) drop-shadow(0 0 1px rgba(255, 255, 255, 0.3));
+      flex-wrap: wrap;
     }
 
     .artan-text-link {
       color: var(--tp-ink);
-      font-weight: 600;
-      text-decoration: none;
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      text-decoration-thickness: 1.5px;
+      text-decoration-color: var(--tp-muted);
       display: inline-flex;
       align-items: center;
-      transition: color 0.2s ease;
+      transition: color 0.2s ease, text-decoration-color 0.2s ease;
     }
 
     .artan-text-link:hover {
       color: var(--tp-ink);
-      text-decoration: underline;
-      text-underline-offset: 3px;
+      text-decoration-color: var(--tp-ink);
     }
 
     [data-theme="dark"] .artan-text-link:hover {
       color: #D7F36A;
+      text-decoration-color: #D7F36A;
+    }
+
+    .artan-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #FFFFFF;
+      border-radius: 6px;
+      padding: 3px 9px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14);
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+      vertical-align: middle;
+    }
+
+    .artan-badge-logo {
+      height: 13px;
+      width: auto;
+      display: block;
+      pointer-events: none;
     }
 
     .landing-footer-links {
@@ -1211,9 +1223,11 @@
       <div class="landing-footer-copy">
         <div>© 2026 PixKit Studio. Built for privacy, speed, and clean workflow.</div>
         <div class="landing-footer-artan">
-          <span>A product of</span>
-          <img src="icons/artan-logo.png" alt="Artàn" class="artan-footer-logo" title="Artàn Visuals">
-          <a href="https://artan.myportfolio.com/" target="_blank" rel="noopener" class="artan-text-link" title="Visit Artàn Visuals Portfolio">Artàn Visuals</a>
+          <span>Designed &amp; Developed by</span>
+          <a href="https://artan.myportfolio.com/" target="_blank" rel="noopener" class="artan-text-link" title="Visit Artàn Visual Portfolio">Artàn Visual</a>
+          <span class="artan-badge" title="Artàn Visual">
+            <img src="icons/artan-logo.png" alt="Artàn" class="artan-badge-logo">
+          </span>
         </div>
       </div>
       <div class="landing-footer-links">
