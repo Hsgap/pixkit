@@ -7,15 +7,18 @@
   <meta name="description" content="Launch PixKit Studio: Client-side image cropping, resizing, compression, effects, and full PDF tools (merge, split, rotate, delete pages). 100% private in your browser.">
   <meta name="keywords" content="online photo editor, pdf merge, pdf split, pdf rotate, pdf compress, remove pdf pages, client side image processing">
   <meta name="robots" content="index, follow">
+  <meta name="google-site-verification" content="iXaD2cnicD3XY_gIZFphMCectOlAksOfSYD63E6tu_A">
   <link rel="canonical" href="https://pixkit.site/studio">
 
   <!-- Favicons for Google Search, Browsers, and PWA -->
-  <link rel="icon" type="image/png" sizes="48x48" href="https://pixkit.site/icons/icon-48.png?v=2">
-  <link rel="icon" type="image/png" sizes="96x96" href="https://pixkit.site/icons/icon-96.png?v=2">
-  <link rel="icon" type="image/png" sizes="192x192" href="https://pixkit.site/icons/icon-192.png?v=2">
-  <link rel="icon" type="image/png" sizes="512x512" href="https://pixkit.site/icons/icon-512.png?v=2">
-  <link rel="shortcut icon" type="image/x-icon" href="https://pixkit.site/favicon.ico?v=2">
-  <link rel="apple-touch-icon" sizes="180x180" href="https://pixkit.site/icons/apple-touch-icon.png?v=2">
+  <link rel="icon" href="https://pixkit.site/favicon.ico">
+  <link rel="icon" type="image/x-icon" href="https://pixkit.site/favicon.ico">
+  <link rel="icon" type="image/png" sizes="48x48" href="https://pixkit.site/icons/icon-48.png">
+  <link rel="icon" type="image/png" sizes="96x96" href="https://pixkit.site/icons/icon-96.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="https://pixkit.site/icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="https://pixkit.site/icons/icon-512.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://pixkit.site/apple-touch-icon.png">
+  <link rel="shortcut icon" href="https://pixkit.site/favicon.ico">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
@@ -23,7 +26,7 @@
   <meta property="og:site_name" content="PixKit">
   <meta property="og:title" content="PixKit Studio — Free Image Editor &amp; PDF Document Toolkit">
   <meta property="og:description" content="100% private, client-side image editor and PDF manipulation tools with zero server uploads.">
-  <meta property="og:image" content="https://pixkit.site/icons/pixkit-preview.png?v=3">
+  <meta property="og:image" content="https://pixkit.site/icons/pixkit-preview.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="PixKit Studio — Free Image Editor &amp; PDF Document Toolkit">
@@ -33,7 +36,7 @@
   <meta name="twitter:url" content="https://pixkit.site/studio">
   <meta name="twitter:title" content="PixKit Studio — Free Image Editor &amp; PDF Document Toolkit">
   <meta name="twitter:description" content="Launch PixKit Studio in your browser: full image editing &amp; PDF toolset with total privacy.">
-  <meta name="twitter:image" content="https://pixkit.site/icons/pixkit-preview.png?v=3">
+  <meta name="twitter:image" content="https://pixkit.site/icons/pixkit-preview.png">
 
   <!-- Schema.org JSON-LD -->
   <script type="application/ld+json">
@@ -43,6 +46,11 @@
     "name": "PixKit Studio",
     "alternateName": "PixKit Image & PDF Studio",
     "url": "https://pixkit.site/studio",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "PixKit",
+      "url": "https://pixkit.site/"
+    },
     "description": "Fast, private client-side image editor and PDF document suite. Crop, resize, compress, convert, merge, split, rotate, and delete PDF pages directly in your browser with zero server uploads.",
     "applicationCategory": "MultimediaApplication, UtilitiesApplication",
     "operatingSystem": "All",
@@ -81,7 +89,7 @@
       }
     } catch (_) {}
   </script>
-  <link rel="stylesheet" href="styles/main.css?v=6.5">
+  <link rel="stylesheet" href="styles/main.css?v=6.6">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FBFBF8">
 </head>
@@ -91,11 +99,12 @@
     <!-- Topbar Navigation -->
     <header class="topbar">
       <div class="brand-nav-group">
-        <a href="studio" class="brand" onclick="showView('home'); return false;" title="PixKit Studio Home" style="text-decoration:none;">
+        <a href="/" class="brand" title="PixKit Home & Showcase" style="text-decoration:none;">
           <span class="mark">✳</span>pixkit
         </a>
         <nav class="nav" aria-label="Main Navigation">
-          <button id="nav-home" class="nav-link active" onclick="showView('home')">Home</button>
+          <a href="/" class="nav-link" title="PixKit Main Showcase &amp; Starting Animation"><i class="fa-solid fa-house" style="font-size: 11px; margin-right: 4px;"></i>Home</a>
+          <button id="nav-home" class="nav-link active" onclick="showView('home')">Studio</button>
           <button id="nav-edit" class="nav-link" onclick="showView('edit')">Edit Image</button>
           <button id="nav-convert" class="nav-link" onclick="showView('convert')">Convert</button>
           <button id="nav-document" class="nav-link" onclick="showView('document')">Document</button>
@@ -148,7 +157,10 @@
       <section class="view active" id="home-view">
         <div class="hero">
           <div>
-            <div class="eyebrow">Your private image studio</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px;">
+              <div class="eyebrow" style="margin-bottom: 0;">Your private image studio</div>
+              <a href="/" class="landing-pill-btn" title="View Animated Hero &amp; Full SEO Showcase" style="display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 500; color: var(--muted); text-decoration: none; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--stage); transition: all 0.2s;"><i class="fa-solid fa-arrow-left" style="font-size: 10px;"></i> Landing Page &amp; Showcase</a>
+            </div>
             <h1 class="kinetic-text-wrap" id="hero-kinetic-title" aria-label="Make every image feel just right.">
               <span class="kinetic-line">Make every image</span>
               <span class="kinetic-line">feel just right.</span>
@@ -261,7 +273,7 @@
             <p>Select any tool to open its dedicated live editing workspace.</p>
           </div>
           <button class="back-btn" onclick="showView('home')">
-            <span>←</span> Back to Home
+            <span>←</span> Back to Studio
           </button>
         </div>
 
@@ -442,7 +454,7 @@
             <p>Convert images between formats, rasterize vector SVGs, create favicons, or export to PDF.</p>
           </div>
           <button class="back-btn" onclick="showView('home')">
-            <span>←</span> Back to Home
+            <span>←</span> Back to Studio
           </button>
         </div>
 
@@ -580,7 +592,7 @@
             <p>Combine, split, compress, extract, rotate, and manage PDF documents 100% in your browser.</p>
           </div>
           <button class="back-btn" onclick="showView('home')">
-            <span>←</span> Back to Home
+            <span>←</span> Back to Studio
           </button>
         </div>
 
@@ -774,7 +786,7 @@
           </div>
           <div class="recent-page-header-actions">
             <button class="back-btn" onclick="showView('home')">
-              <span>←</span> Back to Home
+              <span>←</span> Back to Studio
             </button>
             <div class="recent-page-btns-row">
               <button class="btn-secondary" id="clear-recent-page-btn" onclick="clearAllRecentFiles()">
@@ -836,7 +848,7 @@
             <p>Workspace options, appearance styling, and zero-server privacy verification.</p>
           </div>
           <button class="back-btn" onclick="showView('home')">
-            <span>←</span> Back to Home
+            <span>←</span> Back to Studio
           </button>
         </div>
 

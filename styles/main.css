@@ -184,6 +184,15 @@ button {
   border-radius: var(--radius-sm);
   transition: color var(--transition-fast), background-color var(--transition-fast);
   white-space: nowrap;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.landing-pill-btn:hover {
+  color: var(--ink) !important;
+  border-color: var(--line-strong) !important;
+  background: var(--paper) !important;
 }
 
 .nav-link:hover {

@@ -1,4 +1,12 @@
 User-agent: *
 Allow: /
 
+User-agent: Googlebot-Image
+Allow: /favicon.ico
+Allow: /icons/
+Allow: /*.png
+Allow: /*.ico
+Allow: /*.svg
+
 Sitemap: https://pixkit.site/sitemap.xml
+
