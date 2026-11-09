@@ -585,6 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderToolWorkspaceDirect(toolId) {
     // Normalize aliases from URL hashes, landing pages, and search queries
+    let targetFormatOverride = null;
     if (toolId === 'convert' || toolId === 'convert-image') toolId = 'convert-format';
     if (toolId === 'heic' || toolId === 'heic-to-jpg') toolId = 'convert-heic';
     if (toolId === 'doc-pdf-to-img' || toolId === 'pdf-to-jpg' || toolId === 'pdf-to-image') toolId = 'doc-pdf-to-images';
@@ -594,6 +595,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toolId === 'crop-image') toolId = 'crop';
     if (toolId === 'blur-image') toolId = 'blur';
     if (toolId === 'adjust-image') toolId = 'adjust';
+
+    // Converter category tool aliases & format presets
+    if (toolId === 'svg-to-png') {
+      toolId = 'convert-svg';
+      lastCategoryOrigin = 'convert';
+    }
+    if (toolId === 'image-to-ico' || toolId === 'png-to-ico' || toolId === 'favicon-generator') {
+      toolId = 'convert-ico';
+      lastCategoryOrigin = 'convert';
+    }
+    if (toolId === 'image-to-base64') {
+      toolId = 'convert-base64';
+      lastCategoryOrigin = 'convert';
+    }
+    if (toolId === 'png-to-jpg' || toolId === 'webp-to-jpg') {
+      toolId = 'convert-format';
+      targetFormatOverride = 'jpeg';
+      lastCategoryOrigin = 'convert';
+    }
+    if (toolId === 'jpg-to-png') {
+      toolId = 'convert-format';
+      targetFormatOverride = 'png';
+      lastCategoryOrigin = 'convert';
+    }
+    if (toolId === 'jpg-to-webp') {
+      toolId = 'convert-format';
+      targetFormatOverride = 'webp';
+      lastCategoryOrigin = 'convert';
+    }
 
     if (toolId === 'convert-pdf') {
       lastCategoryOrigin = 'document';
@@ -614,6 +644,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (workspaceView) {
       workspaceView.classList.add('active');
       initToolStage(toolId);
+      if (targetFormatOverride) {
+        setTimeout(() => {
+          if (typeof window.setConvertTargetFormat === 'function') {
+            window.setConvertTargetFormat(targetFormatOverride);
+          }
+        }, 50);
+      }
     } else {
       // If individual tool workspace is not yet built, notify the user and keep on category view
       const toolName = toolId.replace(/^doc-/, '').replace(/-/g, ' ');
@@ -9274,6 +9311,10 @@ document.addEventListener('DOMContentLoaded', () => {
                   window.handlePdfDeleteFile(file);
                 } else if (window.handlePdfFileUpload) {
                   window.handlePdfFileUpload(file);
+                }
+              } else if (activeTool === 'convert-svg' || file.type === 'image/svg+xml' || pendingName.toLowerCase().endsWith('.svg')) {
+                if (typeof window.handleSvgFileSelect === 'function') {
+                  window.handleSvgFileSelect({ target: { files: [file] } });
                 }
               } else {
                 handleImageFile(file);
