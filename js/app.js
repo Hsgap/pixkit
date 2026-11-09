@@ -689,6 +689,45 @@ document.addEventListener('DOMContentLoaded', () => {
     navigateTo(`#/tool/${toolId}`, true);
   };
 
+  window.sharePixKitStudio = function() {
+    let toolSlug = '';
+    if (activeTool) {
+      const slugMap = {
+        'convert-svg': 'svg-to-png',
+        'convert-ico': 'image-to-ico',
+        'convert-base64': 'image-to-base64',
+        'convert-heic': 'heic-to-jpg',
+        'convert-format': 'convert-image',
+        'convert-pdf': 'images-to-pdf',
+        'doc-merge-pdf': 'merge-pdf',
+        'doc-split-pdf': 'split-pdf',
+        'doc-compress-pdf': 'compress-pdf',
+        'doc-rotate-pdf': 'rotate-pdf',
+        'doc-delete-pdf': 'delete-pdf-pages',
+        'doc-pdf-to-images': 'pdf-to-jpg',
+        'compress': 'compress-image',
+        'resize': 'resize-image',
+        'crop': 'crop-image',
+        'blur': 'blur-image',
+        'adjust': 'adjust-image'
+      };
+      toolSlug = slugMap[activeTool] || '';
+    }
+    const shareUrl = toolSlug ? `https://pixkit.site/${toolSlug}` : 'https://pixkit.site/studio';
+    const shareTitle = 'PixKit Studio — Free & Private In-Browser Image & PDF Toolkit';
+    const shareText = 'Edit images, convert formats, and manage PDFs with 100% in-browser privacy:';
+
+    if (navigator.share) {
+      navigator.share({ title: shareTitle, text: shareText, url: shareUrl }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        showToast('🔗 PixKit link copied to clipboard!');
+      }).catch(() => {
+        showToast(`Share PixKit: ${shareUrl}`);
+      });
+    }
+  };
+
   // Browser Navigation Listener (Back / Forward buttons)
   window.addEventListener('popstate', (e) => {
     // If Shortcuts modal is open, close it first without navigating away
