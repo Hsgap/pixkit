@@ -584,17 +584,26 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   function renderToolWorkspaceDirect(toolId) {
-    if (toolId === 'doc-images-to-pdf' || toolId === 'convert-pdf') {
-      lastCategoryOrigin = toolId === 'convert-pdf' ? 'convert' : 'document';
+    // Normalize aliases from URL hashes, landing pages, and search queries
+    if (toolId === 'convert' || toolId === 'convert-image') toolId = 'convert-format';
+    if (toolId === 'heic' || toolId === 'heic-to-jpg') toolId = 'convert-heic';
+    if (toolId === 'doc-pdf-to-img' || toolId === 'pdf-to-jpg' || toolId === 'pdf-to-image') toolId = 'doc-pdf-to-images';
+    if (toolId === 'doc-img-to-pdf' || toolId === 'images-to-pdf' || toolId === 'jpg-to-pdf' || toolId === 'doc-images-to-pdf') toolId = 'convert-pdf';
+    if (toolId === 'compress-image') toolId = 'compress';
+    if (toolId === 'resize-image') toolId = 'resize';
+    if (toolId === 'crop-image') toolId = 'crop';
+    if (toolId === 'blur-image') toolId = 'blur';
+    if (toolId === 'adjust-image') toolId = 'adjust';
+
+    if (toolId === 'convert-pdf') {
+      lastCategoryOrigin = 'document';
       const parentCrumb = document.getElementById('pdf-parent-crumb');
       const titleCrumb = document.getElementById('pdf-title-crumb');
       const backBtnText = document.getElementById('pdf-back-btn-text');
       
-      if (parentCrumb) parentCrumb.textContent = lastCategoryOrigin === 'convert' ? 'Convert' : 'Document';
-      if (titleCrumb) titleCrumb.textContent = lastCategoryOrigin === 'convert' ? 'Image to PDF' : 'Images to PDF';
-      if (backBtnText) backBtnText.textContent = lastCategoryOrigin === 'convert' ? 'Back to Convert Tools' : 'Back to Document Tools';
-
-      toolId = 'convert-pdf';
+      if (parentCrumb) parentCrumb.textContent = 'Document';
+      if (titleCrumb) titleCrumb.textContent = 'Images to PDF';
+      if (backBtnText) backBtnText.textContent = 'Back to Document Tools';
     }
 
     activeTool = toolId;
@@ -9251,23 +9260,25 @@ document.addEventListener('DOMContentLoaded', () => {
           .then(res => res.blob())
           .then(blob => {
             const file = new File([blob], pendingName, { type: pendingType || blob.type });
-            if (file.type === 'application/pdf' || pendingName.toLowerCase().endsWith('.pdf')) {
-              if (window.handlePdfMergeFiles && activeTool === 'doc-merge-pdf') {
-                window.handlePdfMergeFiles([file]);
-              } else if (window.handlePdfSplitFile && activeTool === 'doc-split-pdf') {
-                window.handlePdfSplitFile(file);
-              } else if (window.handlePdfCompressFile && activeTool === 'doc-compress-pdf') {
-                window.handlePdfCompressFile(file);
-              } else if (window.handlePdfRotateFile && activeTool === 'doc-rotate-pdf') {
-                window.handlePdfRotateFile(file);
-              } else if (window.handlePdfDeleteFile && activeTool === 'doc-delete-pdf') {
-                window.handlePdfDeleteFile(file);
-              } else if (window.handlePdfFileUpload) {
-                window.handlePdfFileUpload(file);
+            setTimeout(() => {
+              if (file.type === 'application/pdf' || pendingName.toLowerCase().endsWith('.pdf')) {
+                if (window.handlePdfMergeFiles && activeTool === 'doc-merge-pdf') {
+                  window.handlePdfMergeFiles([file]);
+                } else if (window.handlePdfSplitFile && activeTool === 'doc-split-pdf') {
+                  window.handlePdfSplitFile(file);
+                } else if (window.handlePdfCompressFile && activeTool === 'doc-compress-pdf') {
+                  window.handlePdfCompressFile(file);
+                } else if (window.handlePdfRotateFile && activeTool === 'doc-rotate-pdf') {
+                  window.handlePdfRotateFile(file);
+                } else if (window.handlePdfDeleteFile && activeTool === 'doc-delete-pdf') {
+                  window.handlePdfDeleteFile(file);
+                } else if (window.handlePdfFileUpload) {
+                  window.handlePdfFileUpload(file);
+                }
+              } else {
+                handleImageFile(file);
               }
-            } else {
-              handleImageFile(file);
-            }
+            }, 120);
           })
           .catch(err => console.warn('Could not restore landing page file:', err));
       }

@@ -785,7 +785,7 @@
       <div class="landing-nav-links">
         <a href="/" class="landing-nav-link"><i class="fa-solid fa-house" style="font-size: 11px; margin-right: 4px;"></i>Home</a>
         <a href="/#all-tools" class="landing-nav-link">All 14 Tools</a>
-        <a href="studio" class="landing-launch-btn" onclick="openStudioTarget(event, 'doc-img-to-pdf')">
+        <a href="studio" class="landing-launch-btn" onclick="openStudioTarget(event, 'convert-pdf')">
           Launch Studio <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i>
         </a>
         <button class="theme-btn" id="themeToggleBtn" aria-label="Toggle Light / Dark mode" title="Toggle Theme" onclick="toggleTheme()">
@@ -992,7 +992,7 @@
     <div class="bottom-cta-banner">
       <h3>Ready to images to pdf with complete privacy?</h3>
       <p>Enjoy fast, limitless in-browser creative &amp; document tools without sign-up, subscriptions, or cloud uploads.</p>
-      <a href="studio" class="landing-launch-btn" onclick="openStudioTarget(event, 'doc-img-to-pdf')" style="font-size: 14.5px; padding: 12px 28px;">
+      <a href="studio" class="landing-launch-btn" onclick="openStudioTarget(event, 'convert-pdf')" style="font-size: 14.5px; padding: 12px 28px;">
         Open Images to PDF Workspace <i class="fa-solid fa-arrow-right" style="font-size: 11px;"></i>
       </a>
     </div>
@@ -1044,7 +1044,7 @@
     initTheme();
 
     // Tool Launch & File Routing
-    const TARGET_TOOL_ID = 'doc-img-to-pdf';
+    const TARGET_TOOL_ID = 'convert-pdf';
 
     function openStudioTarget(e, toolId) {
       if (e) e.preventDefault();
