@@ -911,6 +911,8 @@
       width: auto;
       display: inline-block;
       vertical-align: middle;
+      pointer-events: none;
+      user-select: none;
     }
 
     [data-theme="dark"] .artan-footer-logo {
@@ -923,14 +925,13 @@
       text-decoration: none;
       display: inline-flex;
       align-items: center;
-      transition: color 0.2s ease, transform 0.2s ease;
+      transition: color 0.2s ease;
     }
 
     .artan-text-link:hover {
       color: var(--tp-ink);
       text-decoration: underline;
       text-underline-offset: 3px;
-      transform: translateY(-1px);
     }
 
     [data-theme="dark"] .artan-text-link:hover {

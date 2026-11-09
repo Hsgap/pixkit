@@ -4461,6 +4461,8 @@ body.dock-is-dragging * {
   width: auto;
   display: inline-block;
   vertical-align: middle;
+  pointer-events: none;
+  user-select: none;
 }
 
 [data-theme="dark"] .artan-footer-logo {
@@ -4473,14 +4475,13 @@ body.dock-is-dragging * {
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  transition: color var(--transition-fast), transform var(--transition-fast);
+  transition: color var(--transition-fast);
 }
 
 .artan-text-link:hover {
   color: var(--ink);
   text-decoration: underline;
   text-underline-offset: 3px;
-  transform: translateY(-1px);
 }
 
 [data-theme="dark"] .artan-text-link:hover {
