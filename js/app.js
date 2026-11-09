@@ -9236,6 +9236,43 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(syncMetadata, 60);
       handleRoute(location.hash || '#/home');
     }
+
+    // Check for pending incoming file uploaded from a dedicated tool landing page
+    try {
+      const pendingData = sessionStorage.getItem('pixkit_pending_file_data');
+      const pendingName = sessionStorage.getItem('pixkit_pending_file_name');
+      const pendingType = sessionStorage.getItem('pixkit_pending_file_type');
+      if (pendingData && pendingName) {
+        sessionStorage.removeItem('pixkit_pending_file_data');
+        sessionStorage.removeItem('pixkit_pending_file_name');
+        sessionStorage.removeItem('pixkit_pending_file_type');
+
+        fetch(pendingData)
+          .then(res => res.blob())
+          .then(blob => {
+            const file = new File([blob], pendingName, { type: pendingType || blob.type });
+            if (file.type === 'application/pdf' || pendingName.toLowerCase().endsWith('.pdf')) {
+              if (window.handlePdfMergeFiles && activeTool === 'doc-merge-pdf') {
+                window.handlePdfMergeFiles([file]);
+              } else if (window.handlePdfSplitFile && activeTool === 'doc-split-pdf') {
+                window.handlePdfSplitFile(file);
+              } else if (window.handlePdfCompressFile && activeTool === 'doc-compress-pdf') {
+                window.handlePdfCompressFile(file);
+              } else if (window.handlePdfRotateFile && activeTool === 'doc-rotate-pdf') {
+                window.handlePdfRotateFile(file);
+              } else if (window.handlePdfDeleteFile && activeTool === 'doc-delete-pdf') {
+                window.handlePdfDeleteFile(file);
+              } else if (window.handlePdfFileUpload) {
+                window.handlePdfFileUpload(file);
+              }
+            } else {
+              handleImageFile(file);
+            }
+          })
+          .catch(err => console.warn('Could not restore landing page file:', err));
+      }
+    } catch (_) {}
+
     cleanCurrentUrl();
   });
 });
