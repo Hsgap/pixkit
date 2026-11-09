@@ -984,37 +984,91 @@ button {
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
-  padding: 22px;
+  padding: 24px 22px;
   display: flex;
   flex-direction: column;
 }
 
-.settings-panel h3 {
+.panel-header {
+  margin-bottom: 22px;
+}
+
+.settings-panel h3,
+.panel-header h3 {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 16px;
   color: var(--ink);
-  margin-bottom: 4px;
+  margin-top: 0;
+  margin-bottom: 8px;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
 }
 
-.settings-panel .sub {
-  font-size: 11px;
+.settings-panel p.sub,
+.settings-panel .sub,
+.panel-header p {
+  font-size: 12px;
+  line-height: 1.55;
   color: var(--muted);
-  margin-bottom: 18px;
+  margin-top: 0;
+  margin-bottom: 22px;
+}
+
+.panel-header p {
+  margin-bottom: 0;
 }
 
 .form-group {
+  margin-bottom: 20px;
+}
+
+.form-group:last-of-type {
   margin-bottom: 16px;
 }
 
+.form-group > label:not([class*="btn"]):not([class*="preset"]):not([class*="card"]):not([class*="action"]),
 .form-label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--muted);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 9px;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+}
+
+.form-group small,
+.form-group .form-hint {
+  display: block;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.settings-panel .card,
+.settings-panel .metric-card {
+  background: var(--soft);
+  padding: 14px 16px !important;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px !important;
+  margin: 18px 0 !important;
+}
+
+.settings-panel .card > div,
+.settings-panel .metric-card > div {
+  font-size: 12px !important;
+  line-height: 1.45;
+}
+
+.settings-panel .divider {
+  margin: 20px 0 !important;
 }
 
 .input-text, .input-select {

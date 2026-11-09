@@ -81,7 +81,7 @@
       }
     } catch (_) {}
   </script>
-  <link rel="stylesheet" href="styles/main.css?v=6.4">
+  <link rel="stylesheet" href="styles/main.css?v=6.5">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FBFBF8">
 </head>
@@ -2795,8 +2795,10 @@
           </div>
 
           <aside class="settings-panel">
-            <h3>Image to PDF Document</h3>
-            <p class="sub">Convert images into standard, clean PDF documents for printing, archiving, or sharing.</p>
+            <div class="panel-header">
+              <h3>Image to PDF Document</h3>
+              <p>Convert images into standard, clean PDF documents for printing, archiving, or sharing.</p>
+            </div>
 
             <!-- Page Size Options -->
             <div class="form-group">
@@ -2975,7 +2977,7 @@
 
             <!-- Target Format -->
             <div class="form-group">
-              <label>Export Image Format</label>
+              <label class="form-label">Export Image Format</label>
               <div class="chip-group" style="display:flex; row-gap:10px; column-gap:8px; flex-wrap:wrap;">
                 <button class="chip-btn active" id="pdf-fmt-png" onclick="setPdfExtractFormat('png')">PNG (Lossless)</button>
                 <button class="chip-btn" id="pdf-fmt-jpg" onclick="setPdfExtractFormat('jpg')">JPG (Photo)</button>
@@ -2985,19 +2987,19 @@
 
             <!-- Resolution Scale -->
             <div class="form-group">
-              <label>Resolution Scale (DPI)</label>
+              <label class="form-label">Resolution Scale (DPI)</label>
               <div class="chip-group" style="display:flex; row-gap:10px; column-gap:8px; flex-wrap:wrap;">
                 <button class="chip-btn" id="pdf-scale-1" onclick="setPdfExtractScale(1)">1x (Standard)</button>
                 <button class="chip-btn active" id="pdf-scale-2" onclick="setPdfExtractScale(2)">2x (High Res · 300 DPI)</button>
                 <button class="chip-btn" id="pdf-scale-3" onclick="setPdfExtractScale(3)">3x (Ultra 450 DPI)</button>
               </div>
-              <small style="color:var(--muted); font-size:11px; margin-top:4px; display:block;">2x gives crisp, publication-ready vector rendering.</small>
+              <small style="color:var(--muted); font-size:11.5px; margin-top:6px; line-height:1.45; display:block;">2x gives crisp, publication-ready vector rendering.</small>
             </div>
 
             <!-- Quality Slider for JPG / WebP -->
             <div class="form-group" id="pdf-extract-quality-group" style="display:none;">
               <div class="control-row">
-                <label for="pdf-extract-quality-slider">Image Quality</label>
+                <label for="pdf-extract-quality-slider" class="form-label">Image Quality</label>
                 <span class="val-badge" id="pdf-extract-quality-val">92%</span>
               </div>
               <input type="range" min="50" max="100" value="92" class="slider" id="pdf-extract-quality-slider" oninput="setPdfExtractQuality(this.value)">
@@ -3005,7 +3007,7 @@
 
             <!-- Page Range Filter -->
             <div class="form-group">
-              <label>Pages to Extract</label>
+              <label class="form-label">Pages to Extract</label>
               <div class="chip-group" style="display:flex; row-gap:10px; column-gap:8px; flex-wrap:wrap;">
                 <button class="chip-btn active" id="pdf-range-all" onclick="setPdfExtractRangeMode('all')">All Pages</button>
                 <button class="chip-btn" id="pdf-range-selected" onclick="setPdfExtractRangeMode('selected')">Selected Only</button>
@@ -3013,21 +3015,21 @@
               </div>
               <div id="pdf-custom-range-input-wrap" style="display:none; margin-top:8px;">
                 <input type="text" id="pdf-custom-range-input" class="input-text" placeholder="e.g. 1, 3-5, 8" style="width:100%; padding:7px 10px; font-size:12px; border:1px solid var(--line); border-radius:var(--radius-sm);" oninput="handlePdfCustomRangeChange(this.value)">
-                <small style="color:var(--muted); font-size:11px; margin-top:3px; display:block;">Enter page numbers and ranges separated by commas.</small>
+                <small style="color:var(--muted); font-size:11.5px; margin-top:6px; line-height:1.45; display:block;">Enter page numbers and ranges separated by commas.</small>
               </div>
             </div>
 
             <!-- Summary Card -->
-            <div class="card" style="background:var(--soft); padding:12px 14px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:6px;">
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+            <div class="card" style="background:var(--soft); padding:14px 16px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Total Pages in PDF:</span>
                 <strong id="pdf-summary-total" style="color:var(--ink);">0</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Selected for Export:</span>
                 <strong id="pdf-summary-selected" style="color:#2d6a4f;">0</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Output Format:</span>
                 <strong id="pdf-summary-format" style="color:var(--ink);">PNG @ 2x</strong>
               </div>
@@ -3139,21 +3141,21 @@
 
             <!-- Output File Name -->
             <div class="form-group">
-              <label for="pdf-merge-output-name">Output PDF Filename</label>
+              <label for="pdf-merge-output-name" class="form-label">Output PDF Filename</label>
               <input type="text" id="pdf-merge-output-name" class="input-text" value="merged_document.pdf" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid var(--line); border-radius:var(--radius-sm); font-weight:600; color:var(--ink);">
             </div>
 
             <!-- Summary Card -->
-            <div class="card" style="background:var(--soft); padding:12px 14px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:6px;">
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+            <div class="card" style="background:var(--soft); padding:14px 16px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Total PDF Files:</span>
                 <strong id="pdf-merge-summary-files" style="color:var(--ink);">0</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Combined Total Pages:</span>
                 <strong id="pdf-merge-summary-pages" style="color:#2d6a4f;">0 Pages</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Combined Input Size:</span>
                 <strong id="pdf-merge-summary-size" style="color:var(--ink);">0 KB</strong>
               </div>
@@ -3267,7 +3269,7 @@
 
             <!-- Split Mode Selector -->
             <div class="form-group">
-              <label for="pdf-split-mode">Split Method</label>
+              <label for="pdf-split-mode" class="form-label">Split Method</label>
               <select id="pdf-split-mode" class="select-input" onchange="onPdfSplitModeChange(this.value)">
                 <option value="extract-selected">Extract Selected Pages (1 PDF)</option>
                 <option value="split-ranges">Custom Page Ranges (e.g. 1-2, 3-5)</option>
@@ -3278,17 +3280,17 @@
 
             <!-- Mode Details: Custom Ranges Input -->
             <div class="form-group" id="pdf-split-ranges-group" style="display:none;">
-              <label for="pdf-split-ranges-input">
-                Page Ranges
+              <label for="pdf-split-ranges-input" class="form-label">
+                <span>Page Ranges</span>
                 <span class="badge-pill" style="font-size:10px; margin-left:4px;">Comma Separated</span>
               </label>
               <input type="text" id="pdf-split-ranges-input" class="input-text" placeholder="e.g. 1-2, 3, 5-6" oninput="validatePdfSplitRanges()" style="width:100%; padding:8px 12px; font-size:12.5px; border:1px solid var(--line); border-radius:var(--radius-sm);">
-              <small id="pdf-split-ranges-hint" style="font-size:11px; color:var(--muted); margin-top:4px; display:block;">Enter ranges like 1-3, 4-6 to create multiple separate files.</small>
+              <small id="pdf-split-ranges-hint" style="font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.45; display:block;">Enter ranges like 1-3, 4-6 to create multiple separate files.</small>
             </div>
 
             <!-- Mode Details: Fixed Chunk Size Input -->
             <div class="form-group" id="pdf-split-fixed-group" style="display:none;">
-              <label for="pdf-split-chunk-size">Pages Per Output PDF</label>
+              <label for="pdf-split-chunk-size" class="form-label">Pages Per Output PDF</label>
               <div class="range-row">
                 <input type="range" id="pdf-split-chunk-size" min="1" max="10" value="2" oninput="updatePdfSplitChunkSize(this.value)">
                 <span id="pdf-split-chunk-size-val" class="range-val">2 Pages</span>
@@ -3297,21 +3299,21 @@
 
             <!-- Output Filename Prefix -->
             <div class="form-group">
-              <label for="pdf-split-output-prefix">Output File Prefix</label>
+              <label for="pdf-split-output-prefix" class="form-label">Output File Prefix</label>
               <input type="text" id="pdf-split-output-prefix" class="input-text" value="split_document" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid var(--line); border-radius:var(--radius-sm); font-weight:600; color:var(--ink);">
             </div>
 
             <!-- Summary Breakdown Card -->
-            <div class="card" style="background:var(--soft); padding:12px 14px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:6px;">
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+            <div class="card" style="background:var(--soft); padding:14px 16px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Total Document Pages:</span>
                 <strong id="pdf-split-summary-total" style="color:var(--ink);">0 Pages</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Selected for Output:</span>
                 <strong id="pdf-split-summary-selected" style="color:#2d6a4f;">0 Pages</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Files to Generate:</span>
                 <strong id="pdf-split-summary-files" style="color:var(--ink);">0 Files</strong>
               </div>
@@ -3417,7 +3419,7 @@
 
             <!-- Compression Level Preset Cards -->
             <div class="form-group">
-              <label>Compression Level</label>
+              <label class="form-label">Compression Level</label>
               <div class="pdf-compress-presets" style="display:flex; flex-direction:column; gap:10px; margin-top:6px;">
                 
                 <!-- Preset 1: Extreme -->
@@ -3431,7 +3433,7 @@
                       </strong>
                       <span class="badge-pill" style="font-size:10px; background:rgba(239,68,68,0.12); color:#dc2626;">~75-90% Smaller</span>
                     </div>
-                    <p style="font-size:11.5px; color:var(--muted); margin-top:2px;">High compression, lower image DPI. Best for email limits and strict upload sizes.</p>
+                    <p style="font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.45;">High compression, lower image DPI. Best for email limits and strict upload sizes.</p>
                   </div>
                 </label>
 
@@ -3446,7 +3448,7 @@
                       </strong>
                       <span class="badge-pill" style="font-size:10px; background:var(--lime-tint); color:#2d6a4f;">~50-70% Smaller</span>
                     </div>
-                    <p style="font-size:11.5px; color:var(--muted); margin-top:2px;">Standard quality and DPI with clean readable text and balanced size reduction.</p>
+                    <p style="font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.45;">Standard quality and DPI with clean readable text and balanced size reduction.</p>
                   </div>
                 </label>
 
@@ -3461,7 +3463,7 @@
                       </strong>
                       <span class="badge-pill" style="font-size:10px; background:var(--soft); color:var(--ink);">~25-45% Smaller</span>
                     </div>
-                    <p style="font-size:11.5px; color:var(--muted); margin-top:2px;">Light compression. Keeps high-resolution photos and crisp sharp vectors.</p>
+                    <p style="font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.45;">Light compression. Keeps high-resolution photos and crisp sharp vectors.</p>
                   </div>
                 </label>
 
@@ -3476,7 +3478,7 @@
                       </strong>
                       <span class="badge-pill" style="font-size:10px; background:var(--soft); color:var(--muted);">Manual</span>
                     </div>
-                    <p style="font-size:11.5px; color:var(--muted); margin-top:2px;">Manually configure JPEG quality, scale factor, and color modes.</p>
+                    <p style="font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.45;">Manually configure JPEG quality, scale factor, and color modes.</p>
                   </div>
                 </label>
 
@@ -3538,25 +3540,25 @@
 
             <!-- Output Filename -->
             <div class="form-group">
-              <label for="pdf-compress-output-name">Output PDF Filename</label>
+              <label for="pdf-compress-output-name" class="form-label">Output PDF Filename</label>
               <input type="text" id="pdf-compress-output-name" class="input-text" value="compressed_document.pdf" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid var(--line); border-radius:var(--radius-sm); font-weight:600; color:var(--ink);">
             </div>
 
             <!-- Compression Stats Summary Card -->
-            <div class="card" style="background:var(--soft); padding:12px 14px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:6px;">
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+            <div class="card" style="background:var(--soft); padding:14px 16px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Original Size:</span>
                 <strong id="pdf-compress-stat-original" style="color:var(--ink);">0 KB</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Estimated Compressed Size:</span>
                 <strong id="pdf-compress-stat-estimated" style="color:#2d6a4f;">0 KB</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Estimated Savings:</span>
                 <strong id="pdf-compress-stat-savings" style="color:#2d6a4f;">0% Reduction</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Total Pages:</span>
                 <strong id="pdf-compress-stat-pages" style="color:var(--ink);">0 Pages</strong>
               </div>
@@ -3706,21 +3708,21 @@
 
             <!-- Output Filename -->
             <div class="form-group">
-              <label for="pdf-rotate-output-name">Output PDF Filename</label>
+              <label for="pdf-rotate-output-name" class="form-label">Output PDF Filename</label>
               <input type="text" id="pdf-rotate-output-name" class="input-text" value="rotated_document.pdf" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid var(--line); border-radius:var(--radius-sm); font-weight:600; color:var(--ink);">
             </div>
 
             <!-- Rotation Stats Summary Card -->
-            <div class="card" style="background:var(--soft); padding:12px 14px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:6px;">
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+            <div class="card" style="background:var(--soft); padding:14px 16px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Total Pages:</span>
                 <strong id="pdf-rotate-stat-total" style="color:var(--ink);">0 Pages</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Pages Rotated:</span>
                 <strong id="pdf-rotate-stat-modified" style="color:#2d6a4f;">0 Modified</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Preservation:</span>
                 <strong style="color:var(--ink);">100% Vector Lossless</strong>
               </div>
@@ -3833,12 +3835,12 @@
 
             <!-- Custom Page Numbers / Ranges to Delete -->
             <div class="form-group">
-              <label for="pdf-delete-range-input" style="display:flex; justify-content:space-between; align-items:center;">
+              <label for="pdf-delete-range-input" class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
                 <span>Pages to Delete</span>
                 <span class="badge-pill" style="font-size:10px; background:var(--white); border:1px solid var(--line); color:var(--muted);">e.g. 2, 4-5</span>
               </label>
               <input type="text" id="pdf-delete-range-input" class="input-text" placeholder="e.g. 2, 4-6" oninput="onPdfDeleteRangeInput(this.value)" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid var(--line); border-radius:var(--radius-sm); font-weight:600; color:var(--ink);">
-              <small style="font-size:11px; color:var(--muted); margin-top:4px; display:block;">Enter comma-separated page numbers or ranges to delete.</small>
+              <small style="font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.45; display:block;">Enter comma-separated page numbers or ranges to delete.</small>
             </div>
 
             <!-- Quick Selection Presets -->
@@ -3862,21 +3864,21 @@
 
             <!-- Output Filename -->
             <div class="form-group">
-              <label for="pdf-delete-output-name">Output PDF Filename</label>
+              <label for="pdf-delete-output-name" class="form-label">Output PDF Filename</label>
               <input type="text" id="pdf-delete-output-name" class="input-text" value="edited_document.pdf" style="width:100%; padding:8px 12px; font-size:13px; border:1px solid var(--line); border-radius:var(--radius-sm); font-weight:600; color:var(--ink);">
             </div>
 
             <!-- Summary Card -->
-            <div class="card" style="background:var(--soft); padding:12px 14px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:6px;">
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+            <div class="card" style="background:var(--soft); padding:14px 16px; border-radius:var(--radius-md); border:1px solid var(--line); display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Total Pages:</span>
                 <strong id="pdf-delete-stat-total" style="color:var(--ink);">0 Pages</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Pages to Remove:</span>
                 <strong id="pdf-delete-stat-deleted" style="color:#b91c1c;">0 Pages</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:11.5px;">
+              <div style="display:flex; justify-content:space-between; font-size:12px; line-height:1.45;">
                 <span style="color:var(--muted);">Remaining in Output:</span>
                 <strong id="pdf-delete-stat-remaining" style="color:#2d6a4f;">0 Pages</strong>
               </div>
