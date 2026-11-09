@@ -4456,31 +4456,50 @@ body.dock-is-dragging * {
   color: var(--ink);
 }
 
-.artan-brand-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--ink);
-  font-weight: 600;
-  text-decoration: none;
-  transition: opacity var(--transition-fast), transform var(--transition-fast);
-}
-
-.artan-brand-link:hover {
-  opacity: 0.85;
-  transform: translateY(-1px);
-}
-
 .artan-footer-logo {
   height: 15px;
   width: auto;
   display: inline-block;
   vertical-align: middle;
-  transition: filter var(--transition-fast);
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter var(--transition-fast);
+  will-change: transform;
+}
+
+@keyframes artanBounce {
+  0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+  30% { transform: translateY(-3.5px) scale(1.1) rotate(-3deg); }
+  60% { transform: translateY(-1px) scale(1.06) rotate(2deg); }
+  85% { transform: translateY(-2.5px) scale(1.08) rotate(-1deg); }
+}
+
+.artan-footer-logo:hover,
+.studio-footer-left:hover .artan-footer-logo {
+  animation: artanBounce 0.75s ease-in-out infinite;
 }
 
 [data-theme="dark"] .artan-footer-logo {
   filter: brightness(1.22) contrast(1.12) drop-shadow(0 0 1px rgba(255, 255, 255, 0.3));
+}
+
+.artan-text-link {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.artan-text-link:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .artan-text-link:hover {
+  color: #D7F36A;
 }
 
 @media (max-width: 680px) {
