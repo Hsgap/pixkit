@@ -65,6 +65,16 @@
       "description": "100% client-side image editor and PDF manipulation tools running entirely in your browser with complete privacy.",
       "applicationCategory": "MultimediaApplication, UtilitiesApplication",
       "operatingSystem": "All",
+      "creator": {
+        "@type": "Organization",
+        "name": "Artàn Visuals",
+        "url": "https://artan.myportfolio.com/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Artàn Visuals",
+        "url": "https://artan.myportfolio.com/"
+      },
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -948,6 +958,43 @@
       line-height: 1.5;
     }
 
+    .aceternity-parent-brand {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .artan-brand-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--ink);
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .artan-brand-link:hover {
+      opacity: 0.85;
+      transform: translateY(-1px);
+    }
+
+    .artan-footer-logo {
+      height: 15px;
+      width: auto;
+      display: inline-block;
+      vertical-align: middle;
+      transition: filter 0.2s ease;
+    }
+
+    [data-theme="dark"] .artan-footer-logo {
+      filter: brightness(1.22) contrast(1.12) drop-shadow(0 0 1px rgba(255, 255, 255, 0.3));
+    }
+
     .aceternity-tagline {
       font-size: 12px;
       color: var(--muted);
@@ -1496,6 +1543,13 @@
               <span class="aceternity-brand-name">PixKit</span>
             </a>
             <p class="aceternity-copyright">© copyright PixKit Studio 2026. All rights reserved.</p>
+            <p class="aceternity-parent-brand">
+              <span>A product of</span>
+              <a href="https://artan.myportfolio.com/" target="_blank" rel="noopener" class="artan-brand-link" title="Visit Artàn Visuals Portfolio">
+                <span>Artàn Visuals</span>
+                <img src="icons/artan-logo.png" alt="Artàn Visuals" class="artan-footer-logo">
+              </a>
+            </p>
             <p class="aceternity-contact-email" style="font-size: 13px; margin: 4px 0 8px 0;"><i class="fa-regular fa-envelope" style="color: #D7F36A; margin-right: 6px;"></i><a href="mailto:support.pixkitstudio@gmail.com?subject=PixKit%20Studio%20Support" style="color: var(--muted, #a0a0a5); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#D7F36A'" onmouseout="this.style.color='var(--muted, #a0a0a5)'">support.pixkitstudio@gmail.com</a></p>
             <p class="aceternity-tagline">100% private, in-browser image &amp; document studio with zero server tracking.</p>
 

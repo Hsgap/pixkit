@@ -59,6 +59,16 @@
     "name": "PixKit",
     "url": "https://pixkit.site/"
   },
+  "creator": {
+    "@type": "Organization",
+    "name": "Art\u00e0n Visuals",
+    "url": "https://artan.myportfolio.com/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Art\u00e0n Visuals",
+    "url": "https://artan.myportfolio.com/"
+  },
   "offers": {
     "@type": "Offer",
     "price": "0",
@@ -882,6 +892,47 @@
       gap: 16px;
     }
 
+    .landing-footer-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .landing-footer-artan {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      color: var(--tp-muted);
+    }
+
+    .artan-brand-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--tp-ink);
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .artan-brand-link:hover {
+      opacity: 0.85;
+      transform: translateY(-1px);
+    }
+
+    .artan-footer-logo {
+      height: 14px;
+      width: auto;
+      display: inline-block;
+      vertical-align: middle;
+      transition: filter 0.2s;
+    }
+
+    [data-theme="dark"] .artan-footer-logo {
+      filter: brightness(1.22) contrast(1.12) drop-shadow(0 0 1px rgba(255, 255, 255, 0.3));
+    }
+
     .landing-footer-links {
       display: flex;
       align-items: center;
@@ -1169,8 +1220,15 @@
 
     <!-- Footer -->
     <footer class="landing-footer">
-      <div>
-        © 2026 PixKit Studio. Built for privacy, speed, and clean workflow.
+      <div class="landing-footer-copy">
+        <div>© 2026 PixKit Studio. Built for privacy, speed, and clean workflow.</div>
+        <div class="landing-footer-artan">
+          <span>A product of</span>
+          <a href="https://artan.myportfolio.com/" target="_blank" rel="noopener" class="artan-brand-link" title="Visit Artàn Visuals Portfolio">
+            <span>Artàn Visuals</span>
+            <img src="icons/artan-logo.png" alt="Artàn Visuals" class="artan-footer-logo">
+          </a>
+        </div>
       </div>
       <div class="landing-footer-links">
         <a href="/">Home</a>

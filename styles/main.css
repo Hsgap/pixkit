@@ -4408,4 +4408,89 @@ body.dock-is-dragging * {
   }
 }
 
+/* Studio Home Footer & Artàn Visuals Branding */
+.studio-home-footer {
+  margin-top: 56px;
+  padding: 24px 0 40px 0;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.studio-footer-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.studio-footer-brand {
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.studio-footer-sep {
+  color: var(--muted);
+  opacity: 0.5;
+}
+
+.studio-footer-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.studio-footer-right a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.studio-footer-right a:hover {
+  color: var(--ink);
+}
+
+.artan-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.artan-brand-link:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.artan-footer-logo {
+  height: 15px;
+  width: auto;
+  display: inline-block;
+  vertical-align: middle;
+  transition: filter var(--transition-fast);
+}
+
+[data-theme="dark"] .artan-footer-logo {
+  filter: brightness(1.22) contrast(1.12) drop-shadow(0 0 1px rgba(255, 255, 255, 0.3));
+}
+
+@media (max-width: 680px) {
+  .studio-home-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    margin-top: 36px;
+  }
+}
+
+
 
