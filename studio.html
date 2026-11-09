@@ -113,12 +113,11 @@
     <!-- Topbar Navigation -->
     <header class="topbar">
       <div class="brand-nav-group">
-        <a href="/" class="brand" title="PixKit Home & Showcase" style="text-decoration:none;">
+        <a href="javascript:void(0)" onclick="showView('home')" class="brand" title="PixKit Studio Home" style="text-decoration:none;">
           <span class="mark">✳</span>pixkit
         </a>
         <nav class="nav" aria-label="Main Navigation">
-          <a href="/" class="nav-link" title="PixKit Main Showcase &amp; Starting Animation"><i class="fa-solid fa-house" style="font-size: 11px; margin-right: 4px;"></i>Home</a>
-          <button id="nav-home" class="nav-link active" onclick="showView('home')">Studio</button>
+          <button id="nav-home" class="nav-link active" onclick="showView('home')">Home</button>
           <button id="nav-edit" class="nav-link" onclick="showView('edit')">Edit Image</button>
           <button id="nav-convert" class="nav-link" onclick="showView('convert')">Convert</button>
           <button id="nav-document" class="nav-link" onclick="showView('document')">Document</button>
@@ -177,10 +176,7 @@
       <section class="view active" id="home-view">
         <div class="hero">
           <div>
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px;">
-              <div class="eyebrow" style="margin-bottom: 0;">Your private image studio</div>
-              <a href="/" class="landing-pill-btn" title="View Animated Hero &amp; Full SEO Showcase" style="display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 500; color: var(--muted); text-decoration: none; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--stage); transition: all 0.2s;"><i class="fa-solid fa-arrow-left" style="font-size: 10px;"></i> Landing Page &amp; Showcase</a>
-            </div>
+            <div class="eyebrow" style="margin-bottom: 8px;">Your private image studio</div>
             <h1 class="kinetic-text-wrap" id="hero-kinetic-title" aria-label="Make every image feel just right.">
               <span class="kinetic-line">Make every image</span>
               <span class="kinetic-line">feel just right.</span>
@@ -280,26 +276,6 @@
             </div>
           </div>
         </div>
-
-        <!-- Studio Home Footer & Artàn Visuals Branding -->
-        <footer class="studio-home-footer">
-          <div class="studio-footer-left">
-            <span class="studio-footer-brand">✳ PixKit Studio</span>
-            <span class="studio-footer-sep">·</span>
-            <span>Designed &amp; Developed by</span>
-            <a href="https://artan.myportfolio.com/" target="_blank" rel="noopener" class="artan-text-link" title="Visit Artàn Visual Portfolio">Artàn Visual</a>
-            <span class="artan-badge" title="Artàn Visual">
-              <img src="icons/artan-logo.png" alt="Artàn" class="artan-badge-logo">
-            </span>
-          </div>
-          <div class="studio-footer-right">
-            <a href="/">Home</a>
-            <a href="/#all-tools">All 21 Tools</a>
-            <a href="privacy-policy.html">Privacy Policy</a>
-            <a href="mailto:support.pixkitstudio@gmail.com">Contact Support</a>
-            <a href="https://github.com/Hsgap/pixkit" target="_blank" rel="noopener">GitHub</a>
-          </div>
-        </footer>
       </section>
 
       <!-- ============================================================== -->
