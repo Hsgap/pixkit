@@ -1542,25 +1542,25 @@
 
         <!-- Gateway View 2: Card -->
         <div class="gateway-panel" id="gateway-panel-card">
-          <div class="card-checkout-form">
-            <div class="form-input-wrap">
-              <label class="form-label">Card Number</label>
-              <input type="text" class="form-input" placeholder="4242 •••• •••• 4242" maxlength="19">
+          <div style="background: var(--stage); border: 1px solid var(--line); border-radius: 14px; padding: 18px 16px; margin-bottom: 18px; text-align: left;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+              <span style="font-size: 13px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 7px;">
+                <i class="fa-solid fa-shield-halved" style="color: var(--accent-green);"></i> 256-Bit SSL Encrypted Card Portal
+              </span>
+              <span style="display: flex; gap: 8px; font-size: 20px; color: var(--muted);">
+                <i class="fa-brands fa-cc-visa"></i>
+                <i class="fa-brands fa-cc-mastercard"></i>
+                <i class="fa-brands fa-cc-amex"></i>
+                <i class="fa-brands fa-apple-pay"></i>
+              </span>
             </div>
-            <div class="form-row-duo">
-              <div class="form-input-wrap">
-                <label class="form-label">Expiration</label>
-                <input type="text" class="form-input" placeholder="MM / YY" maxlength="5">
-              </div>
-              <div class="form-input-wrap">
-                <label class="form-label">CVC Code</label>
-                <input type="text" class="form-input" placeholder="123" maxlength="4">
-              </div>
-            </div>
+            <p style="font-size: 12.5px; color: var(--muted); line-height: 1.5; margin: 0;">
+              Debit &amp; Credit cards (Visa, Mastercard, Amex, Discover) and Apple Pay are processed securely via our encrypted, PCI-compliant checkout portal powered by PayPal.
+            </p>
           </div>
           <button type="button" class="checkout-hero-btn card" onclick="executePageCheckout('card')">
             <i class="fa-solid fa-lock" style="font-size: 15px;"></i>
-            <span>Pay with Card <strong id="cardDynamicBtnAmt">($5.00)</strong></span>
+            <span>Pay with Card or Apple Pay <strong id="cardDynamicBtnAmt">($5.00)</strong></span>
           </button>
         </div>
 
@@ -1870,8 +1870,11 @@
     }
 
     // Developer Configuration for Payment Gateways
-    // Replace placeholder keys / URLs when ready to go live!
     const PIXKIT_GATEWAY_CONFIG = {
+      paypal: {
+        paymentUrl: 'https://www.paypal.com/ncp/payment/XE3XE7KZABNUY',
+        name: 'PixKit Studio'
+      },
       razorpay: {
         keyId: 'rzp_test_YOUR_KEY_ID', // Replace with your live Key ID from Razorpay (rzp_live_... or rzp_test_...)
         paymentPageUrl: '', // Optional: https://pages.razorpay.com/your-donation-page
@@ -2008,6 +2011,17 @@
         amt = selectedAmount;
       }
       const note = document.getElementById('pageNoteInput')?.value || '';
+
+      // Live PayPal & Card Portal Integration
+      if (method === 'paypal' || method === 'card') {
+        const paypalUrl = PIXKIT_GATEWAY_CONFIG.paypal?.paymentUrl;
+        if (paypalUrl) {
+          window.open(paypalUrl, '_blank', 'noopener,noreferrer');
+          const gatewayLabel = method === 'card' ? 'Debit/Credit Card' : 'PayPal';
+          completeCelebration(gatewayLabel, amt, note);
+          return;
+        }
+      }
 
       // Direct Razorpay SDK Integration
       if (method === 'razorpay') {
