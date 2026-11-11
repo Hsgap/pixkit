@@ -40,6 +40,7 @@
   const PixKitRemote = {
     state: null,
     platform: 'web', // 'web' | 'mobile'
+    appVersion: '1.0.0',
     configUrl: DEFAULT_CONFIG_URL,
     listeners: [],
     _toastTimer: null,
@@ -54,6 +55,7 @@
 
     init: async function (options = {}) {
       this.platform = options.platform || this.detectPlatform();
+      this.appVersion = options.appVersion || window.PIXKIT_APP_VERSION || '1.0.0';
       this.configUrl = options.configUrl || DEFAULT_CONFIG_URL;
 
       this.injectStyles();
@@ -596,6 +598,176 @@
 
       // 5. Active Tool Eviction Check (Kick out if tool was closed while in use)
       this.enforceActiveToolAccess();
+
+      // 6. App Version Control & Fleet Policy Enforcement
+      this.enforceVersionPolicy();
+    },
+
+    semverCompare: function (v1, v2) {
+      if (!v1 || !v2) return 0;
+      const p1 = String(v1).replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
+      const p2 = String(v2).replace(/^v/i, '').split('.').map(n => parseInt(n, 10) || 0);
+      const len = Math.max(p1.length, p2.length);
+      for (let i = 0; i < len; i++) {
+        const a = p1[i] || 0;
+        const b = p2[i] || 0;
+        if (a > b) return 1;
+        if (a < b) return -1;
+      }
+      return 0;
+    },
+
+    enforceVersionPolicy: function () {
+      if (!this.state || !this.state.versionControl) return;
+
+      const policy = this.state.versionControl[this.platform];
+      if (!policy) return;
+
+      const clientVersion = this.appVersion || '1.0.0';
+      const minVer = policy.minSupportedVersion || '1.0.0';
+      const latestVer = policy.latestVersion || '1.0.0';
+      const forceUpdate = !!policy.forceUpdate;
+
+      const isBelowMin = this.semverCompare(clientVersion, minVer) < 0;
+      const isBelowLatest = this.semverCompare(clientVersion, latestVer) < 0;
+
+      // 1. Hard Force Update Gate
+      if (isBelowMin && forceUpdate) {
+        this.renderForceUpdateOverlay(policy, clientVersion);
+        return;
+      } else {
+        this.removeForceUpdateOverlay();
+      }
+
+      // 2. Soft Update Notification (if below latest and not dismissed this session)
+      if (isBelowLatest) {
+        const dismissedKey = 'pixkit_dismissed_update_' + latestVer;
+        try {
+          if (!sessionStorage.getItem(dismissedKey)) {
+            this.renderSoftUpdateToast(policy, clientVersion);
+          }
+        } catch (_) {}
+      } else {
+        this.removeSoftUpdateToast();
+      }
+    },
+
+    renderForceUpdateOverlay: function (policy, clientVersion) {
+      let overlay = document.getElementById('pixkit-force-update-screen');
+      const latestVer = policy.latestVersion || '1.2.0';
+      const updateUrl = policy.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio';
+      const notes = policy.notes || 'Critical security update and performance enhancements.';
+
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'pixkit-force-update-screen';
+        overlay.style.cssText = `
+          position: fixed;
+          inset: 0;
+          z-index: 999999999;
+          background: rgba(18, 19, 16, 0.98);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          color: #F2F3EC;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 24px;
+          text-align: center;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        `;
+        document.body.appendChild(overlay);
+      }
+
+      overlay.innerHTML = `
+        <div style="max-width: 440px; background: #1A1C16; border: 1px solid #292B23; padding: 36px 30px; border-radius: 24px; box-shadow: 0 24px 70px rgba(0,0,0,0.8);">
+          <div style="width: 58px; height: 58px; border-radius: 18px; background: rgba(239, 68, 68, 0.15); color: #EF4444; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 20px; border: 1px solid rgba(239, 68, 68, 0.35);">
+            ⚡
+          </div>
+          <div style="display:inline-block; padding: 4px 12px; border-radius: 999px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); font-size: 11px; font-weight: 800; color: #EF4444; text-transform: uppercase; margin-bottom: 12px;">
+            Mandatory Update Required
+          </div>
+          <h2 style="font-size: 22px; font-weight: 800; margin: 0 0 10px; color: #FFFFFF; letter-spacing: -0.02em;">Update to Continue</h2>
+          <p style="font-size: 13.5px; line-height: 1.5; color: #9FA197; margin: 0 0 18px;">
+            Your installed version (<strong>v${this.escapeHtml(clientVersion)}</strong>) is no longer supported. Please update to <strong>v${this.escapeHtml(latestVer)}</strong> to safely continue using PixKit.
+          </p>
+          <div style="background: #121310; border: 1px solid #262920; border-radius: 12px; padding: 12px 16px; text-align: left; font-size: 12px; color: #B5B7AC; line-height: 1.5; margin-bottom: 22px;">
+            <div style="font-weight: 800; color: #D7F36A; font-size: 11px; text-transform: uppercase; margin-bottom: 4px;">What's New:</div>
+            <div>${this.escapeHtml(notes)}</div>
+          </div>
+          <div>
+            <a href="${this.escapeHtml(updateUrl)}" target="_blank" style="display: block; width: 100%; box-sizing: border-box; padding: 13px 24px; border-radius: 14px; background: #D7F36A; color: #121310; font-size: 14px; font-weight: 800; text-decoration: none; transition: transform 0.15s ease;">
+              Update via Google Play &rarr;
+            </a>
+          </div>
+        </div>
+      `;
+      document.body.style.overflow = 'hidden';
+    },
+
+    removeForceUpdateOverlay: function () {
+      const overlay = document.getElementById('pixkit-force-update-screen');
+      if (overlay) {
+        overlay.remove();
+        document.body.style.overflow = '';
+      }
+    },
+
+    renderSoftUpdateToast: function (policy, clientVersion) {
+      let toast = document.getElementById('pixkit-soft-update-toast');
+      const latestVer = policy.latestVersion || '1.2.0';
+      const updateUrl = policy.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio';
+
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'pixkit-soft-update-toast';
+        toast.style.cssText = `
+          position: fixed;
+          bottom: 24px;
+          right: 24px;
+          z-index: 999998;
+          background: #1A1C16;
+          color: #F2F3EC;
+          border: 1px solid #38BDF8;
+          padding: 14px 18px;
+          border-radius: 16px;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          font-size: 13px;
+          font-weight: 700;
+          box-shadow: 0 16px 40px rgba(0,0,0,0.65);
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          max-width: 420px;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        `;
+        document.body.appendChild(toast);
+      }
+
+      toast.innerHTML = `
+        <span style="font-size: 20px;">🚀</span>
+        <div style="flex: 1; line-height: 1.35;">
+          <div style="font-weight: 800; color: #FFFFFF;">PixKit v${this.escapeHtml(latestVer)} Available</div>
+          <div style="font-size: 11.5px; color: #9FA197;">Update now for improved performance.</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <a href="${this.escapeHtml(updateUrl)}" target="_blank" style="background: #38BDF8; color: #0F172A; padding: 6px 14px; border-radius: 999px; text-decoration: none; font-size: 11.5px; font-weight: 800; white-space: nowrap;">Update</a>
+          <button onclick="PixKitRemote.dismissSoftUpdate('${this.escapeHtml(latestVer)}')" style="background:none; border:none; color:#71717A; cursor:pointer; font-size:16px; font-weight:800; padding:2px 6px;">&times;</button>
+        </div>
+      `;
+    },
+
+    dismissSoftUpdate: function (latestVer) {
+      if (latestVer) {
+        try { sessionStorage.setItem('pixkit_dismissed_update_' + latestVer, 'true'); } catch (_) {}
+      }
+      this.removeSoftUpdateToast();
+    },
+
+    removeSoftUpdateToast: function () {
+      const toast = document.getElementById('pixkit-soft-update-toast');
+      if (toast) toast.remove();
     },
 
     renderMaintenanceOverlay: function () {
