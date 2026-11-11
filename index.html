@@ -1643,14 +1643,14 @@
     </div>
   </section>
 
-  <!-- Mobile Desktop Mode Recommendation Modal -->
+  <!-- Mobile Desktop Mode Required Modal -->
   <style>
     .pixkit-desktop-modal-backdrop {
       position: fixed;
       inset: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.78);
+      background: rgba(0, 0, 0, 0.82);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       z-index: 99999;
@@ -1675,10 +1675,10 @@
       background: #161812;
       border: 1px solid #2d3023;
       border-radius: 24px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(215, 243, 106, 0.15);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(215, 243, 106, 0.2);
       width: 100%;
       max-width: 440px;
-      padding: 30px 24px 26px;
+      padding: 30px 22px 24px;
       box-sizing: border-box;
       text-align: center;
       position: relative;
@@ -1718,8 +1718,8 @@
     }
 
     .pixkit-desktop-icon-badge {
-      width: 58px;
-      height: 58px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       background: rgba(215, 243, 106, 0.12);
       border: 1px solid rgba(215, 243, 106, 0.35);
@@ -1728,7 +1728,7 @@
       align-items: center;
       justify-content: center;
       margin-bottom: 18px;
-      box-shadow: 0 0 24px rgba(215, 243, 106, 0.2);
+      box-shadow: 0 0 24px rgba(215, 243, 106, 0.22);
     }
 
     .pixkit-desktop-modal-title {
@@ -1751,9 +1751,9 @@
       background: #1b1e16;
       border: 1px dashed rgba(215, 243, 106, 0.35);
       border-radius: 14px;
-      padding: 12px 14px;
+      padding: 14px 16px;
       text-align: left;
-      margin-bottom: 22px;
+      margin-bottom: 18px;
     }
 
     .pixkit-desktop-tip-box .tip-header {
@@ -1765,14 +1765,19 @@
       color: #D7F36A;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      margin-bottom: 5px;
+      margin-bottom: 8px;
     }
 
-    .pixkit-desktop-tip-box .tip-body {
-      font-size: 12.5px;
-      line-height: 1.5;
-      color: #d1d4c8;
+    .pixkit-desktop-tip-box .tip-steps {
       margin: 0;
+      padding-left: 18px;
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: #d1d4c8;
+    }
+
+    .pixkit-desktop-tip-box .tip-steps li {
+      margin-bottom: 4px;
     }
 
     .pixkit-desktop-tip-box strong {
@@ -1780,15 +1785,38 @@
       font-weight: 700;
     }
 
+    .desktop-mode-check-status {
+      display: none;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      font-size: 12.5px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      line-height: 1.45;
+      text-align: left;
+    }
+
+    @keyframes shakeHint {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    .shake-anim {
+      animation: shakeHint 0.4s ease;
+    }
+
     .pixkit-desktop-modal-actions {
       display: flex;
       flex-direction: column;
-      gap: 9px;
+      gap: 10px;
     }
 
     .pixkit-desktop-btn-primary {
       width: 100%;
-      height: 46px;
+      height: 48px;
       border-radius: 12px;
       background: #D7F36A;
       color: #121310;
@@ -1807,47 +1835,25 @@
     .pixkit-desktop-btn-primary:hover {
       background: #c5e353;
       transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(215, 243, 106, 0.3);
-    }
-
-    .pixkit-desktop-btn-secondary {
-      width: 100%;
-      height: 42px;
-      border-radius: 12px;
-      background: #1f2219;
-      border: 1px solid #2d3023;
-      color: #e5e7dc;
-      text-decoration: none;
-      font-weight: 700;
-      font-size: 13px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-      font-family: inherit;
-      box-sizing: border-box;
-    }
-
-    .pixkit-desktop-btn-secondary:hover {
-      background: #272b1f;
-      border-color: #3d4230;
-      color: #ffffff;
+      box-shadow: 0 6px 20px rgba(215, 243, 106, 0.35);
     }
 
     .pixkit-desktop-btn-ghost {
       background: transparent;
-      border: none;
+      border: 1px solid #2d3023;
+      border-radius: 10px;
       color: #8c9082;
       font-size: 12.5px;
-      padding: 8px;
+      padding: 9px;
       cursor: pointer;
       font-family: inherit;
-      transition: color 0.2s ease;
+      transition: all 0.2s ease;
     }
 
     .pixkit-desktop-btn-ghost:hover {
+      background: #1b1e16;
       color: #d1d4c8;
+      border-color: #3d4230;
     }
   </style>
 
@@ -1863,10 +1869,10 @@
         </svg>
       </div>
 
-      <h3 id="desktop-modal-title" class="pixkit-desktop-modal-title">Desktop Mode Recommended</h3>
+      <h3 id="desktop-modal-title" class="pixkit-desktop-modal-title">Desktop Mode Required</h3>
       
       <p class="pixkit-desktop-modal-lead">
-        PixKit Studio's full canvas, multi-tool panels, and editing workspace are crafted for desktop screens.
+        PixKit Studio's full canvas, multi-tool panels, and editing workspace require a desktop-resolution screen. Phone mobile view is not supported.
       </p>
 
       <div class="pixkit-desktop-tip-box">
@@ -1876,28 +1882,26 @@
             <line x1="12" y1="16" x2="12" y2="12"></line>
             <line x1="12" y1="8" x2="12.01" y2="8"></line>
           </svg>
-          <span>For the best mobile experience:</span>
+          <span>Please enable Desktop site:</span>
         </div>
-        <p class="tip-body">
-          Tap browser menu (<strong>⋮</strong> or <strong>Share / aA</strong>) &rarr; enable <strong>"Desktop site"</strong>, or open <strong>pixkit.site</strong> on your PC / laptop.
-        </p>
+        <ul class="tip-steps">
+          <li><strong>Chrome / Brave / Edge:</strong> Tap <strong>⋮</strong> &rarr; turn on <strong>"Desktop site"</strong></li>
+          <li><strong>Safari (iPhone):</strong> Tap <strong>aA</strong> &rarr; select <strong>"Request Desktop Website"</strong></li>
+          <li><strong>Or:</strong> Open <strong>pixkit.site</strong> on any PC, laptop, or Mac</li>
+        </ul>
       </div>
 
+      <!-- Live status alert when checking -->
+      <div id="desktop-mode-check-status" class="desktop-mode-check-status"></div>
+
       <div class="pixkit-desktop-modal-actions">
-        <button type="button" class="pixkit-desktop-btn-primary" onclick="proceedToStudioAnyway()">
-          <span>Continue to Studio</span>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
+        <button type="button" class="pixkit-desktop-btn-primary" onclick="verifyAndEnterStudio()">
+          <i class="fa-solid fa-arrows-rotate"></i>
+          <span>I Turned on Desktop Site &mdash; Enter Studio</span>
         </button>
 
-        <a href="https://github.com/Hsgap/pixkit/releases" target="_blank" class="pixkit-desktop-btn-secondary">
-          <i class="fa-brands fa-android" style="font-size: 16px; color: #3DDC84;"></i>
-          <span>Get Official Mobile App</span>
-        </a>
-
         <button type="button" class="pixkit-desktop-btn-ghost" onclick="closeDesktopModeModal()">
-          Stay on Overview
+          Stay on Homepage
         </button>
       </div>
     </div>
@@ -1912,15 +1916,17 @@
   <script>
     let pendingStudioRoute = null;
 
-    function isMobileDeviceForStudio() {
+    function isMobilePhoneMode() {
       const ua = navigator.userAgent || navigator.vendor || window.opera || '';
       const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
-      const isNarrow = window.innerWidth <= 840;
-      return (isMobileUA || isNarrow);
+      // If mobile device user agent AND viewport width is less than 850px, Desktop Mode is OFF
+      return (isMobileUA && window.innerWidth < 850);
     }
 
     function showDesktopModeModal() {
       const modal = document.getElementById('pixkit-desktop-mode-modal');
+      const statusEl = document.getElementById('desktop-mode-check-status');
+      if (statusEl) statusEl.style.display = 'none';
       if (modal) {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -1937,10 +1943,21 @@
       }
     }
 
-    function proceedToStudioAnyway() {
-      sessionStorage.setItem('pixkit_desktop_prompt_bypassed', 'true');
-      closeDesktopModeModal();
-      window.location.href = 'studio';
+    function verifyAndEnterStudio() {
+      // Check if user has enabled Desktop Mode (viewport expanded >= 850px or desktop UA)
+      if (!isMobilePhoneMode()) {
+        closeDesktopModeModal();
+        window.location.href = 'studio';
+      } else {
+        const statusEl = document.getElementById('desktop-mode-check-status');
+        if (statusEl) {
+          statusEl.style.display = 'block';
+          statusEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="margin-right: 6px;"></i> <strong>Desktop site not detected yet.</strong><br>Please tap your browser menu (<strong>⋮</strong> or <strong>aA</strong>), check <strong>"Desktop site"</strong>, then tap here again.';
+          statusEl.classList.remove('shake-anim');
+          void statusEl.offsetWidth;
+          statusEl.classList.add('shake-anim');
+        }
+      }
     }
 
     function launchStudioWithSavedWork(event, directRoute) {
@@ -1950,9 +1967,8 @@
       localStorage.setItem('pixkit_target_route', cleanRoute);
       localStorage.setItem('pixkit_entered', 'true');
 
-      // Check if user is on mobile/phone and hasn't bypassed the desktop prompt this session
-      const alreadyAccepted = sessionStorage.getItem('pixkit_desktop_prompt_bypassed');
-      if (isMobileDeviceForStudio() && !alreadyAccepted) {
+      // Strict Gate: Mobile phone view cannot enter until user switches to Desktop Mode
+      if (isMobilePhoneMode()) {
         pendingStudioRoute = cleanRoute;
         showDesktopModeModal();
         return;
@@ -1960,6 +1976,17 @@
 
       window.location.href = 'studio';
     }
+
+    // Auto-detect when user toggles Desktop Mode in browser menu
+    window.addEventListener('resize', function() {
+      const modal = document.getElementById('pixkit-desktop-mode-modal');
+      if (modal && modal.classList.contains('active')) {
+        if (!isMobilePhoneMode()) {
+          closeDesktopModeModal();
+          window.location.href = 'studio';
+        }
+      }
+    });
     /**
      * Real-World Time-Based Theme Manager
      */
