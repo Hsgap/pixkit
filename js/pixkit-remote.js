@@ -87,47 +87,67 @@
       const style = document.createElement('style');
       style.id = 'pixkit-remote-styles';
       style.textContent = `
+        /* Disabled feature & tool card styling: Keep icons visible, greyed out */
+        .pixkit-tool-card-disabled,
+        .pixkit-feature-disabled,
+        body.pixkit-no-recent .floating-dock-item#dock-btn-recent,
+        body.pixkit-no-support [data-community="supportModal"],
+        body.pixkit-no-support a[href*="support"]:not(.support-back-btn),
+        body.pixkit-no-support .leaderboard-support-btn,
         body.pixkit-no-leaderboard .leaderboard-bottom-arrow-wrap,
-        body.pixkit-no-leaderboard .leaderboard-bottom-arrow-btn,
-        body.pixkit-no-leaderboard #leaderboard-screen,
-        body.pixkit-no-leaderboard .support-leaderboard-optin-section,
-        body.pixkit-no-leaderboard a[href*="view=leaderboard"],
+        body.pixkit-no-leaderboard .leaderboard-trigger,
         body.pixkit-no-leaderboard [data-community="leaderboard"] {
-          display: none !important;
-          pointer-events: none !important;
-        }
-
-        body.pixkit-no-support #support-toast-card,
-        body.pixkit-no-support .support-toast-card,
-        body.pixkit-no-support [data-community="supportModal"] {
-          display: none !important;
-          pointer-events: none !important;
-        }
-
-        body.pixkit-no-recent .floating-dock-item#dock-btn-recent {
-          opacity: 0.65;
-        }
-
-        .pixkit-tool-card-disabled {
           opacity: 0.42 !important;
-          filter: grayscale(0.65) !important;
+          filter: grayscale(0.85) !important;
           cursor: not-allowed !important;
           position: relative !important;
+          transition: opacity 0.25s ease, filter 0.25s ease;
         }
-        .pixkit-tool-card-disabled::after {
+
+        .pixkit-tool-card-disabled::after,
+        .pixkit-feature-disabled::after {
           content: "PAUSED";
           position: absolute;
-          top: 12px;
-          right: 14px;
+          top: 10px;
+          right: 12px;
           background: rgba(245, 158, 11, 0.22);
           color: #F59E0B;
           border: 1px solid rgba(245, 158, 11, 0.45);
-          font-size: 10px;
+          font-size: 9.5px;
           font-weight: 800;
           padding: 2px 7px;
           border-radius: 999px;
           letter-spacing: 0.04em;
           pointer-events: none;
+          z-index: 10;
+        }
+
+        /* Top-Center Floating Notice Capsule (Zero Dock / Bottom Collision) */
+        #pixkit-top-notice-toast {
+          position: fixed;
+          top: 24px;
+          left: 50%;
+          transform: translateX(-50%) translateY(-24px);
+          z-index: 999999999;
+          background: rgba(22, 24, 18, 0.95);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          color: #F4F5EE;
+          border: 1px solid rgba(245, 158, 11, 0.55);
+          padding: 11px 20px;
+          border-radius: 999px;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          font-size: 13px;
+          font-weight: 700;
+          box-shadow: 0 16px 45px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.06);
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          opacity: 0;
+          pointer-events: auto;
+          transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+          max-width: min(92vw, 560px);
+          box-sizing: border-box;
         }
       `;
       (document.head || document.documentElement).appendChild(style);
@@ -338,6 +358,16 @@
         return match[1];
       }
 
+      // Check SEO tool landing page pathname (/crop-image -> crop)
+      const pathname = window.location.pathname || '';
+      const pathMatch = pathname.match(/\/([a-zA-Z0-9_-]+)(?:\.html)?$/);
+      if (pathMatch && pathMatch[1]) {
+        const page = pathMatch[1].toLowerCase();
+        if (page !== 'index' && page !== 'studio' && page !== 'support' && page !== 'privacy-policy') {
+          return page;
+        }
+      }
+
       return null;
     },
 
@@ -355,6 +385,15 @@
         
         this.showToolEvictedToast(toolInfo.name);
 
+        // Check if on dedicated SEO tool page
+        const pathname = window.location.pathname || '';
+        if (pathname.includes(currentTool)) {
+          setTimeout(() => {
+            window.location.href = 'studio';
+          }, 1200);
+          return;
+        }
+
         // Safely exit the tool workspace to home
         if (typeof window.showView === 'function') {
           window.showView('home');
@@ -371,6 +410,57 @@
       }
     },
 
+    // Top-Center Floating Notice Capsule (Zero Dock / Bottom Collision)
+    showNoticeToast: function (headline, message, icon = '⚠️', duration = 3800) {
+      let toast = document.getElementById('pixkit-top-notice-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'pixkit-top-notice-toast';
+        document.body.appendChild(toast);
+      }
+
+      toast.innerHTML = `
+        <span style="font-size: 16px; flex-shrink: 0;">${icon}</span>
+        <span style="line-height: 1.35; flex: 1;">
+          <strong style="color: #FBBF24; margin-right: 4px;">${this.escapeHtml(headline)}:</strong>
+          <span style="color: #E4E5DD; font-weight: 500;">${this.escapeHtml(message)}</span>
+        </span>
+        <span onclick="var t=document.getElementById('pixkit-top-notice-toast'); if(t){t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(-24px)';}" style="cursor: pointer; opacity: 0.65; font-size: 18px; margin-left: 6px; padding: 0 4px; line-height: 1;" title="Dismiss">&times;</span>
+      `;
+
+      // Trigger entrance animation
+      requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+      });
+
+      clearTimeout(this._toastTimer);
+      this._toastTimer = setTimeout(() => {
+        if (toast) {
+          toast.style.opacity = '0';
+          toast.style.transform = 'translateX(-50%) translateY(-24px)';
+        }
+      }, duration);
+    },
+
+    showToolDisabledToast: function (toolName) {
+      this.showNoticeToast(
+        toolName || 'Tool',
+        'This feature is temporarily paused for scheduled maintenance. Back shortly!',
+        '⚠️',
+        3800
+      );
+    },
+
+    showToolEvictedToast: function (toolName) {
+      this.showNoticeToast(
+        toolName || 'Feature Notice',
+        'This feature was temporarily paused for scheduled maintenance. Safely returned to home.',
+        '⚠️',
+        4500
+      );
+    },
+
     // Enforce Community Feature Flags (Leaderboard, Support Modal, and Recent Files & History)
     applyCommunityFeatureFlags: function () {
       const isLeaderboard = this.isFeatureEnabled('community', 'leaderboard');
@@ -384,15 +474,35 @@
         document.body.classList.toggle('pixkit-no-recent', !isRecent);
       }
 
-      // 1. Direct DOM handling for Leaderboard
+      // 1. Leaderboard: Keep icon visible, grey out and intercept clicks if paused
       const lbElements = document.querySelectorAll(
-        '.leaderboard-bottom-arrow-wrap, .leaderboard-bottom-arrow-btn, #leaderboard-floating-trigger, .leaderboard-trigger, [data-community="leaderboard"], .support-leaderboard-optin-section, a[href*="view=leaderboard"]'
+        '.leaderboard-bottom-arrow-wrap, .leaderboard-bottom-arrow-btn, #leaderboard-floating-trigger, .leaderboard-trigger, [data-community="leaderboard"], a[href*="view=leaderboard"]'
       );
       lbElements.forEach(el => {
         if (!isLeaderboard) {
-          el.style.setProperty('display', 'none', 'important');
+          el.classList.add('pixkit-feature-disabled');
+          if (!el._pixkitLbHandler) {
+            el._pixkitLbHandler = (e) => {
+              if (!PixKitRemote.isFeatureEnabled('community', 'leaderboard')) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                PixKitRemote.showNoticeToast(
+                  'Leaderboard Paused',
+                  'The Supporter Leaderboard is temporarily paused for routine moderation.',
+                  '🏆'
+                );
+                return false;
+              }
+            };
+            el.addEventListener('click', el._pixkitLbHandler, true);
+          }
         } else {
-          el.style.removeProperty('display');
+          el.classList.remove('pixkit-feature-disabled');
+          if (el._pixkitLbHandler) {
+            el.removeEventListener('click', el._pixkitLbHandler, true);
+            el._pixkitLbHandler = null;
+          }
         }
       });
 
@@ -405,39 +515,120 @@
         }
       }
 
-      // 2. Direct DOM handling for Support Modal & Toast
+      // 2. Support Modal & Page: Keep icons visible, grey out and intercept clicks if paused
       const supportToast = document.getElementById('support-toast-card');
       if (!isSupport) {
         if (typeof window.dismissSupportToast === 'function') {
           window.dismissSupportToast();
         }
         if (supportToast) {
-          supportToast.style.setProperty('display', 'none', 'important');
           supportToast.classList.remove('visible');
-        }
-      } else {
-        if (supportToast) {
-          supportToast.style.removeProperty('display');
         }
       }
 
-      // Any support buttons or banners marked with data-community="supportModal"
-      const supportElements = document.querySelectorAll('[data-community="supportModal"]');
+      const supportElements = document.querySelectorAll(
+        '[data-community="supportModal"], a[href*="support"]:not(.support-back-btn), .leaderboard-support-btn'
+      );
       supportElements.forEach(el => {
         if (!isSupport) {
-          el.style.setProperty('display', 'none', 'important');
+          el.classList.add('pixkit-feature-disabled');
+          if (!el._pixkitSupportHandler) {
+            el._pixkitSupportHandler = (e) => {
+              if (!PixKitRemote.isFeatureEnabled('community', 'supportModal')) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                PixKitRemote.showNoticeToast(
+                  'Support Contributions Paused',
+                  'Community contributions & donations are temporarily paused for maintenance. Back shortly!',
+                  '☕'
+                );
+                return false;
+              }
+            };
+            el.addEventListener('click', el._pixkitSupportHandler, true);
+          }
         } else {
-          el.style.removeProperty('display');
+          el.classList.remove('pixkit-feature-disabled');
+          if (el._pixkitSupportHandler) {
+            el.removeEventListener('click', el._pixkitSupportHandler, true);
+            el._pixkitSupportHandler = null;
+          }
         }
       });
 
-      // 3. Direct DOM handling for Recent Files & History (Keep icon visible, update state)
+      // In-page handling if user visits support.html directly
+      if (window.location.pathname.includes('support')) {
+        let banner = document.getElementById('pixkit-support-paused-banner');
+        if (!isSupport) {
+          if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'pixkit-support-paused-banner';
+            banner.style.cssText = `
+              position: sticky;
+              top: 0;
+              z-index: 999999;
+              background: #78350F;
+              color: #FEF3C7;
+              padding: 14px 24px;
+              text-align: center;
+              font-weight: 700;
+              font-size: 13.5px;
+              border-bottom: 2px solid #D97706;
+              box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            `;
+            banner.innerHTML = `
+              ⚠️ <strong>Support Contributions Paused:</strong> Voluntary donations and sponsorships are temporarily closed for scheduled maintenance. All image & PDF tools remain 100% free and functional!
+            `;
+            document.body.prepend(banner);
+          }
+          const checkoutElements = document.querySelectorAll('.checkout-hero-btn, .gateway-tab, .currency-btn, #customAmountInput');
+          checkoutElements.forEach(btn => {
+            btn.style.opacity = '0.4';
+            btn.style.pointerEvents = 'none';
+          });
+        } else {
+          if (banner) banner.remove();
+          const checkoutElements = document.querySelectorAll('.checkout-hero-btn, .gateway-tab, .currency-btn, #customAmountInput');
+          checkoutElements.forEach(btn => {
+            btn.style.removeProperty('opacity');
+            btn.style.removeProperty('pointer-events');
+          });
+        }
+      }
+
+      // 3. Recent Files & History: Keep dock icon visible, grey out and intercept clicks if paused
       const dockBtn = document.getElementById('dock-btn-recent');
       if (dockBtn) {
-        dockBtn.style.removeProperty('display'); // Never hide the icon
-        const tooltip = dockBtn.querySelector('.dock-tooltip');
-        if (tooltip) {
-          tooltip.textContent = !isRecent ? 'Recent Files (Temporarily Unavailable)' : 'Recent Files';
+        if (!isRecent) {
+          dockBtn.classList.add('pixkit-tool-card-disabled');
+          const tooltip = dockBtn.querySelector('.dock-tooltip');
+          if (tooltip) tooltip.textContent = 'Recent Files (Temporarily Paused)';
+          if (!dockBtn._pixkitRecentHandler) {
+            dockBtn._pixkitRecentHandler = (e) => {
+              if (!PixKitRemote.isFeatureEnabled('community', 'recentFiles')) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                PixKitRemote.showNoticeToast(
+                  'Recent Files Paused',
+                  'Recent Files & History is temporarily paused for routine maintenance.',
+                  '📁'
+                );
+                return false;
+              }
+            };
+            dockBtn.addEventListener('click', dockBtn._pixkitRecentHandler, true);
+          }
+        } else {
+          dockBtn.classList.remove('pixkit-tool-card-disabled');
+          const tooltip = dockBtn.querySelector('.dock-tooltip');
+          if (tooltip) tooltip.textContent = 'Recent Files';
+          if (dockBtn._pixkitRecentHandler) {
+            dockBtn.removeEventListener('click', dockBtn._pixkitRecentHandler, true);
+            dockBtn._pixkitRecentHandler = null;
+          }
         }
       }
 
@@ -454,122 +645,67 @@
           } else {
             window.location.hash = '#/home';
           }
-          this.showToolEvictedToast('This feature is temporarily unavailable: Recent Files & History is currently disabled.');
+          this.showNoticeToast(
+            'Recent Files Unavailable',
+            'Recent Files & History is currently disabled for maintenance. Returned to home.',
+            '📁'
+          );
         }
       }
     },
 
-    // Visually update tool cards and buttons in Home/Edit/Convert/Doc suites
+    // Visually update tool cards and buttons in Home/Edit/Convert/Doc suites and landing pages
     applyToolCardsState: function () {
-      const toolCards = document.querySelectorAll('[onclick*="openToolWorkspace"]');
+      const toolCards = document.querySelectorAll(
+        '[onclick*="openToolWorkspace"], .tool-row-card, .shortcut-pill, .seo-tool-card, a[href*="resize-image"], a[href*="crop-image"], a[href*="merge-pdf"], a[href*="split-pdf"], a[href*="compress-"], a[href*="convert-"]'
+      );
+
       toolCards.forEach(card => {
+        let toolId = null;
         const onclickAttr = card.getAttribute('onclick') || '';
         const match = onclickAttr.match(/openToolWorkspace\(['"]([^'"]+)['"]\)/);
         if (match && match[1]) {
-          const toolId = match[1];
-          const toolInfo = this.getToolInfo(toolId);
-          if (toolInfo) {
-            const isEnabled = this.isFeatureEnabled(toolInfo.cat, toolInfo.key);
-            if (!isEnabled) {
-              card.classList.add('pixkit-tool-card-disabled');
-              card.setAttribute('data-disabled-notice', toolInfo.name + ' is paused for maintenance');
-            } else {
-              card.classList.remove('pixkit-tool-card-disabled');
-              card.removeAttribute('data-disabled-notice');
-            }
+          toolId = match[1];
+        } else {
+          const href = card.getAttribute('href') || '';
+          const hrefMatch = href.match(/([a-zA-Z0-9_-]+)(?:\.html)?$/);
+          if (hrefMatch && hrefMatch[1]) {
+            toolId = hrefMatch[1];
+          }
+        }
+
+        if (!toolId) return;
+        const toolInfo = this.getToolInfo(toolId);
+        if (!toolInfo) return;
+
+        const isEnabled = this.isFeatureEnabled(toolInfo.cat, toolInfo.key);
+        if (!isEnabled) {
+          card.classList.add('pixkit-tool-card-disabled');
+          card.setAttribute('data-disabled-notice', toolInfo.name + ' is paused for maintenance');
+
+          // Intercept click in capturing phase before workspace or navigation can fire
+          if (!card._pixkitDisabledHandler) {
+            card._pixkitDisabledHandler = (e) => {
+              const currentEnabled = PixKitRemote.isFeatureEnabled(toolInfo.cat, toolInfo.key);
+              if (!currentEnabled) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                PixKitRemote.showToolDisabledToast(toolInfo.name);
+                return false;
+              }
+            };
+            card.addEventListener('click', card._pixkitDisabledHandler, true);
+          }
+        } else {
+          card.classList.remove('pixkit-tool-card-disabled');
+          card.removeAttribute('data-disabled-notice');
+          if (card._pixkitDisabledHandler) {
+            card.removeEventListener('click', card._pixkitDisabledHandler, true);
+            card._pixkitDisabledHandler = null;
           }
         }
       });
-    },
-
-    showToolDisabledToast: function (toolName) {
-      let toast = document.getElementById('pixkit-tool-disabled-toast');
-      if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'pixkit-tool-disabled-toast';
-        toast.style.cssText = `
-          position: fixed;
-          bottom: 28px;
-          left: 50%;
-          transform: translateX(-50%) translateY(20px);
-          z-index: 99999999;
-          background: #1A1C16;
-          color: #F2F3EC;
-          border: 1px solid #3D4034;
-          padding: 14px 24px;
-          border-radius: 16px;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          font-size: 13.5px;
-          font-weight: 700;
-          box-shadow: 0 16px 40px rgba(0,0,0,0.6);
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          opacity: 0;
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          pointer-events: none;
-        `;
-        document.body.appendChild(toast);
-      }
-
-      toast.innerHTML = `
-        <span style="color: #F59E0B; font-size: 18px;">⚠️</span>
-        <span><strong>${toolName}</strong> is temporarily paused for scheduled maintenance. Back shortly!</span>
-      `;
-
-      toast.style.opacity = '1';
-      toast.style.transform = 'translateX(-50%) translateY(0)';
-
-      clearTimeout(this._toastTimer);
-      this._toastTimer = setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(-50%) translateY(20px)';
-      }, 4000);
-    },
-
-    showToolEvictedToast: function (toolName) {
-      let toast = document.getElementById('pixkit-tool-evicted-toast');
-      if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'pixkit-tool-evicted-toast';
-        toast.style.cssText = `
-          position: fixed;
-          top: 24px;
-          left: 50%;
-          transform: translateX(-50%) translateY(-20px);
-          z-index: 99999999;
-          background: #1A1C16;
-          color: #F2F3EC;
-          border: 1px solid #F59E0B;
-          padding: 14px 26px;
-          border-radius: 16px;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          font-size: 13.5px;
-          font-weight: 700;
-          box-shadow: 0 18px 50px rgba(0,0,0,0.75);
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          opacity: 0;
-          transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-          pointer-events: none;
-        `;
-        document.body.appendChild(toast);
-      }
-
-      toast.innerHTML = `
-        <span style="color: #F59E0B; font-size: 20px;">⚠️</span>
-        <span><strong>${toolName}</strong> was temporarily paused for scheduled maintenance by admin. You have been safely returned to studio home.</span>
-      `;
-
-      toast.style.opacity = '1';
-      toast.style.transform = 'translateX(-50%) translateY(0)';
-
-      clearTimeout(this._evictToastTimer);
-      this._evictToastTimer = setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(-50%) translateY(-20px)';
-      }, 5500);
     },
 
     // Evaluate ecosystem state and render maintenance overlay, broadcast banner, and flag rules
