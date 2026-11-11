@@ -87,7 +87,7 @@
       const style = document.createElement('style');
       style.id = 'pixkit-remote-styles';
       style.textContent = `
-        /* Disabled feature & tool card styling: Keep icons visible, greyed out */
+        /* Disabled feature & tool card styling: Keep icons visible, calm greyscale with zero badge collision */
         .pixkit-tool-card-disabled,
         .pixkit-feature-disabled,
         body.pixkit-no-recent .floating-dock-item#dock-btn-recent,
@@ -97,57 +97,23 @@
         body.pixkit-no-leaderboard .leaderboard-bottom-arrow-wrap,
         body.pixkit-no-leaderboard .leaderboard-trigger,
         body.pixkit-no-leaderboard [data-community="leaderboard"] {
-          opacity: 0.42 !important;
-          filter: grayscale(0.85) !important;
+          opacity: 0.38 !important;
+          filter: grayscale(1) !important;
           cursor: not-allowed !important;
           position: relative !important;
+          pointer-events: auto !important;
           transition: opacity 0.25s ease, filter 0.25s ease;
         }
 
-        .pixkit-tool-card-disabled::after,
-        .pixkit-feature-disabled::after {
-          content: "PAUSED";
-          position: absolute;
-          top: 10px;
-          right: 12px;
-          background: rgba(245, 158, 11, 0.22);
-          color: #F59E0B;
-          border: 1px solid rgba(245, 158, 11, 0.45);
-          font-size: 9.5px;
-          font-weight: 800;
-          padding: 2px 7px;
-          border-radius: 999px;
-          letter-spacing: 0.04em;
-          pointer-events: none;
-          z-index: 10;
+        /* Clean Minimal Pop-In Animations for Maintenance Modal */
+        @keyframes pixkitFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
 
-        /* Top-Center Floating Notice Capsule (Zero Dock / Bottom Collision) */
-        #pixkit-top-notice-toast {
-          position: fixed;
-          top: 24px;
-          left: 50%;
-          transform: translateX(-50%) translateY(-24px);
-          z-index: 999999999;
-          background: rgba(22, 24, 18, 0.95);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          color: #F4F5EE;
-          border: 1px solid rgba(245, 158, 11, 0.55);
-          padding: 11px 20px;
-          border-radius: 999px;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          font-size: 13px;
-          font-weight: 700;
-          box-shadow: 0 16px 45px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.06);
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          opacity: 0;
-          pointer-events: auto;
-          transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
-          max-width: min(92vw, 560px);
-          box-sizing: border-box;
+        @keyframes pixkitPopIn {
+          from { opacity: 0; transform: scale(0.92) translateY(10px); }
+          to { opacity: 1; transform: scale(1) translateY(0); }
         }
       `;
       (document.head || document.documentElement).appendChild(style);
@@ -410,54 +376,81 @@
       }
     },
 
-    // Top-Center Floating Notice Capsule (Zero Dock / Bottom Collision)
-    showNoticeToast: function (headline, message, icon = '⚠️', duration = 3800) {
-      let toast = document.getElementById('pixkit-top-notice-toast');
-      if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'pixkit-top-notice-toast';
-        document.body.appendChild(toast);
-      }
+    // Check if an entire category is completely disabled
+    isCategoryAllDisabled: function (category) {
+      if (!this.state || !this.state.featureFlags) return false;
+      const flags = this.state.featureFlags;
+      const catFlags = (flags.web && flags.web[category]) || flags[category];
+      if (!catFlags || typeof catFlags !== 'object') return false;
+      const values = Object.values(catFlags);
+      if (values.length === 0) return false;
+      return values.every(v => v === false);
+    },
 
-      toast.innerHTML = `
-        <span style="font-size: 16px; flex-shrink: 0;">${icon}</span>
-        <span style="line-height: 1.35; flex: 1;">
-          <strong style="color: #FBBF24; margin-right: 4px;">${this.escapeHtml(headline)}:</strong>
-          <span style="color: #E4E5DD; font-weight: 500;">${this.escapeHtml(message)}</span>
-        </span>
-        <span onclick="var t=document.getElementById('pixkit-top-notice-toast'); if(t){t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(-24px)';}" style="cursor: pointer; opacity: 0.65; font-size: 18px; margin-left: 6px; padding: 0 4px; line-height: 1;" title="Dismiss">&times;</span>
+    // Clean, Minimal App-Themed Modal Popup
+    showMaintenanceModal: function (title, message, icon = '🛠️') {
+      const existing = document.getElementById('pixkit-maintenance-modal-backdrop');
+      if (existing) existing.remove();
+
+      const backdrop = document.createElement('div');
+      backdrop.id = 'pixkit-maintenance-modal-backdrop';
+      backdrop.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 999999999;
+        background: rgba(0, 0, 0, 0.78);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        box-sizing: border-box;
+        animation: pixkitFadeIn 0.2s ease forwards;
       `;
 
-      // Trigger entrance animation
-      requestAnimationFrame(() => {
-        toast.style.opacity = '1';
-        toast.style.transform = 'translateX(-50%) translateY(0)';
+      backdrop.innerHTML = `
+        <div id="pixkit-maintenance-modal-card" style="width: 100%; max-width: 320px; background: #12130e; border: 1px solid #2d3023; border-radius: 24px; padding: 24px 20px; text-align: center; box-shadow: 0 24px 60px rgba(0,0,0,0.85); box-sizing: border-box; font-family: 'DM Sans', -apple-system, sans-serif; animation: pixkitPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+          <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(245, 158, 11, 0.16); border: 1px solid rgba(245, 158, 11, 0.35); color: #F59E0B; font-size: 22px; display: grid; place-items: center; margin: 0 auto 14px;">
+            ${icon}
+          </div>
+          <h3 style="font: 800 17px/1.25 'Manrope', -apple-system, sans-serif; color: #FFFFFF; margin: 0 0 8px; letter-spacing: -0.3px;">
+            ${this.escapeHtml(title)}
+          </h3>
+          <p style="font-size: 13px; line-height: 1.5; color: #9fa197; margin: 0 0 20px;">
+            ${this.escapeHtml(message)}
+          </p>
+          <button type="button" onclick="window.closePixKitMaintenanceModal()" style="width: 100%; padding: 13px 16px; border-radius: 12px; background: #D7F36A; color: #101204; font: 800 13px/1 'Manrope', -apple-system, sans-serif; border: none; cursor: pointer; transition: transform 0.12s ease; box-shadow: 0 4px 14px rgba(215, 243, 106, 0.2);">
+            Understood
+          </button>
+        </div>
+      `;
+
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) {
+          window.closePixKitMaintenanceModal();
+        }
       });
 
-      clearTimeout(this._toastTimer);
-      this._toastTimer = setTimeout(() => {
-        if (toast) {
-          toast.style.opacity = '0';
-          toast.style.transform = 'translateX(-50%) translateY(-24px)';
-        }
-      }, duration);
+      document.body.appendChild(backdrop);
     },
 
     showToolDisabledToast: function (toolName) {
-      this.showNoticeToast(
-        toolName || 'Tool',
+      this.showMaintenanceModal(
+        (toolName || 'Tool') + ' Paused',
         'This feature is temporarily paused for scheduled maintenance. Back shortly!',
-        '⚠️',
-        3800
+        '🛠️'
       );
     },
 
     showToolEvictedToast: function (toolName) {
-      this.showNoticeToast(
-        toolName || 'Feature Notice',
+      this.showMaintenanceModal(
+        (toolName || 'Feature') + ' Notice',
         'This feature was temporarily paused for scheduled maintenance. Safely returned to home.',
-        '⚠️',
-        4500
+        '🛠️'
       );
     },
 
@@ -487,7 +480,7 @@
                 e.preventDefault();
                 e.stopPropagation();
                 e.stopImmediatePropagation();
-                PixKitRemote.showNoticeToast(
+                PixKitRemote.showMaintenanceModal(
                   'Leaderboard Paused',
                   'The Supporter Leaderboard is temporarily paused for routine moderation.',
                   '🏆'
@@ -538,7 +531,7 @@
                 e.preventDefault();
                 e.stopPropagation();
                 e.stopImmediatePropagation();
-                PixKitRemote.showNoticeToast(
+                PixKitRemote.showMaintenanceModal(
                   'Support Contributions Paused',
                   'Community contributions & donations are temporarily paused for maintenance. Back shortly!',
                   '☕'
@@ -611,7 +604,7 @@
                 e.preventDefault();
                 e.stopPropagation();
                 e.stopImmediatePropagation();
-                PixKitRemote.showNoticeToast(
+                PixKitRemote.showMaintenanceModal(
                   'Recent Files Paused',
                   'Recent Files & History is temporarily paused for routine maintenance.',
                   '📁'
@@ -645,7 +638,7 @@
           } else {
             window.location.hash = '#/home';
           }
-          this.showNoticeToast(
+          this.showMaintenanceModal(
             'Recent Files Unavailable',
             'Recent Files & History is currently disabled for maintenance. Returned to home.',
             '📁'
@@ -1071,6 +1064,29 @@
       if (banner) banner.remove();
     }
   };
+
+  window.closePixKitMaintenanceModal = function () {
+    const backdrop = document.getElementById('pixkit-maintenance-modal-backdrop');
+    if (backdrop) {
+      backdrop.style.opacity = '0';
+      backdrop.style.transition = 'opacity 0.18s ease';
+      const card = document.getElementById('pixkit-maintenance-modal-card');
+      if (card) {
+        card.style.transform = 'scale(0.92) translateY(10px)';
+        card.style.opacity = '0';
+        card.style.transition = 'all 0.18s ease';
+      }
+      setTimeout(() => {
+        if (backdrop.parentNode) backdrop.remove();
+      }, 190);
+    }
+  };
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      window.closePixKitMaintenanceModal();
+    }
+  });
 
   window.PixKitRemote = PixKitRemote;
 
