@@ -1643,6 +1643,266 @@
     </div>
   </section>
 
+  <!-- Mobile Desktop Mode Recommendation Modal -->
+  <style>
+    .pixkit-desktop-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      box-sizing: border-box;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.25s ease;
+    }
+
+    .pixkit-desktop-modal-backdrop.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .pixkit-desktop-modal-card {
+      background: #161812;
+      border: 1px solid #2d3023;
+      border-radius: 24px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(215, 243, 106, 0.15);
+      width: 100%;
+      max-width: 440px;
+      padding: 30px 24px 26px;
+      box-sizing: border-box;
+      text-align: center;
+      position: relative;
+      transform: scale(0.92) translateY(12px);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      color: #fafaf9;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .pixkit-desktop-modal-backdrop.active .pixkit-desktop-modal-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .pixkit-desktop-modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid #2d3023;
+      background: #1f2219;
+      color: #9da090;
+      font-size: 20px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .pixkit-desktop-modal-close:hover {
+      background: #282c20;
+      color: #ffffff;
+      border-color: #3f4432;
+    }
+
+    .pixkit-desktop-icon-badge {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: rgba(215, 243, 106, 0.12);
+      border: 1px solid rgba(215, 243, 106, 0.35);
+      color: #D7F36A;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+      box-shadow: 0 0 24px rgba(215, 243, 106, 0.2);
+    }
+
+    .pixkit-desktop-modal-title {
+      font-family: 'Manrope', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      margin: 0 0 10px;
+    }
+
+    .pixkit-desktop-modal-lead {
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: #a4a79b;
+      margin: 0 0 18px;
+    }
+
+    .pixkit-desktop-tip-box {
+      background: #1b1e16;
+      border: 1px dashed rgba(215, 243, 106, 0.35);
+      border-radius: 14px;
+      padding: 12px 14px;
+      text-align: left;
+      margin-bottom: 22px;
+    }
+
+    .pixkit-desktop-tip-box .tip-header {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #D7F36A;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 5px;
+    }
+
+    .pixkit-desktop-tip-box .tip-body {
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #d1d4c8;
+      margin: 0;
+    }
+
+    .pixkit-desktop-tip-box strong {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    .pixkit-desktop-modal-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .pixkit-desktop-btn-primary {
+      width: 100%;
+      height: 46px;
+      border-radius: 12px;
+      background: #D7F36A;
+      color: #121310;
+      border: none;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      font-family: inherit;
+    }
+
+    .pixkit-desktop-btn-primary:hover {
+      background: #c5e353;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(215, 243, 106, 0.3);
+    }
+
+    .pixkit-desktop-btn-secondary {
+      width: 100%;
+      height: 42px;
+      border-radius: 12px;
+      background: #1f2219;
+      border: 1px solid #2d3023;
+      color: #e5e7dc;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    .pixkit-desktop-btn-secondary:hover {
+      background: #272b1f;
+      border-color: #3d4230;
+      color: #ffffff;
+    }
+
+    .pixkit-desktop-btn-ghost {
+      background: transparent;
+      border: none;
+      color: #8c9082;
+      font-size: 12.5px;
+      padding: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: color 0.2s ease;
+    }
+
+    .pixkit-desktop-btn-ghost:hover {
+      color: #d1d4c8;
+    }
+  </style>
+
+  <div id="pixkit-desktop-mode-modal" class="pixkit-desktop-modal-backdrop" onclick="if(event.target === this) closeDesktopModeModal()">
+    <div class="pixkit-desktop-modal-card" role="dialog" aria-modal="true" aria-labelledby="desktop-modal-title">
+      <button type="button" class="pixkit-desktop-modal-close" onclick="closeDesktopModeModal()" aria-label="Close dialog">&times;</button>
+      
+      <div class="pixkit-desktop-icon-badge">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+        </svg>
+      </div>
+
+      <h3 id="desktop-modal-title" class="pixkit-desktop-modal-title">Desktop Mode Recommended</h3>
+      
+      <p class="pixkit-desktop-modal-lead">
+        PixKit Studio's full canvas, multi-tool panels, and editing workspace are crafted for desktop screens.
+      </p>
+
+      <div class="pixkit-desktop-tip-box">
+        <div class="tip-header">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#D7F36A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>For the best mobile experience:</span>
+        </div>
+        <p class="tip-body">
+          Tap browser menu (<strong>⋮</strong> or <strong>Share / aA</strong>) &rarr; enable <strong>"Desktop site"</strong>, or open <strong>pixkit.site</strong> on your PC / laptop.
+        </p>
+      </div>
+
+      <div class="pixkit-desktop-modal-actions">
+        <button type="button" class="pixkit-desktop-btn-primary" onclick="proceedToStudioAnyway()">
+          <span>Continue to Studio</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <a href="https://github.com/Hsgap/pixkit/releases" target="_blank" class="pixkit-desktop-btn-secondary">
+          <i class="fa-brands fa-android" style="font-size: 16px; color: #3DDC84;"></i>
+          <span>Get Official Mobile App</span>
+        </a>
+
+        <button type="button" class="pixkit-desktop-btn-ghost" onclick="closeDesktopModeModal()">
+          Stay on Overview
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Firebase Realtime Global Presence SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -1650,12 +1910,54 @@
   <script src="js/pixkit-remote.js"></script>
 
   <script>
+    let pendingStudioRoute = null;
+
+    function isMobileDeviceForStudio() {
+      const ua = navigator.userAgent || navigator.vendor || window.opera || '';
+      const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(ua);
+      const isNarrow = window.innerWidth <= 840;
+      return (isMobileUA || isNarrow);
+    }
+
+    function showDesktopModeModal() {
+      const modal = document.getElementById('pixkit-desktop-mode-modal');
+      if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      } else {
+        window.location.href = 'studio';
+      }
+    }
+
+    function closeDesktopModeModal() {
+      const modal = document.getElementById('pixkit-desktop-mode-modal');
+      if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+      }
+    }
+
+    function proceedToStudioAnyway() {
+      sessionStorage.setItem('pixkit_desktop_prompt_bypassed', 'true');
+      closeDesktopModeModal();
+      window.location.href = 'studio';
+    }
+
     function launchStudioWithSavedWork(event, directRoute) {
       if (event) event.preventDefault();
-      localStorage.setItem('pixkit_entered', 'true');
       const route = directRoute || localStorage.getItem('pixkit_last_route') || '#/home';
       const cleanRoute = route.startsWith('#') ? route : '#' + route;
       localStorage.setItem('pixkit_target_route', cleanRoute);
+      localStorage.setItem('pixkit_entered', 'true');
+
+      // Check if user is on mobile/phone and hasn't bypassed the desktop prompt this session
+      const alreadyAccepted = sessionStorage.getItem('pixkit_desktop_prompt_bypassed');
+      if (isMobileDeviceForStudio() && !alreadyAccepted) {
+        pendingStudioRoute = cleanRoute;
+        showDesktopModeModal();
+        return;
+      }
+
       window.location.href = 'studio';
     }
     /**
