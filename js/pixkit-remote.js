@@ -639,8 +639,8 @@
         this.removeForceUpdateOverlay();
       }
 
-      // 2. Soft Update Notification (if below latest and not dismissed this session)
-      if (isBelowLatest) {
+      // 2. Soft Update Notification (web/desktop only; mobile updates are handled via Play Store)
+      if (this.platform !== 'mobile' && isBelowLatest) {
         const dismissedKey = 'pixkit_dismissed_update_' + latestVer;
         try {
           if (!sessionStorage.getItem(dismissedKey)) {
