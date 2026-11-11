@@ -102,6 +102,17 @@
           pointer-events: none !important;
         }
 
+        body.pixkit-no-recent #dock-btn-recent,
+        body.pixkit-no-recent .dock-btn-recent,
+        body.pixkit-no-recent [data-community="recentFiles"],
+        body.pixkit-no-recent a[href*="recent"],
+        body.pixkit-no-recent #recent-view,
+        body.pixkit-no-recent .recent-files-container,
+        body.pixkit-no-recent .jump-to-recent-btn {
+          display: none !important;
+          pointer-events: none !important;
+        }
+
         .pixkit-tool-card-disabled {
           opacity: 0.42 !important;
           filter: grayscale(0.65) !important;
@@ -365,15 +376,17 @@
       }
     },
 
-    // Enforce Community Feature Flags (Leaderboard & Support Modal)
+    // Enforce Community Feature Flags (Leaderboard, Support Modal, and Recent Files & History)
     applyCommunityFeatureFlags: function () {
       const isLeaderboard = this.isFeatureEnabled('community', 'leaderboard');
       const isSupport = this.isFeatureEnabled('community', 'supportModal');
+      const isRecent = this.isFeatureEnabled('community', 'recentFiles');
 
       // Toggle CSS root flags on body
       if (document.body) {
         document.body.classList.toggle('pixkit-no-leaderboard', !isLeaderboard);
         document.body.classList.toggle('pixkit-no-support', !isSupport);
+        document.body.classList.toggle('pixkit-no-recent', !isRecent);
       }
 
       // 1. Direct DOM handling for Leaderboard
@@ -422,6 +435,35 @@
           el.style.removeProperty('display');
         }
       });
+
+      // 3. Direct DOM handling for Recent Files & History
+      const recentElements = document.querySelectorAll(
+        '#dock-btn-recent, .dock-btn-recent, [data-community="recentFiles"], a[href*="recent"], .jump-to-recent-btn'
+      );
+      recentElements.forEach(el => {
+        if (!isRecent) {
+          el.style.setProperty('display', 'none', 'important');
+        } else {
+          el.style.removeProperty('display');
+        }
+      });
+
+      // If user is currently looking at Recent Files and the flag gets turned off, evict back to home!
+      if (!isRecent) {
+        const hash = window.location.hash || '';
+        const isCurrentRecent = hash.includes('recent') ||
+          (typeof window.getActiveTool === 'function' && window.getActiveTool() === 'recent') ||
+          document.getElementById('recent-view')?.classList.contains('active');
+
+        if (isCurrentRecent) {
+          if (typeof window.showView === 'function') {
+            window.showView('home');
+          } else {
+            window.location.hash = '#/home';
+          }
+          this.showToolEvictedToast('Recent Files & History feature is currently disabled by administrator.');
+        }
+      }
     },
 
     // Visually update tool cards and buttons in Home/Edit/Convert/Doc suites

@@ -526,6 +526,15 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (parts[0] === 'document') {
       renderViewDirect('document');
     } else if (parts[0] === 'recent') {
+      if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
+        if (!window.PixKitRemote.isFeatureEnabled('community', 'recentFiles')) {
+          renderViewDirect('home');
+          if (typeof showToast === 'function') {
+            showToast('Recent Files & History is currently disabled by administrator.', 'info');
+          }
+          return;
+        }
+      }
       renderViewDirect('recent');
     } else if (parts[0] === 'settings') {
       renderViewDirect('settings');
@@ -690,6 +699,16 @@ document.addEventListener('DOMContentLoaded', () => {
   window.trackAnalyticsEvent = trackAnalyticsEvent;
 
   window.showView = function(viewId) {
+    if (viewId === 'recent') {
+      if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
+        if (!window.PixKitRemote.isFeatureEnabled('community', 'recentFiles')) {
+          if (typeof showToast === 'function') {
+            showToast('Recent Files & History is currently disabled by administrator.', 'info');
+          }
+          return;
+        }
+      }
+    }
     trackAnalyticsEvent('view_page', { page_name: viewId });
     navigateTo(`#/${viewId}`, true);
   };
@@ -1091,6 +1110,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.recordRecentFile = function(name, size, type, width, height, category) {
     if (!name || name === 'mountain-view.jpg') return;
+    if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
+      if (!window.PixKitRemote.isFeatureEnabled('community', 'recentFiles')) return;
+    }
     try {
       let previewUrl = null;
       if (engine && engine.activeCanvas && engine.activeCanvas.width > 0 && !engine.isSampleArtwork) {
