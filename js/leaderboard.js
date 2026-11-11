@@ -309,6 +309,17 @@
 
   // Full-Screen Slide Animation Controls
   window.openLeaderboardScreen = function () {
+    if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
+      if (!window.PixKitRemote.isFeatureEnabled('community', 'leaderboard')) {
+        if (typeof window.showToast === 'function') {
+          window.showToast('⚠️ Community Leaderboard is temporarily paused for maintenance.');
+        } else {
+          alert('Community Leaderboard is temporarily paused for maintenance.');
+        }
+        return;
+      }
+    }
+
     document.body.classList.add('leaderboard-active');
     renderLeaderboardView();
 
@@ -346,6 +357,9 @@
   // Auto-open if query param ?view=leaderboard is present
   function checkUrlParamAutoOpen() {
     if (window.location.search.includes('view=leaderboard')) {
+      if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
+        if (!window.PixKitRemote.isFeatureEnabled('community', 'leaderboard')) return;
+      }
       setTimeout(() => {
         window.openLeaderboardScreen();
       }, 350);

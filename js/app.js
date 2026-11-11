@@ -544,6 +544,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderViewDirect(viewId) {
     currentView = viewId;
     activeTool = null;
+    window.activeTool = null;
     localStorage.setItem('pixkit_last_route', `#/${viewId}`);
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
 
@@ -636,7 +637,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (backBtnText) backBtnText.textContent = 'Back to Document Tools';
     }
 
+    // Check remote feature flag before opening workspace
+    if (window.PixKitRemote && typeof window.PixKitRemote.checkToolAccess === 'function') {
+      if (!window.PixKitRemote.checkToolAccess(toolId)) {
+        renderViewDirect('home');
+        return;
+      }
+    }
+
     activeTool = toolId;
+    window.activeTool = toolId;
     currentView = `tool-${toolId}`;
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
 
@@ -682,6 +692,10 @@ document.addEventListener('DOMContentLoaded', () => {
   window.showView = function(viewId) {
     trackAnalyticsEvent('view_page', { page_name: viewId });
     navigateTo(`#/${viewId}`, true);
+  };
+
+  window.getActiveTool = function() {
+    return activeTool;
   };
 
   window.openToolWorkspace = function(toolId) {

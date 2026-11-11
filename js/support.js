@@ -9,6 +9,14 @@
 
   // Navigate directly to the dedicated Support Page
   window.toggleSupportModal = function () {
+    if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
+      if (!window.PixKitRemote.isFeatureEnabled('community', 'supportModal')) {
+        if (typeof window.showToast === 'function') {
+          window.showToast('Support contributions are temporarily paused for maintenance.');
+        }
+        return;
+      }
+    }
     window.dismissSupportToast();
     window.location.href = 'support';
   };
@@ -82,6 +90,12 @@
   }
 
   window.showSupportToast = function () {
+    if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
+      if (!window.PixKitRemote.isFeatureEnabled('community', 'supportModal')) {
+        return;
+      }
+    }
+
     const toast = createSupportToastDOM();
     if (!toast) return;
 
@@ -138,11 +152,17 @@
 
     // First appearance after 10s on page load for easy review
     setTimeout(() => {
+      if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
+        if (!window.PixKitRemote.isFeatureEnabled('community', 'supportModal')) return;
+      }
       window.showSupportToast();
     }, 10000);
 
     // Then recurring every 5 minutes (300,000 ms)
     setInterval(() => {
+      if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
+        if (!window.PixKitRemote.isFeatureEnabled('community', 'supportModal')) return;
+      }
       window.showSupportToast();
     }, 5 * 60 * 1000);
   }
