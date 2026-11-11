@@ -685,6 +685,9 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.openToolWorkspace = function(toolId) {
+    if (window.PixKitRemote && typeof window.PixKitRemote.checkToolAccess === 'function') {
+      if (!window.PixKitRemote.checkToolAccess(toolId)) return;
+    }
     trackAnalyticsEvent('open_tool', { tool_id: toolId });
     navigateTo(`#/tool/${toolId}`, true);
   };

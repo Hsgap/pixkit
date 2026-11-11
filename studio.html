@@ -57,13 +57,13 @@
     },
     "creator": {
       "@type": "Organization",
-      "name": "Artàn Visuals",
-      "url": "https://artan.myportfolio.com/"
+      "name": "PixKit",
+      "url": "https://pixkit.site/"
     },
     "publisher": {
       "@type": "Organization",
-      "name": "Artàn Visuals",
-      "url": "https://artan.myportfolio.com/"
+      "name": "PixKit",
+      "url": "https://pixkit.site/"
     },
     "description": "Fast, private client-side image editor and PDF document suite. Crop, resize, compress, convert, merge, split, rotate, and delete PDF pages directly in your browser with zero server uploads.",
     "applicationCategory": "MultimediaApplication, UtilitiesApplication",
@@ -103,7 +103,8 @@
       }
     } catch (_) {}
   </script>
-  <link rel="stylesheet" href="styles/main.css?v=7.1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="styles/main.css?v=7.6">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FBFBF8">
 </head>
@@ -275,6 +276,15 @@
               <span>→</span>
             </div>
           </div>
+        </div>
+
+        <!-- Bottom Supporters Arrow Trigger (Simple arrow pointing downward, placed at bottom) -->
+        <div class="leaderboard-bottom-arrow-wrap">
+          <button type="button" class="leaderboard-bottom-arrow-btn" onclick="openLeaderboardScreen()" aria-label="View Top Supporters" title="View Top Supporters">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 5v14M19 12l-7 7-7-7"/>
+            </svg>
+          </button>
         </div>
       </section>
 
@@ -1030,6 +1040,20 @@
               </div>
             </div>
             <div class="settings-card-body">
+              <div class="settings-row" style="border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 16px;">
+                <div class="settings-row-label">
+                  <strong>Community Sponsorship &amp; Support</strong>
+                  <div class="settings-help">Help fund independent engineering and keep PixKit private, fast, and community supported.</div>
+                </div>
+                <div class="settings-row-action">
+                  <a href="support" target="_blank" class="settings-action-btn" style="background: rgba(215, 243, 106, 0.18); border-color: rgba(215, 243, 106, 0.35); color: var(--ink);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+                      <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/>
+                    </svg>
+                    <span>Support Studio</span>
+                  </a>
+                </div>
+              </div>
               <div class="settings-row" style="border-bottom:none; padding-bottom:0;">
                 <div class="settings-row-label">
                   <strong>Direct Email Support</strong>
@@ -4223,6 +4247,111 @@
   <!-- Keyboard Shortcut Sequence Floating HUD Indicator -->
   <div id="shortcut-sequence-hud" class="shortcut-sequence-hud" aria-live="polite"></div>
 
+  <!-- ============================================================== -->
+  <!-- PixKit Community Supporters Full-Screen Deck (Slide-Up Screen) -->
+  <!-- ============================================================== -->
+  <div id="leaderboard-screen" class="leaderboard-screen" aria-label="Community Supporters Leaderboard">
+    <div class="leaderboard-container">
+      
+      <!-- Top Sticky Action Bar -->
+      <header class="leaderboard-topbar">
+        <button type="button" class="leaderboard-back-btn" onclick="closeLeaderboardScreen()" title="Return to Studio (Esc)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+          </svg>
+          <span>Back to Studio</span>
+          <kbd class="leaderboard-esc-kbd">Esc</kbd>
+        </button>
+
+        <div class="leaderboard-brand-badge">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="#F59E0B" style="vertical-align: middle;">
+            <path d="M19 5h-2V3a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v2H5a3 3 0 0 0-3 3v1a5 5 0 0 0 4.5 4.96A6.002 6.002 0 0 0 11 17.92V20H8a1 1 0 0 0 0 2h8a1 1 0 0 0 0-2h-3v-2.08a6.002 6.002 0 0 0 4.5-4.96A5 5 0 0 0 22 9V8a3 3 0 0 0-3-3zM4 9V8a1 1 0 0 1 1-1h2v4.54A3 3 0 0 1 4 9zm16 0a3 3 0 0 1-3 2.54V7h2a1 1 0 0 1 1 1v1z"/>
+          </svg>
+          <span class="leaderboard-brand-name">Top Supporters</span>
+        </div>
+
+        <button type="button" class="leaderboard-support-btn" onclick="openSupportFromLeaderboard()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+            <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/>
+          </svg>
+          <span>Support Us</span>
+        </button>
+      </header>
+
+      <!-- Main Content Area -->
+      <main class="leaderboard-body">
+        
+        <!-- Hero Headline -->
+        <div class="leaderboard-hero-head">
+          <h1 class="leaderboard-heading">Top Supporters</h1>
+          <p class="leaderboard-tagline">
+            Recognizing and celebrating the generous supporters and patrons whose contributions empower our work.
+          </p>
+        </div>
+
+        <!-- Total Collection Stats Card (Purely showing Total Collection) -->
+        <div class="total-collection-card">
+          <div class="collection-main-stats">
+            <span class="collection-badge">TOTAL COLLECTION</span>
+            <div class="collection-amount-display" id="collectionTotalAmountDisplay">
+              $0.00 <span class="collection-currency-code">USD</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timeframe Controls Row (Weekly / Monthly / Yearly) -->
+        <div class="leaderboard-controls-row">
+          <div class="timeframe-tabs-group" role="tablist">
+            <button type="button" class="timeframe-btn" id="tf-btn-weekly" onclick="setLeaderboardTimeframe('weekly', this)" role="tab">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>This Week</span>
+            </button>
+            <button type="button" class="timeframe-btn active" id="tf-btn-monthly" onclick="setLeaderboardTimeframe('monthly', this)" role="tab">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
+              <span>This Month</span>
+            </button>
+            <button type="button" class="timeframe-btn" id="tf-btn-yearly" onclick="setLeaderboardTimeframe('yearly', this)" role="tab">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;"><path d="M2 19h20v2H2v-2zM2 5l5 7 5-7 5 7 5-7v12H2V5z"/></svg>
+              <span>Yearly &amp; All-Time</span>
+            </button>
+          </div>
+
+          <div class="leaderboard-meta-tag" id="leaderboardMetaTag">
+            <span>Arranged by contribution amount</span>
+          </div>
+        </div>
+
+        <!-- Ranked Supporters List Grid -->
+        <div class="supporters-ranked-list" id="supportersRankedList">
+          <!-- Dynamically populated by js/leaderboard.js -->
+        </div>
+
+        <!-- Join the Board Card -->
+        <div class="leaderboard-join-card">
+          <div class="join-card-left">
+            <span class="join-card-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="#EF4444" style="vertical-align: middle;">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+            </span>
+            <div>
+              <h3>Want to see your name on the Leaderboard?</h3>
+              <p>Contribute any amount via PayPal, Card, or Razorpay to join our Top Supporters.</p>
+            </div>
+          </div>
+          <button type="button" class="join-card-btn" onclick="openSupportFromLeaderboard()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle;">
+              <path d="M19 5h-2V3a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v2H5a3 3 0 0 0-3 3v1a5 5 0 0 0 4.5 4.96A6.002 6.002 0 0 0 11 17.92V20H8a1 1 0 0 0 0 2h8a1 1 0 0 0 0-2h-3v-2.08a6.002 6.002 0 0 0 4.5-4.96A5 5 0 0 0 22 9V8a3 3 0 0 0-3-3z"/>
+            </svg>
+            <span>Support &amp; Feature Name</span>
+          </button>
+        </div>
+
+      </main>
+
+    </div>
+  </div>
+
   <!-- PDF.js, PDF-Lib and JSZip for client-side PDF processing & ZIP bundling (Local Vendor Scripts) -->
   <script src="js/vendor/pdf.worker.min.js"></script>
   <script src="js/vendor/pdf.min.js"></script>
@@ -4231,7 +4360,11 @@
   <!-- Google Firebase Realtime Global Presence SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <!-- PixKit Remote Connector to admin.pixkit.site -->
+  <script src="js/pixkit-remote.js"></script>
   <script src="js/engine.js?v=2.5"></script>
   <script src="js/app.js?v=6.7"></script>
+  <script src="js/support.js"></script>
+  <script src="js/leaderboard.js"></script>
 </body>
 </html>

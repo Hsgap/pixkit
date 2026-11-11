@@ -41,8 +41,17 @@ class PixKitHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/api/presence' or self.path.startswith('/api/presence?'):
             self._send_presence_response()
-        else:
-            super().do_GET()
+            return
+
+        # Clean URL rewriting (e.g. /studio -> /studio.html, /compress-image -> /compress-image.html)
+        clean_path = self.path.split('?')[0].split('#')[0]
+        if clean_path != '/' and not os.path.splitext(clean_path)[1]:
+            potential_file = os.path.join(DIRECTORY, clean_path.lstrip('/') + '.html')
+            if os.path.isfile(potential_file):
+                query = self.path[len(clean_path):]
+                self.path = clean_path + '.html' + query
+
+        super().do_GET()
 
     def do_POST(self):
         if self.path.startswith('/api/presence/leave'):
