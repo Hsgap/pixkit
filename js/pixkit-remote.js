@@ -657,36 +657,105 @@
     },
 
     renderBroadcastBanner: function (b) {
+      if (!b || !b.enabled) {
+        this.removeBroadcastBanner();
+        return;
+      }
+
+      // Platform targeting check: all, web, mobile
+      if (b.targetPlatform && b.targetPlatform !== 'all' && b.targetPlatform !== this.platform) {
+        this.removeBroadcastBanner();
+        return;
+      }
+
+      // Dismissal memory check for this specific broadcast
+      const broadcastKey = b.id || ((b.headline || '') + '_' + (b.message ? b.message.slice(0, 15) : ''));
+      if (b.dismissible !== false) {
+        try {
+          if (sessionStorage.getItem('pixkit_dismissed_bc_' + broadcastKey)) {
+            this.removeBroadcastBanner();
+            return;
+          }
+        } catch (_) {}
+      }
+
+      // Theme styling and defaults
+      const themes = {
+        announcement: { bg: '#D7F36A', color: '#121310', btnBg: '#121310', btnColor: '#FFFFFF', icon: '✨' },
+        info:         { bg: '#38BDF8', color: '#0F172A', btnBg: '#0F172A', btnColor: '#FFFFFF', icon: 'ℹ️' },
+        warning:      { bg: '#F59E0B', color: '#18181B', btnBg: '#18181B', btnColor: '#FFFFFF', icon: '🛠️' },
+        urgent:       { bg: '#EF4444', color: '#FFFFFF', btnBg: '#FFFFFF', btnColor: '#EF4444', icon: '🚨' },
+        purple:       { bg: '#A855F7', color: '#FFFFFF', btnBg: '#FFFFFF', btnColor: '#A855F7', icon: '💜' }
+      };
+
+      const theme = themes[b.type] || themes.announcement;
+      const displayIcon = b.icon || theme.icon;
+
       let banner = document.getElementById('pixkit-broadcast-banner');
       if (!banner) {
         banner = document.createElement('div');
         banner.id = 'pixkit-broadcast-banner';
-        banner.style.cssText = `
-          position: sticky;
-          top: 0;
-          left: 0;
-          right: 0;
-          z-index: 999999;
-          background: #D7F36A;
-          color: #121310;
-          padding: 10px 20px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 14px;
-          font-size: 13px;
-          font-weight: 700;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          box-shadow: 0 4px 18px rgba(0,0,0,0.18);
-        `;
         document.body.prepend(banner);
       }
 
-      banner.innerHTML = `
-        <span><strong>${b.headline || 'Announcement'}:</strong> ${b.message || ''}</span>
-        ${b.actionUrl ? `<a href="${b.actionUrl}" style="background: #121310; color: #FFFFFF; padding: 4px 14px; border-radius: 999px; text-decoration: none; font-size: 11.5px; font-weight: 800;">${b.actionLabel || 'Learn More'}</a>` : ''}
-        ${b.dismissible ? `<button onclick="document.getElementById('pixkit-broadcast-banner').remove()" style="background:none;border:none;cursor:pointer;font-weight:900;font-size:16px;margin-left:8px;line-height:1;color:inherit;" title="Dismiss">&times;</button>` : ''}
+      banner.style.cssText = `
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 999999;
+        background: ${theme.bg};
+        color: ${theme.color};
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        font-size: 13px;
+        font-weight: 700;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        flex-wrap: wrap;
       `;
+
+      const safeHeadline = this.escapeHtml(b.headline || '');
+      const safeMessage = this.escapeHtml(b.message || '');
+      const safeLabel = this.escapeHtml(b.actionLabel || 'Learn More');
+      const safeUrl = b.actionUrl ? this.escapeHtml(b.actionUrl) : '';
+
+      banner.innerHTML = `
+        <span style="font-size: 15px; line-height: 1;">${displayIcon}</span>
+        <span style="line-height: 1.4;">
+          ${safeHeadline ? `<strong style="font-weight: 800; margin-right: 4px;">${safeHeadline}:</strong>` : ''}
+          <span>${safeMessage}</span>
+        </span>
+        ${safeUrl ? `
+          <a href="${safeUrl}" style="background: ${theme.btnBg}; color: ${theme.btnColor}; padding: 4px 14px; border-radius: 999px; text-decoration: none; font-size: 11.5px; font-weight: 800; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: opacity 0.15s ease;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+            ${safeLabel} &rarr;
+          </a>
+        ` : ''}
+        ${b.dismissible !== false ? `
+          <button onclick="PixKitRemote.dismissBroadcast('${broadcastKey}')" style="background: none; border: none; cursor: pointer; font-weight: 900; font-size: 18px; margin-left: 6px; line-height: 1; color: inherit; opacity: 0.75; padding: 0 4px;" title="Dismiss">&times;</button>
+        ` : ''}
+      `;
+    },
+
+    dismissBroadcast: function (key) {
+      if (key) {
+        try { sessionStorage.setItem('pixkit_dismissed_bc_' + key, 'true'); } catch (_) {}
+      }
+      this.removeBroadcastBanner();
+    },
+
+    escapeHtml: function (str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
     },
 
     removeBroadcastBanner: function () {
