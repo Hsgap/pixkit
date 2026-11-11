@@ -102,15 +102,8 @@
           pointer-events: none !important;
         }
 
-        body.pixkit-no-recent #dock-btn-recent,
-        body.pixkit-no-recent .dock-btn-recent,
-        body.pixkit-no-recent [data-community="recentFiles"],
-        body.pixkit-no-recent a[href*="recent"],
-        body.pixkit-no-recent #recent-view,
-        body.pixkit-no-recent .recent-files-container,
-        body.pixkit-no-recent .jump-to-recent-btn {
-          display: none !important;
-          pointer-events: none !important;
+        body.pixkit-no-recent .floating-dock-item#dock-btn-recent {
+          opacity: 0.65;
         }
 
         .pixkit-tool-card-disabled {
@@ -436,17 +429,15 @@
         }
       });
 
-      // 3. Direct DOM handling for Recent Files & History
-      const recentElements = document.querySelectorAll(
-        '#dock-btn-recent, .dock-btn-recent, [data-community="recentFiles"], a[href*="recent"], .jump-to-recent-btn'
-      );
-      recentElements.forEach(el => {
-        if (!isRecent) {
-          el.style.setProperty('display', 'none', 'important');
-        } else {
-          el.style.removeProperty('display');
+      // 3. Direct DOM handling for Recent Files & History (Keep icon visible, update state)
+      const dockBtn = document.getElementById('dock-btn-recent');
+      if (dockBtn) {
+        dockBtn.style.removeProperty('display'); // Never hide the icon
+        const tooltip = dockBtn.querySelector('.dock-tooltip');
+        if (tooltip) {
+          tooltip.textContent = !isRecent ? 'Recent Files (Temporarily Unavailable)' : 'Recent Files';
         }
-      });
+      }
 
       // If user is currently looking at Recent Files and the flag gets turned off, evict back to home!
       if (!isRecent) {
@@ -461,7 +452,7 @@
           } else {
             window.location.hash = '#/home';
           }
-          this.showToolEvictedToast('Recent Files & History feature is currently disabled by administrator.');
+          this.showToolEvictedToast('This feature is temporarily unavailable: Recent Files & History is currently disabled.');
         }
       }
     },

@@ -530,7 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!window.PixKitRemote.isFeatureEnabled('community', 'recentFiles')) {
           renderViewDirect('home');
           if (typeof showToast === 'function') {
-            showToast('Recent Files & History is currently disabled by administrator.', 'info');
+            showToast('This feature is temporarily unavailable: Recent Files & History is currently disabled.', 'info');
           }
           return;
         }
@@ -703,7 +703,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
         if (!window.PixKitRemote.isFeatureEnabled('community', 'recentFiles')) {
           if (typeof showToast === 'function') {
-            showToast('Recent Files & History is currently disabled by administrator.', 'info');
+            showToast('This feature is temporarily unavailable: Recent Files & History is currently disabled.', 'info');
           }
           return;
         }
@@ -1732,6 +1732,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const controlsBar = document.getElementById('recentControlsBar');
     if (!container) return;
 
+    if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
+      if (!window.PixKitRemote.isFeatureEnabled('community', 'recentFiles')) {
+        if (controlsBar) controlsBar.style.display = 'none';
+        container.innerHTML = `
+          <div style="text-align: center; padding: 60px 20px; color: var(--muted);">
+            <div style="font-size: 38px; margin-bottom: 14px;">⏳</div>
+            <h3 style="font-size: 19px; color: var(--text-color); margin-bottom: 8px; font-weight: 800;">Feature Temporarily Unavailable</h3>
+            <p style="font-size: 13.5px; max-width: 440px; margin: 0 auto 22px; line-height: 1.6;">Recent Files &amp; History is currently disabled by administrator. Please check back shortly!</p>
+            <button type="button" class="btn-primary" onclick="showView('home')" style="margin: 0 auto;">Back to Home</button>
+          </div>
+        `;
+        return;
+      }
+    }
+
     let rawRecents = [];
     try {
       rawRecents = JSON.parse(localStorage.getItem('pixkit_recent_files') || '[]');
@@ -2310,6 +2325,16 @@ document.addEventListener('DOMContentLoaded', () => {
           e.stopPropagation();
         }
         return;
+      }
+      if (viewId === 'recent') {
+        if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
+          if (!window.PixKitRemote.isFeatureEnabled('community', 'recentFiles')) {
+            if (typeof showToast === 'function') {
+              showToast('This feature is temporarily unavailable: Recent Files & History is currently disabled.', 'info');
+            }
+            return;
+          }
+        }
       }
       window.showView(viewId);
     }
