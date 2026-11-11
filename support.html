@@ -1844,15 +1844,16 @@
       document.querySelector('.gateways-tabs-nav').style.display = 'none';
       document.querySelectorAll('.gateway-panel').forEach(p => p.style.display = 'none');
 
-      // Record to Community Leaderboard if opted in
+      // Record donation to Community Leaderboard & Total Collection
       const optIn = document.getElementById('pageLeaderboardOptIn')?.checked !== false;
       const customName = document.getElementById('pageSupporterName')?.value?.trim();
-      if (optIn && typeof window.addLeaderboardSupporter === 'function') {
+      if (typeof window.addLeaderboardSupporter === 'function') {
         window.addLeaderboardSupporter({
-          name: customName || 'Anonymous Supporter',
+          name: optIn ? (customName || 'Generous Supporter') : 'Anonymous Supporter',
           amount: amt,
           currency: activeCurrency,
-          note: note
+          note: optIn ? note : '',
+          hidden: !optIn // If user unchecked opt-in, hidden is true: hides name from public board, but counts on Total Collection!
         });
       }
 

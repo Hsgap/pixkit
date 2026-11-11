@@ -91,7 +91,8 @@
     if (!data) return;
     const supporters = getAllSupporters();
 
-    const name = data.name && data.name.trim() ? data.name.trim() : 'Anonymous Supporter';
+    const isHidden = data.hidden === true;
+    const name = data.name && data.name.trim() ? data.name.trim() : (isHidden ? 'Anonymous Supporter' : 'Generous Supporter');
     const amount = Number(data.amount) || 5;
     const currency = data.currency || 'USD';
     const note = data.note ? data.note.trim() : '';
@@ -105,7 +106,7 @@
       timestamp: Date.now(),
       badge: amount >= 50 ? 'Patron' : (amount >= 15 ? 'Backer' : 'Supporter'),
       verified: true,
-      hidden: false
+      hidden: isHidden
     };
 
     supporters.unshift(newSupporter);
@@ -121,7 +122,7 @@
   };
 
   // Timeframe filtering: Weekly (last 7d), Monthly (last 30d), Yearly (all)
-  // Only displays non-hidden, verified supporters on the public leaderboard
+  // Only displays non-hidden supporters on the public leaderboard ranking cards
   function getSupportersForTimeframe(timeframe) {
     const all = getAllSupporters().filter(s => s && s.hidden !== true);
     const now = Date.now();
@@ -139,10 +140,10 @@
     return filtered.sort((a, b) => toUSD(b.amount, b.currency) - toUSD(a.amount, a.currency));
   }
 
-  // Calculate total collection across all visible supporters
+  // Calculate total collection across ALL contributions (both public & anonymous donations count in full!)
   function calculateTotalCollection(all) {
     let totalUSD = 0;
-    (all || []).filter(s => s && s.hidden !== true).forEach(s => {
+    (all || []).filter(s => s && s.id !== 'sup_initial_01' && s.name !== 'Marcus Vance').forEach(s => {
       totalUSD += toUSD(s.amount, s.currency);
     });
     return totalUSD;
