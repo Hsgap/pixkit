@@ -23,6 +23,8 @@
   <link rel="stylesheet" href="styles/main.css?v=7.5">
   <!-- Razorpay Checkout SDK -->
   <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
+  <!-- Official PayPal Smart Payment Buttons SDK (Live Client ID) -->
+  <script src="https://www.paypal.com/sdk/js?client-id=Adnp_McB7bsrQj9Ssd9nM6zwwbESTlpuXNP_1hIe__p5np7Tku06p5_Td4cRN7fwhFhWgjIZ7GMm053u&currency=USD&components=buttons&enable-funding=card,venmo" data-sdk-integration-source="button-factory"></script>
 
   <style>
     /* ==========================================================================
@@ -1534,10 +1536,15 @@
 
         <!-- Gateway View 1: PayPal -->
         <div class="gateway-panel active" id="gateway-panel-paypal">
-          <button type="button" class="checkout-hero-btn paypal" onclick="executePageCheckout('paypal')">
-            <i class="fa-brands fa-paypal" style="font-size: 20px;"></i>
-            <span>Pay with PayPal <strong id="paypalDynamicBtnAmt">($5.00)</strong></span>
-          </button>
+          <!-- PayPal Smart Buttons SDK Container -->
+          <div id="paypal-smart-button-container" style="min-height: 48px; width: 100%;"></div>
+          <!-- Fallback in case browser adblocker blocks external PayPal JS -->
+          <div id="paypal-fallback-container" style="display: none; margin-top: 10px;">
+            <a href="https://www.paypal.com/ncp/payment/XE3XE7KZABNUY" target="_blank" rel="noopener noreferrer" class="checkout-hero-btn paypal" style="text-decoration: none; display: flex;">
+              <i class="fa-brands fa-paypal" style="font-size: 20px;"></i>
+              <span>Pay with PayPal Portal <strong id="paypalDynamicBtnAmt">($5.00)</strong></span>
+            </a>
+          </div>
         </div>
 
         <!-- Gateway View 2: Card -->
@@ -1555,13 +1562,17 @@
               </span>
             </div>
             <p style="font-size: 12.5px; color: var(--muted); line-height: 1.5; margin: 0;">
-              Debit &amp; Credit cards (Visa, Mastercard, Amex, Discover) and Apple Pay are processed securely via our encrypted, PCI-compliant checkout portal powered by PayPal.
+              Debit &amp; Credit cards (Visa, Mastercard, Amex, Discover) and Apple Pay are processed securely via our encrypted, PCI-compliant portal powered by PayPal.
             </p>
           </div>
-          <button type="button" class="checkout-hero-btn card" onclick="executePageCheckout('card')">
-            <i class="fa-solid fa-lock" style="font-size: 15px;"></i>
-            <span>Pay with Card or Apple Pay <strong id="cardDynamicBtnAmt">($5.00)</strong></span>
-          </button>
+          <!-- PayPal Card Smart Button Container -->
+          <div id="paypal-card-button-container" style="min-height: 48px; width: 100%;"></div>
+          <div id="paypal-card-fallback-container" style="display: none; margin-top: 10px;">
+            <a href="https://www.paypal.com/ncp/payment/XE3XE7KZABNUY" target="_blank" rel="noopener noreferrer" class="checkout-hero-btn card" style="text-decoration: none; display: flex;">
+              <i class="fa-solid fa-lock" style="font-size: 15px;"></i>
+              <span>Pay with Card or Apple Pay <strong id="cardDynamicBtnAmt">($5.00)</strong></span>
+            </a>
+          </div>
         </div>
 
         <!-- Gateway View 3: Razorpay -->
@@ -1872,6 +1883,7 @@
     // Developer Configuration for Payment Gateways
     const PIXKIT_GATEWAY_CONFIG = {
       paypal: {
+        clientId: 'Adnp_McB7bsrQj9Ssd9nM6zwwbESTlpuXNP_1hIe__p5np7Tku06p5_Td4cRN7fwhFhWgjIZ7GMm053u',
         paymentUrl: 'https://www.paypal.com/ncp/payment/XE3XE7KZABNUY',
         name: 'PixKit Studio'
       },
@@ -1998,7 +2010,7 @@
       }
     }
 
-    function executePageCheckout(method) {
+    function getCheckoutAmount() {
       const rate = exchangeRates[activeCurrency].rate;
       let amt;
       const activeCard = document.querySelector('.tier-option-card.active');
@@ -2010,18 +2022,133 @@
       } else {
         amt = selectedAmount;
       }
-      const note = document.getElementById('pageNoteInput')?.value || '';
+      return (typeof amt === 'number' && amt > 0) ? amt : 5;
+    }
 
-      // Live PayPal & Card Portal Integration
-      if (method === 'paypal' || method === 'card') {
-        const paypalUrl = PIXKIT_GATEWAY_CONFIG.paypal?.paymentUrl;
-        if (paypalUrl) {
-          window.open(paypalUrl, '_blank', 'noopener,noreferrer');
-          const gatewayLabel = method === 'card' ? 'Debit/Credit Card' : 'PayPal';
-          completeCelebration(gatewayLabel, amt, note);
-          return;
-        }
+    function initPayPalSmartButtons() {
+      if (!window.paypal) {
+        console.warn('PayPal Smart Buttons SDK not detected, activating direct portal fallback.');
+        const fallback1 = document.getElementById('paypal-fallback-container');
+        const fallback2 = document.getElementById('paypal-card-fallback-container');
+        if (fallback1) fallback1.style.display = 'block';
+        if (fallback2) fallback2.style.display = 'block';
+        return;
       }
+
+      try {
+        // 1. Render in main PayPal tab (Yellow button)
+        const paypalContainer = document.getElementById('paypal-smart-button-container');
+        if (paypalContainer) {
+          paypalContainer.innerHTML = '';
+          window.paypal.Buttons({
+            fundingSource: window.paypal.FUNDING.PAYPAL,
+            style: {
+              shape: 'rect',
+              color: 'gold',
+              layout: 'vertical',
+              height: 48,
+              label: 'paypal'
+            },
+            createOrder: function(data, actions) {
+              const amt = getCheckoutAmount();
+              const usdVal = activeCurrency === 'INR' ? Math.max(1, Math.round(amt / 85)) : amt;
+              return actions.order.create({
+                application_context: {
+                  brand_name: 'PixKit Studio',
+                  user_action: 'PAY_NOW'
+                },
+                purchase_units: [{
+                  description: 'Support PixKit Studio Development',
+                  amount: {
+                    currency_code: 'USD',
+                    value: usdVal.toFixed(2)
+                  }
+                }]
+              });
+            },
+            onApprove: function(data, actions) {
+              return actions.order.capture().then(function(details) {
+                const amt = getCheckoutAmount();
+                const note = document.getElementById('pageNoteInput')?.value || '';
+                const txnId = details.id || (details.purchase_units && details.purchase_units[0].payments && details.purchase_units[0].payments.captures && details.purchase_units[0].payments.captures[0] && details.purchase_units[0].payments.captures[0].id) || data.orderID;
+                completeCelebration('PayPal', amt, note, txnId);
+              });
+            },
+            onCancel: function(data) {
+              console.log('PayPal checkout cancelled by user');
+            },
+            onError: function(err) {
+              console.error('PayPal Smart Button error:', err);
+              alert('PayPal payment was not completed. Please try again.');
+            }
+          }).render('#paypal-smart-button-container');
+        }
+
+        // 2. Render in Card tab (Black button)
+        const cardContainer = document.getElementById('paypal-card-button-container');
+        if (cardContainer) {
+          cardContainer.innerHTML = '';
+          const cardBtn = window.paypal.Buttons({
+            fundingSource: window.paypal.FUNDING.CARD,
+            style: {
+              shape: 'rect',
+              color: 'black',
+              layout: 'vertical',
+              height: 48
+            },
+            createOrder: function(data, actions) {
+              const amt = getCheckoutAmount();
+              const usdVal = activeCurrency === 'INR' ? Math.max(1, Math.round(amt / 85)) : amt;
+              return actions.order.create({
+                application_context: {
+                  brand_name: 'PixKit Studio',
+                  user_action: 'PAY_NOW'
+                },
+                purchase_units: [{
+                  description: 'Support PixKit Studio Development',
+                  amount: {
+                    currency_code: 'USD',
+                    value: usdVal.toFixed(2)
+                  }
+                }]
+              });
+            },
+            onApprove: function(data, actions) {
+              return actions.order.capture().then(function(details) {
+                const amt = getCheckoutAmount();
+                const note = document.getElementById('pageNoteInput')?.value || '';
+                const txnId = details.id || data.orderID;
+                completeCelebration('Credit/Debit Card', amt, note, txnId);
+              });
+            },
+            onCancel: function(data) {
+              console.log('Card payment cancelled by user');
+            },
+            onError: function(err) {
+              console.error('Card payment error:', err);
+              alert('Card payment was not completed. Please try again.');
+            }
+          });
+
+          if (cardBtn.isEligible()) {
+            cardBtn.render('#paypal-card-button-container');
+          } else {
+            const cardFallback = document.getElementById('paypal-card-fallback-container');
+            if (cardFallback) cardFallback.style.display = 'block';
+          }
+        }
+      } catch (err) {
+        console.warn('PayPal Smart Buttons init error:', err);
+        const fallback1 = document.getElementById('paypal-fallback-container');
+        const fallback2 = document.getElementById('paypal-card-fallback-container');
+        if (fallback1) fallback1.style.display = 'block';
+        if (fallback2) fallback2.style.display = 'block';
+      }
+    }
+
+    function executePageCheckout(method) {
+      const amt = getCheckoutAmount();
+      const note = document.getElementById('pageNoteInput')?.value || '';
 
       // Direct Razorpay SDK Integration
       if (method === 'razorpay') {
@@ -2056,6 +2183,16 @@
           return;
         }
       }
+
+      // Fallback portal links (only used if external JS SDK is blocked)
+      if (method === 'paypal' || method === 'card') {
+        const paypalUrl = PIXKIT_GATEWAY_CONFIG.paypal?.paymentUrl;
+        if (paypalUrl) {
+          window.open(paypalUrl, '_blank', 'noopener,noreferrer');
+          return;
+        }
+      }
+    }
 
       // Localhost sandbox simulation
       const btn = event?.currentTarget;
@@ -2169,6 +2306,15 @@
           statusEl.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i> Message draft copied to clipboard! You can paste it into any email client and send to <strong>support.pixkitstudio@gmail.com</strong>.`;
         }
       });
+    }
+
+    // Initialize PayPal Smart Payment Buttons when page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(initPayPalSmartButtons, 300);
+      });
+    } else {
+      setTimeout(initPayPalSmartButtons, 300);
     }
   </script>
   <!-- Firebase SDK for Realtime Supporter Sync -->
