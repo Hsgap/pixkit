@@ -36,13 +36,13 @@
         // Listen in real time to new supporters across the globe
         supportersRef.on('value', snapshot => {
           const val = snapshot.val();
+          let list = [];
           if (val) {
-            const list = Array.isArray(val) ? val : Object.values(val);
-            if (list.length > 0) {
-              saveSupporters(list);
-              renderLeaderboardView();
-            }
+            list = Array.isArray(val) ? val : Object.values(val);
+            list = list.filter(s => s && s.id !== 'sup_initial_01' && s.name !== 'Marcus Vance');
           }
+          saveSupporters(list);
+          renderLeaderboardView();
         });
       }
     } catch (_) {}
@@ -69,7 +69,7 @@
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
-          return parsed;
+          return parsed.filter(s => s && s.id !== 'sup_initial_01' && s.name !== 'Marcus Vance');
         }
       }
     } catch (_) {}
@@ -79,7 +79,10 @@
   // Save supporters list to localStorage
   function saveSupporters(supporters) {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(supporters));
+      const clean = Array.isArray(supporters)
+        ? supporters.filter(s => s && s.id !== 'sup_initial_01' && s.name !== 'Marcus Vance')
+        : [];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(clean));
     } catch (_) {}
   }
 
@@ -118,8 +121,9 @@
   };
 
   // Timeframe filtering: Weekly (last 7d), Monthly (last 30d), Yearly (all)
+  // Only displays non-hidden, verified supporters on the public leaderboard
   function getSupportersForTimeframe(timeframe) {
-    const all = getAllSupporters();
+    const all = getAllSupporters().filter(s => s && s.hidden !== true);
     const now = Date.now();
     const weekMs = 7 * 24 * 60 * 60 * 1000;
     const monthMs = 30 * 24 * 60 * 60 * 1000;
@@ -135,10 +139,10 @@
     return filtered.sort((a, b) => toUSD(b.amount, b.currency) - toUSD(a.amount, a.currency));
   }
 
-  // Calculate total collection across all supporters
+  // Calculate total collection across all visible supporters
   function calculateTotalCollection(all) {
     let totalUSD = 0;
-    all.forEach(s => {
+    (all || []).filter(s => s && s.hidden !== true).forEach(s => {
       totalUSD += toUSD(s.amount, s.currency);
     });
     return totalUSD;
