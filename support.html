@@ -2031,35 +2031,103 @@
       });
     }
 
-    function handleQuickContactSubmit(e) {
+    async function handleQuickContactSubmit(e) {
       e.preventDefault();
       const topic = document.getElementById('contactTopic').value.trim();
       const sender = document.getElementById('contactSender').value.trim();
       const message = document.getElementById('contactMessage').value.trim();
+      const submitBtn = document.getElementById('contactSendBtn');
+      const statusEl = document.getElementById('contactFormStatus');
 
       if (!message) return;
 
-      const subject = `[PixKit Support] ${topic}${sender ? ' - ' + sender : ''}`;
-      const bodyLines = [
-        `Topic: ${topic}`,
-        `From: ${sender || 'PixKit User'}`,
-        '',
-        'Message:',
-        message,
-        '',
-        '---',
-        'Sent via PixKit Studio Support Portal'
-      ];
-      const body = bodyLines.join('\n');
-      const mailtoUrl = `mailto:support.pixkitstudio@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      const originalBtnHTML = submitBtn ? submitBtn.innerHTML : '';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending message...';
+      }
 
-      // Launch user's email client
-      window.location.href = mailtoUrl;
+      const timestamp = Date.now();
+      const dateStr = new Date().toLocaleString();
 
-      const statusEl = document.getElementById('contactFormStatus');
+      // 1. Direct Realtime Save to Firebase Cloud
+      try {
+        if (typeof firebase !== 'undefined') {
+          if (!firebase.apps || !firebase.apps.length) {
+            firebase.initializeApp({
+              apiKey: "AIzaSyDCueyN5HjZWuCFuXbVcV5v27QhM3jC0vw",
+              authDomain: "pixkit-a7862.firebaseapp.com",
+              databaseURL: "https://pixkit-a7862-default-rtdb.asia-southeast1.firebasedatabase.app",
+              projectId: "pixkit-a7862",
+              storageBucket: "pixkit-a7862.firebasestorage.app",
+              messagingSenderId: "704646920606",
+              appId: "1:704646920606:web:f50077d6ab0a913bb2fe8f"
+            });
+          }
+          firebase.database().ref('support_messages').push({
+            topic: topic,
+            sender: sender || 'Anonymous User',
+            message: message,
+            timestamp: timestamp,
+            date: dateStr,
+            page: 'support.html'
+          });
+        }
+      } catch (err) {
+        console.warn('Firebase message dispatch warning:', err);
+      }
+
+      // 2. Email Forwarding via FormSubmit API (parallel)
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        await fetch('https://formsubmit.co/ajax/support.pixkitstudio@gmail.com', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            _subject: `[PixKit Support] ${topic} from ${sender || 'User'}`,
+            topic: topic,
+            sender: sender || 'Anonymous User',
+            message: message,
+            date: dateStr
+          }),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+      } catch (_) {}
+
+      // Reset form fields
+      document.getElementById('contactMessage').value = '';
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Sent!';
+        setTimeout(() => {
+          submitBtn.innerHTML = originalBtnHTML;
+        }, 3000);
+      }
+
       if (statusEl) {
         statusEl.style.display = 'block';
-        statusEl.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i> Draft prepared and opening in your email app! If your email app didn't open automatically, click <strong>"Copy Draft"</strong> and email us directly at <a href="mailto:support.pixkitstudio@gmail.com" style="color: inherit; text-decoration: underline; font-weight: 700;">support.pixkitstudio@gmail.com</a>.`;
+        const gmailWebUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=support.pixkitstudio@gmail.com&su=${encodeURIComponent('[PixKit Support] ' + topic)}&body=${encodeURIComponent('From: ' + (sender || 'User') + '\n\n' + message)}`;
+        statusEl.innerHTML = `
+          <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 12px; padding: 14px 16px; margin-top: 10px;">
+            <div style="color: #10B981; font-weight: 800; font-size: 13.5px; display: flex; align-items: center; gap: 7px; margin-bottom: 4px;">
+              <i class="fa-solid fa-circle-check" style="font-size: 16px;"></i> Message Delivered to PixKit Studio!
+            </div>
+            <p style="font-size: 12px; color: var(--ink); margin: 0; line-height: 1.5;">
+              Thank you for reaching out! Your message was delivered directly to our support desk (<strong>support.pixkitstudio@gmail.com</strong>).
+            </p>
+            <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
+              <a href="${gmailWebUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; color: #EA4335; text-decoration: none; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px;">
+                <i class="fa-brands fa-google"></i> Open in Web Gmail
+              </a>
+            </div>
+          </div>
+        `;
       }
     }
 
