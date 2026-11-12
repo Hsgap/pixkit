@@ -401,29 +401,32 @@
         right: 0;
         bottom: 0;
         z-index: 999999999;
-        background: rgba(0, 0, 0, 0.78);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        background: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 24px;
+        padding: 20px;
         box-sizing: border-box;
-        animation: pixkitFadeIn 0.2s ease forwards;
+        animation: pixkitFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       `;
 
       backdrop.innerHTML = `
-        <div id="pixkit-maintenance-modal-card" style="width: 100%; max-width: 320px; background: #12130e; border: 1px solid #2d3023; border-radius: 24px; padding: 24px 20px; text-align: center; box-shadow: 0 24px 60px rgba(0,0,0,0.85); box-sizing: border-box; font-family: 'DM Sans', -apple-system, sans-serif; animation: pixkitPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
-          <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(245, 158, 11, 0.16); border: 1px solid rgba(245, 158, 11, 0.35); color: #F59E0B; font-size: 22px; display: grid; place-items: center; margin: 0 auto 14px;">
+        <div id="pixkit-maintenance-modal-card" style="width: 100%; max-width: 350px; background: var(--paper, #161713); border: 1px solid var(--line-strong, rgba(255, 255, 255, 0.12)); border-radius: 20px; padding: 28px 24px 22px; text-align: center; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05); position: relative; box-sizing: border-box; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; animation: pixkitPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+          <button type="button" onclick="window.closePixKitMaintenanceModal()" aria-label="Close" style="position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 8px; background: var(--soft, rgba(255, 255, 255, 0.05)); border: 1px solid var(--line, rgba(255, 255, 255, 0.08)); color: var(--muted, #85877F); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s ease;" onmouseover="this.style.color='var(--ink, #fff)'; this.style.borderColor='var(--line-strong, #fff)';" onmouseout="this.style.color='var(--muted, #85877F)'; this.style.borderColor='var(--line, rgba(255, 255, 255, 0.08))';">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+          <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--soft, rgba(255, 255, 255, 0.05)); border: 1px solid var(--line, rgba(255, 255, 255, 0.1)); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 20px;">
             ${icon}
           </div>
-          <h3 style="font: 800 17px/1.25 'Manrope', -apple-system, sans-serif; color: #FFFFFF; margin: 0 0 8px; letter-spacing: -0.3px;">
+          <h3 style="font: 700 16.5px/1.3 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; color: var(--ink, #FFFFFF); margin: 0 0 8px; letter-spacing: -0.015em;">
             ${this.escapeHtml(title)}
           </h3>
-          <p style="font-size: 13px; line-height: 1.5; color: #9fa197; margin: 0 0 20px;">
+          <p style="font-size: 13.5px; line-height: 1.55; color: var(--muted, #8B8D85); margin: 0 0 22px; font-weight: 400;">
             ${this.escapeHtml(message)}
           </p>
-          <button type="button" onclick="window.closePixKitMaintenanceModal()" style="width: 100%; padding: 13px 16px; border-radius: 12px; background: #D7F36A; color: #101204; font: 800 13px/1 'Manrope', -apple-system, sans-serif; border: none; cursor: pointer; transition: transform 0.12s ease; box-shadow: 0 4px 14px rgba(215, 243, 106, 0.2);">
+          <button type="button" onclick="window.closePixKitMaintenanceModal()" style="width: 100%; padding: 11px 16px; border-radius: 10px; background: var(--lime, #D7F36A); color: #121310; font: 700 13px/1 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif; border: none; cursor: pointer; transition: transform 0.15s ease, filter 0.15s ease; box-shadow: 0 2px 8px rgba(215, 243, 106, 0.25);" onmouseover="this.style.filter='brightness(1.06)'; this.style.transform='translateY(-1px)';" onmouseout="this.style.filter='none'; this.style.transform='none';">
             Understood
           </button>
         </div>
