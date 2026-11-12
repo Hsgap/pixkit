@@ -121,22 +121,45 @@
     } catch (_) {}
   };
 
-  // Timeframe filtering: Weekly (last 7d), Monthly (last 30d), Yearly (all)
+  // Calendar boundary calculation:
+  // - weekly: Current week (Monday 00:00:00 to now, resets every Monday)
+  // - monthly: Current month (1st of this month 00:00:00 to now, resets on 1st of each month)
+  // - yearly: Current year (Jan 1 of this year 00:00:00 to now, resets on Jan 1)
+  // - all: Cumulative all-time total (never resets)
+  function isWithinTimeframe(timestamp, timeframe) {
+    if (!timestamp || timeframe === 'all') return true;
+    const ts = typeof timestamp === 'number' ? timestamp : new Date(timestamp).getTime();
+    if (isNaN(ts) || ts <= 0) return true;
+
+    const now = new Date();
+
+    if (timeframe === 'weekly') {
+      const startOfWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const day = startOfWeek.getDay();
+      const diffToMonday = (day === 0 ? -6 : 1) - day;
+      startOfWeek.setDate(startOfWeek.getDate() + diffToMonday);
+      startOfWeek.setHours(0, 0, 0, 0);
+      return ts >= startOfWeek.getTime();
+    }
+
+    if (timeframe === 'monthly') {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+      return ts >= startOfMonth.getTime();
+    }
+
+    if (timeframe === 'yearly') {
+      const startOfYear = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0);
+      return ts >= startOfYear.getTime();
+    }
+
+    return true;
+  }
+
+  // Timeframe filtering: Weekly (resets every week), Monthly (resets every month), Yearly (resets every year), All-Time
   // Only displays non-hidden supporters on the public leaderboard ranking cards
   function getSupportersForTimeframe(timeframe) {
     const all = getAllSupporters().filter(s => s && s.hidden !== true);
-    const now = Date.now();
-    const weekMs = 7 * 24 * 60 * 60 * 1000;
-    const monthMs = 30 * 24 * 60 * 60 * 1000;
-
-    let filtered = all;
-    if (timeframe === 'weekly') {
-      filtered = all.filter(s => (now - s.timestamp) <= weekMs);
-    } else if (timeframe === 'monthly') {
-      filtered = all.filter(s => (now - s.timestamp) <= monthMs);
-    }
-
-    // Sort descending by normalized USD value (highest supporter on top)
+    const filtered = all.filter(s => isWithinTimeframe(s.timestamp, timeframe));
     return filtered.sort((a, b) => toUSD(b.amount, b.currency) - toUSD(a.amount, a.currency));
   }
 
@@ -203,9 +226,10 @@
 
     const all = getAllSupporters();
     const ranked = getSupportersForTimeframe(activeTimeframe);
-    const totalUSD = calculateTotalCollection(all);
+    const timeframeAll = all.filter(s => isWithinTimeframe(s.timestamp, activeTimeframe));
+    const totalUSD = calculateTotalCollection(timeframeAll);
 
-    // 1. Update Total Collection Display (Purely total collection, zero mockups)
+    // 1. Update Total Collection Display & Dynamic Timeframe Badge
     const totalEl = document.getElementById('collectionTotalAmountDisplay');
     if (totalEl) {
       const formattedTotal = totalUSD > 0
@@ -214,8 +238,30 @@
       totalEl.innerHTML = `${formattedTotal} <span class="collection-currency-code">USD</span>`;
     }
 
+    const badgeEl = document.querySelector('.collection-badge');
+    if (badgeEl) {
+      const now = new Date();
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const badgeLabels = {
+        weekly: "THIS WEEK'S COLLECTION",
+        monthly: `${monthNames[now.getMonth()].toUpperCase()}'S COLLECTION`,
+        yearly: `${now.getFullYear()}'S COLLECTION`,
+        all: "TOTAL COLLECTION (ALL TIME)"
+      };
+      badgeEl.textContent = badgeLabels[activeTimeframe] || 'TOTAL COLLECTION';
+    }
+
     // 2. Render Ranked Supporter Cards
     if (ranked.length === 0) {
+      const now = new Date();
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const emptyMessages = {
+        weekly: { title: 'No supporters yet this week', text: 'A new week has started! Be the first supporter to take the #1 spot on this week\'s leaderboard!' },
+        monthly: { title: `No supporters yet in ${monthNames[now.getMonth()]}`, text: 'A new month has started! Be the first supporter to take the #1 spot on this month\'s leaderboard!' },
+        yearly: { title: `No supporters yet in ${now.getFullYear()}`, text: 'Be the first supporter to take the #1 spot on this year\'s leaderboard!' },
+        all: { title: 'No supporters yet', text: 'Be the first supporter to take the #1 spot on the All-Time leaderboard!' }
+      };
+      const emptyState = emptyMessages[activeTimeframe] || emptyMessages.all;
       listEl.innerHTML = `
         <div class="leaderboard-empty-state">
           <span class="empty-state-icon">
@@ -223,8 +269,8 @@
               <path d="M19 5h-2V3a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v2H5a3 3 0 0 0-3 3v1a5 5 0 0 0 4.5 4.96A6.002 6.002 0 0 0 11 17.92V20H8a1 1 0 0 0 0 2h8a1 1 0 0 0 0-2h-3v-2.08a6.002 6.002 0 0 0 4.5-4.96A5 5 0 0 0 22 9V8a3 3 0 0 0-3-3zM4 9V8a1 1 0 0 1 1-1h2v4.54A3 3 0 0 1 4 9zm16 0a3 3 0 0 1-3 2.54V7h2a1 1 0 0 1 1 1v1z"/>
             </svg>
           </span>
-          <h4>No supporters yet for this period</h4>
-          <p>Be the first supporter to take the #1 spot on the leaderboard!</p>
+          <h4>${emptyState.title}</h4>
+          <p>${emptyState.text}</p>
           <button type="button" class="leaderboard-support-btn" onclick="openSupportFromLeaderboard()" style="margin: 0 auto;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
               <path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/>
@@ -293,18 +339,26 @@
     }[tag] || tag));
   }
 
-  // Switch timeframe tabs (weekly, monthly, yearly)
+  // Switch timeframe tabs (weekly, monthly, yearly, all)
   window.setLeaderboardTimeframe = function (timeframe, tabBtn) {
     activeTimeframe = timeframe;
     document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
-    if (tabBtn) tabBtn.classList.add('active');
+    if (tabBtn) {
+      tabBtn.classList.add('active');
+    } else {
+      const btn = document.getElementById(`tf-btn-${timeframe}`);
+      if (btn) btn.classList.add('active');
+    }
 
     const metaTag = document.getElementById('leaderboardMetaTag');
     if (metaTag) {
+      const now = new Date();
+      const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
       const labels = {
-        weekly: 'Top supporters this week',
-        monthly: 'Top supporters this month',
-        yearly: 'All-time top supporters'
+        weekly: 'Top supporters this week • Resets every Monday',
+        monthly: `Top supporters in ${monthNames[now.getMonth()]} • Resets 1st of each month`,
+        yearly: `Top supporters in ${now.getFullYear()} • Resets Jan 1`,
+        all: 'All-time top supporters • Permanent Hall of Fame'
       };
       metaTag.innerHTML = `<span>${labels[timeframe] || 'Arranged by highest amount'}</span>`;
     }

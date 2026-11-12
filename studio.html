@@ -4299,20 +4299,24 @@
           </div>
         </div>
 
-        <!-- Timeframe Controls Row (Weekly / Monthly / Yearly) -->
+        <!-- Timeframe Controls Row (Weekly / Monthly / Yearly / All-Time) -->
         <div class="leaderboard-controls-row">
           <div class="timeframe-tabs-group" role="tablist">
-            <button type="button" class="timeframe-btn" id="tf-btn-weekly" onclick="setLeaderboardTimeframe('weekly', this)" role="tab">
+            <button type="button" class="timeframe-btn" id="tf-btn-weekly" onclick="setLeaderboardTimeframe('weekly', this)" role="tab" title="Top supporters this week (refreshes every week)">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               <span>This Week</span>
             </button>
-            <button type="button" class="timeframe-btn active" id="tf-btn-monthly" onclick="setLeaderboardTimeframe('monthly', this)" role="tab">
+            <button type="button" class="timeframe-btn active" id="tf-btn-monthly" onclick="setLeaderboardTimeframe('monthly', this)" role="tab" title="Top supporters this month (refreshes every month)">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg>
               <span>This Month</span>
             </button>
-            <button type="button" class="timeframe-btn" id="tf-btn-yearly" onclick="setLeaderboardTimeframe('yearly', this)" role="tab">
+            <button type="button" class="timeframe-btn" id="tf-btn-yearly" onclick="setLeaderboardTimeframe('yearly', this)" role="tab" title="Top supporters this year (refreshes every year)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>This Year</span>
+            </button>
+            <button type="button" class="timeframe-btn" id="tf-btn-all" onclick="setLeaderboardTimeframe('all', this)" role="tab" title="Permanent all-time hall of fame">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:middle;"><path d="M2 19h20v2H2v-2zM2 5l5 7 5-7 5 7 5-7v12H2V5z"/></svg>
-              <span>Yearly &amp; All-Time</span>
+              <span>All-Time</span>
             </button>
           </div>
 
