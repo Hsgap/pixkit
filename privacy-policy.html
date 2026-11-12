@@ -45,41 +45,55 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="styles/main.css?v=7.5">
 
-  <!-- Immediate Theme Initialization to avoid flicker -->
   <script>
+    // Immediate Theme Initialization
     (function initTheme() {
-      const saved = localStorage.getItem('pixkit_theme') || 'dark';
+      const saved = localStorage.getItem('pixkit_theme') || 
+                    localStorage.getItem('pixkit-theme') || 
+                    'dark';
       document.documentElement.setAttribute('data-theme', saved);
     })();
   </script>
 
   <style>
     /* ==========================================================================
-       Privacy Policy High-Contrast Design System Variables
+       PixKit SEO Tool Page Unified Theme Tokens
        ========================================================================== */
     :root {
-      --accent-green: #385500;
+      --tp-bg: #FBFBF8;
+      --tp-ink: #22241F;
+      --tp-muted: #85877F;
+      --tp-border: #E9E9E3;
+      --tp-border-strong: #CDD0C1;
+      --tp-stage: #F0F0EB;
+      --tp-card: #FFFFFF;
+      --tp-lime: #D7F36A;
+      --tp-lime-hover: #D0EE5F;
       --accent-green-bg: #E8F4B8;
       --accent-green-border: #BCD660;
-      --hero-green-grad: linear-gradient(135deg, #385500 0%, #203300 100%);
-      --card-shadow: 0 10px 30px rgba(34, 36, 31, 0.05);
-      --topbar-bg: rgba(251, 251, 248, 0.94);
-      --highlight-bg: #F4F5EE;
+      --hero-grad: linear-gradient(135deg, #385500 0%, #203300 100%);
+      --card-shadow: 0 8px 24px rgba(35, 35, 26, 0.05);
     }
 
     [data-theme="dark"] {
-      --accent-green: #D7F36A;
+      --tp-bg: #121310;
+      --tp-ink: #F2F3EC;
+      --tp-muted: #9FA197;
+      --tp-border: #292B23;
+      --tp-border-strong: #3D4034;
+      --tp-stage: #161713;
+      --tp-card: #1A1C16;
+      --tp-lime: #D7F36A;
+      --tp-lime-hover: #E3FB7C;
       --accent-green-bg: rgba(215, 243, 106, 0.12);
       --accent-green-border: rgba(215, 243, 106, 0.28);
-      --hero-green-grad: linear-gradient(135deg, #D7F36A 0%, #a4e82b 100%);
-      --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-      --topbar-bg: rgba(18, 19, 16, 0.94);
-      --highlight-bg: #1A1C16;
+      --hero-grad: linear-gradient(135deg, #D7F36A 0%, #a4e82b 100%);
+      --card-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
     }
 
     body {
-      background-color: var(--paper);
-      color: var(--ink);
+      background-color: var(--tp-bg);
+      color: var(--tp-ink);
       font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       margin: 0;
       padding: 0;
@@ -88,156 +102,183 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    .privacy-shell {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+    .landing-shell {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+      box-sizing: border-box;
     }
 
     /* ==========================================================================
-       Top Navigation Bar
+       Top Navigation Bar (Exact SEO Page Matching)
        ========================================================================== */
-    .privacy-topbar {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: var(--topbar-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--line);
-      padding: 14px 28px;
+    .landing-nav {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      transition: background 0.25s ease, border-color 0.25s ease;
+      padding: 22px 0 24px;
+      border-bottom: 1px solid var(--tp-border);
+      margin-bottom: 32px;
+      transition: border-color 0.2s ease;
     }
 
-    .privacy-topbar-left {
+    /* Exact Signature PixKit Brand Lockup & Color Combo */
+    .landing-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-weight: 800;
+      font-size: 21px;
+      letter-spacing: -0.04em;
+      color: var(--tp-ink);
+      text-decoration: none;
+      user-select: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .landing-brand:hover {
+      opacity: 0.95;
+    }
+
+    .landing-brand .brand-mark {
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      background: var(--tp-ink);
+      color: var(--tp-bg);
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      line-height: 1;
+      font-weight: 800;
+      box-shadow: 0 2px 8px rgba(34, 36, 31, 0.12);
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    [data-theme="dark"] .landing-brand .brand-mark {
+      background: var(--tp-lime);
+      color: #121310;
+      box-shadow: 0 2px 10px rgba(215, 243, 106, 0.35);
+    }
+
+    .landing-brand:hover .brand-mark {
+      transform: rotate(15deg) scale(1.08);
+      box-shadow: 0 4px 16px rgba(215, 243, 106, 0.45);
+    }
+
+    .landing-brand .brand-name {
+      color: var(--tp-ink);
+    }
+
+    .landing-nav-links {
       display: flex;
       align-items: center;
       gap: 14px;
     }
 
-    .brand, .brand:hover, .brand:focus, .brand:active {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
-      font-weight: 800;
-      font-size: 20px;
-      letter-spacing: -0.03em;
-      color: var(--ink);
-      text-decoration: none !important;
-      user-select: none;
+    .landing-nav-link {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--tp-muted);
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      transition: color 0.15s ease, background 0.15s ease;
     }
 
-    .brand .mark {
-      color: var(--lime);
-      font-size: 22px;
-      line-height: 1;
+    .landing-nav-link:hover {
+      color: var(--tp-ink);
+      background: var(--tp-stage);
     }
 
-    .privacy-page-badge {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: var(--accent-green-bg);
-      color: var(--accent-green);
-      border: 1px solid var(--accent-green-border);
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .privacy-topbar-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .privacy-back-btn {
+    .landing-launch-btn {
       display: inline-flex;
       align-items: center;
       gap: 7px;
-      padding: 8px 14px;
-      border-radius: 999px;
-      background: var(--soft);
-      border: 1px solid var(--line);
-      color: var(--ink);
+      background: var(--tp-ink);
+      color: var(--tp-bg) !important;
       font-size: 13px;
       font-weight: 600;
+      padding: 8px 16px;
+      border-radius: 999px;
       text-decoration: none;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: opacity 0.2s ease, transform 0.15s ease, background 0.2s ease, color 0.2s ease;
     }
 
-    .privacy-back-btn:hover {
-      background: var(--soft-hover);
-      border-color: var(--line-strong);
+    .landing-launch-btn:hover {
+      background: var(--tp-lime);
+      color: #121310 !important;
       transform: translateY(-1px);
     }
 
-    /* Theme Toggle Button */
-    .theme-toggle-btn {
-      width: 38px;
-      height: 38px;
+    /* Fixed Theme Toggle Button with Guaranteed Icon Display */
+    .theme-btn {
+      background: transparent;
+      border: 1px solid var(--tp-border);
+      color: var(--tp-ink);
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      background: var(--soft);
-      border: 1px solid var(--line);
-      color: var(--ink);
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      font-size: 14px;
+      transition: all 0.2s ease;
     }
 
-    .theme-toggle-btn:hover {
-      background: var(--soft-hover);
-      border-color: var(--line-strong);
-      transform: scale(1.05);
+    .theme-btn:hover {
+      border-color: var(--tp-border-strong);
+      background: var(--tp-stage);
+      transform: scale(1.06);
     }
 
-    .theme-toggle-btn .sun-icon {
-      display: none;
-    }
-    .theme-toggle-btn .moon-icon {
-      display: block;
+    /* Breadcrumbs */
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--tp-muted);
+      margin-bottom: 36px;
     }
 
-    [data-theme="dark"] .theme-toggle-btn .sun-icon {
-      display: block;
+    .breadcrumbs a {
+      color: var(--tp-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
     }
-    [data-theme="dark"] .theme-toggle-btn .moon-icon {
-      display: none;
+
+    .breadcrumbs a:hover {
+      color: var(--tp-ink);
+    }
+
+    .breadcrumbs .divider {
+      opacity: 0.5;
+    }
+
+    .breadcrumbs .current {
+      color: var(--tp-ink);
+      font-weight: 600;
     }
 
     /* ==========================================================================
-       Main Container & Hero Section
+       Hero Section
        ========================================================================== */
-    .privacy-container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 48px 24px 80px;
-      box-sizing: border-box;
-      flex: 1;
-    }
-
     .privacy-hero {
       text-align: center;
       margin-bottom: 56px;
     }
 
-    .privacy-hero-pill {
+    .privacy-hero-badge {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       padding: 6px 14px;
       border-radius: 999px;
       background: var(--accent-green-bg);
-      color: var(--accent-green);
+      color: var(--tp-ink);
       border: 1px solid var(--accent-green-border);
       font-size: 12.5px;
       font-weight: 700;
@@ -245,12 +286,16 @@
       margin-bottom: 20px;
     }
 
-    .privacy-hero-pill .dot {
+    [data-theme="dark"] .privacy-hero-badge {
+      color: var(--tp-lime);
+    }
+
+    .privacy-hero-badge .dot {
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: currentColor;
-      box-shadow: 0 0 10px currentColor;
+      background: var(--tp-lime);
+      box-shadow: 0 0 10px var(--tp-lime);
     }
 
     .privacy-hero-title {
@@ -259,12 +304,12 @@
       font-weight: 800;
       line-height: 1.15;
       letter-spacing: -0.035em;
-      color: var(--ink);
+      color: var(--tp-ink);
       margin: 0 0 16px;
     }
 
     .privacy-hero-title span {
-      background: var(--hero-green-grad);
+      background: var(--hero-grad);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       display: inline-block;
@@ -275,7 +320,7 @@
       margin: 0 auto 28px;
       font-size: 16.5px;
       line-height: 1.65;
-      color: var(--muted);
+      color: var(--tp-muted);
       font-weight: 400;
     }
 
@@ -286,7 +331,7 @@
       flex-wrap: wrap;
       gap: 20px;
       font-size: 13px;
-      color: var(--muted);
+      color: var(--tp-muted);
       font-weight: 500;
     }
 
@@ -297,49 +342,50 @@
     }
 
     .privacy-hero-meta i {
-      color: var(--accent-green);
+      color: var(--tp-lime);
     }
 
     /* ==========================================================================
-       Core Guarantees Grid (4 Highlight Cards)
+       4 Guarantees Highlight Cards
        ========================================================================== */
     .guarantees-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 16px;
       margin-bottom: 56px;
     }
 
     .guarantee-card {
-      background: var(--surface);
-      border: 1px solid var(--line);
+      background: var(--tp-card);
+      border: 1px solid var(--tp-border);
       border-radius: 18px;
       padding: 24px;
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      overflow: hidden;
-      box-shadow: var(--shadow-subtle);
+      box-shadow: var(--card-shadow);
     }
 
     .guarantee-card:hover {
-      border-color: var(--line-strong);
+      border-color: var(--tp-border-strong);
       transform: translateY(-2px);
-      box-shadow: var(--shadow-card);
     }
 
     .guarantee-icon-wrap {
       width: 44px;
       height: 44px;
       border-radius: 12px;
-      background: var(--soft);
-      border: 1px solid var(--line);
+      background: var(--tp-stage);
+      border: 1px solid var(--tp-border);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
-      color: var(--accent-green);
+      font-size: 18px;
+      color: var(--tp-ink);
       margin-bottom: 16px;
       transition: all 0.25s ease;
+    }
+
+    [data-theme="dark"] .guarantee-icon-wrap {
+      color: var(--tp-lime);
     }
 
     .guarantee-card:hover .guarantee-icon-wrap {
@@ -349,38 +395,39 @@
 
     .guarantee-card h3 {
       font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 16.5px;
+      font-size: 16px;
       font-weight: 700;
       letter-spacing: -0.015em;
       margin: 0 0 8px;
-      color: var(--ink);
+      color: var(--tp-ink);
     }
 
     .guarantee-card p {
-      font-size: 13.5px;
+      font-size: 13px;
       line-height: 1.6;
-      color: var(--muted);
+      color: var(--tp-muted);
       margin: 0;
     }
 
     /* ==========================================================================
-       Detailed Document Content (Card Stack)
+       Detailed Document Content Card
        ========================================================================== */
     .policy-content-card {
-      background: var(--surface);
-      border: 1px solid var(--line);
+      background: var(--tp-card);
+      border: 1px solid var(--tp-border);
       border-radius: 24px;
       padding: 44px 40px;
-      box-shadow: var(--shadow-card);
+      box-shadow: var(--card-shadow);
+      margin-bottom: 56px;
     }
 
     .policy-intro {
       font-size: 15.5px;
       line-height: 1.7;
-      color: var(--ink);
+      color: var(--tp-ink);
       margin-bottom: 36px;
       padding-bottom: 24px;
-      border-bottom: 1px solid var(--line);
+      border-bottom: 1px solid var(--tp-border);
     }
 
     .policy-section {
@@ -402,9 +449,9 @@
       width: 32px;
       height: 32px;
       border-radius: 8px;
-      background: var(--soft);
-      border: 1px solid var(--line);
-      color: var(--ink);
+      background: var(--tp-stage);
+      border: 1px solid var(--tp-border);
+      color: var(--tp-ink);
       font-family: 'JetBrains Mono', monospace;
       font-size: 13px;
       font-weight: 700;
@@ -416,22 +463,22 @@
 
     .policy-section h2 {
       font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 700;
       letter-spacing: -0.02em;
-      color: var(--ink);
+      color: var(--tp-ink);
       margin: 0;
     }
 
     .policy-section p {
       font-size: 15px;
       line-height: 1.7;
-      color: var(--muted);
+      color: var(--tp-muted);
       margin: 0 0 14px;
     }
 
     .policy-section p strong {
-      color: var(--ink);
+      color: var(--tp-ink);
       font-weight: 600;
     }
 
@@ -443,38 +490,36 @@
     .policy-section li {
       font-size: 14.5px;
       line-height: 1.7;
-      color: var(--muted);
+      color: var(--tp-muted);
       margin-bottom: 8px;
     }
 
     .policy-section li strong {
-      color: var(--ink);
+      color: var(--tp-ink);
     }
 
-    /* Callout Notice Box */
     .policy-callout {
-      background: var(--soft);
-      border: 1px solid var(--line);
-      border-left: 4px solid var(--lime);
-      border-radius: 14px;
-      padding: 18px 20px;
+      background: var(--tp-stage);
+      border: 1px solid var(--tp-border);
+      border-left: 4px solid var(--tp-lime);
+      border-radius: 12px;
+      padding: 16px 20px;
       margin: 18px 0;
       font-size: 14px;
       line-height: 1.6;
-      color: var(--ink);
+      color: var(--tp-ink);
     }
 
     .policy-callout i {
-      color: var(--lime);
+      color: var(--tp-lime);
       margin-right: 6px;
     }
 
-    /* Contact Box */
     .policy-contact-box {
       margin-top: 36px;
       padding: 24px 28px;
-      background: var(--soft);
-      border: 1px solid var(--line);
+      background: var(--tp-stage);
+      border: 1px solid var(--tp-border);
       border-radius: 18px;
       display: flex;
       align-items: center;
@@ -488,13 +533,13 @@
       font-size: 16px;
       font-weight: 700;
       margin: 0 0 4px;
-      color: var(--ink);
+      color: var(--tp-ink);
     }
 
     .policy-contact-info p {
       font-size: 13.5px;
       margin: 0;
-      color: var(--muted);
+      color: var(--tp-muted);
     }
 
     .policy-email-btn {
@@ -503,145 +548,128 @@
       gap: 8px;
       padding: 10px 18px;
       border-radius: 10px;
-      background: var(--lime);
+      background: var(--tp-lime);
       color: #121310;
       font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
       font-size: 13.5px;
       font-weight: 700;
       text-decoration: none;
       transition: all 0.2s ease;
-      box-shadow: 0 2px 10px rgba(215, 243, 106, 0.2);
+      box-shadow: 0 2px 10px rgba(215, 243, 106, 0.25);
     }
 
     .policy-email-btn:hover {
-      filter: brightness(1.06);
+      background: var(--tp-lime-hover);
       transform: translateY(-1px);
     }
 
     /* ==========================================================================
-       Aceternity-Style Footer
+       Exact SEO Page Footer (.landing-footer)
        ========================================================================== */
-    .aceternity-footer {
-      border-top: 1px solid var(--line);
-      padding: 60px 0 28px;
-      margin-top: 60px;
-      width: 100%;
-      background: var(--paper);
-    }
-
-    .aceternity-footer-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 0 24px;
-      box-sizing: border-box;
-    }
-
-    .aceternity-footer-top {
+    .landing-footer {
+      border-top: 1px solid var(--tp-border);
+      padding-top: 36px;
       display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: flex-start;
-      gap: 48px;
-      margin-bottom: 40px;
+      font-size: 13px;
+      color: var(--tp-muted);
       flex-wrap: wrap;
+      gap: 16px;
     }
 
-    .aceternity-footer-brand {
-      flex: 1.2;
-      min-width: 260px;
+    .landing-footer-copy {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 6px;
     }
 
-    .aceternity-brand-lockup {
+    .landing-footer-artan {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      text-decoration: none;
-      color: var(--ink);
-      font-family: 'Manrope', sans-serif;
-      font-weight: 800;
-      font-size: 19px;
-    }
-
-    .aceternity-brand-icon {
-      width: 26px;
-      height: 26px;
-      border-radius: 6px;
-      background: var(--lime);
-      color: #121310;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 15px;
-      font-weight: 800;
-    }
-
-    .aceternity-copyright {
       font-size: 13px;
-      color: var(--muted);
-      margin: 0;
-    }
-
-    .aceternity-tagline {
-      font-size: 13px;
-      color: var(--muted);
-      margin: 0;
-      line-height: 1.5;
-    }
-
-    .aceternity-footer-links {
-      display: flex;
-      gap: 40px;
+      color: var(--tp-muted);
       flex-wrap: wrap;
     }
 
-    .footer-col h4 {
-      font-family: 'Manrope', sans-serif;
-      font-size: 13px;
+    .artan-text-link {
+      color: var(--tp-ink);
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--ink);
-      margin: 0 0 14px;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      text-decoration-thickness: 1.5px;
+      text-decoration-color: var(--tp-muted);
+      display: inline-flex;
+      align-items: center;
+      transition: color 0.2s ease, text-decoration-color 0.2s ease;
     }
 
-    .footer-col ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
+    .artan-text-link:hover {
+      color: var(--tp-ink);
+      text-decoration-color: var(--tp-ink);
+    }
+
+    [data-theme="dark"] .artan-text-link:hover {
+      color: #D7F36A;
+      text-decoration-color: #D7F36A;
+    }
+
+    .artan-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #FFFFFF;
+      border-radius: 6px;
+      padding: 3px 9px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.14);
+      line-height: 1;
+      pointer-events: none;
+      user-select: none;
+      vertical-align: middle;
+    }
+
+    .artan-badge-logo {
+      height: 13px;
+      width: auto;
+      display: block;
+      pointer-events: none;
+    }
+
+    .landing-footer-links {
       display: flex;
-      flex-direction: column;
-      gap: 9px;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 18px;
     }
 
-    .footer-col a {
-      color: var(--muted);
+    .landing-footer-links a {
+      color: var(--tp-muted);
       text-decoration: none;
-      font-size: 13.5px;
-      transition: color 0.15s ease;
+      transition: color 0.2s;
     }
 
-    .footer-col a:hover {
-      color: var(--ink);
+    .landing-footer-links a:hover {
+      color: var(--tp-ink);
     }
 
-    @media (max-width: 640px) {
-      .privacy-topbar {
-        padding: 12px 18px;
+    @media (max-width: 680px) {
+      .landing-nav {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
       }
-      .privacy-page-badge {
-        display: none;
-      }
-      .privacy-container {
-        padding: 32px 16px 60px;
+      .landing-nav-links {
+        width: 100%;
+        justify-content: space-between;
       }
       .policy-content-card {
         padding: 28px 20px;
         border-radius: 18px;
       }
-      .policy-section h2 {
-        font-size: 18px;
+      .landing-footer {
+        flex-direction: column;
+        align-items: flex-start;
       }
       .policy-contact-box {
         flex-direction: column;
@@ -655,297 +683,267 @@
   </style>
 </head>
 <body>
-  <div class="privacy-shell">
 
-    <!-- Topbar Navigation -->
-    <header class="privacy-topbar">
-      <div class="privacy-topbar-left">
-        <a href="studio" class="brand" title="PixKit Studio Home">
-          <span class="mark">✳</span>pixkit
+  <div class="landing-shell">
+    
+    <!-- Top Navigation (Exact SEO Page Style & Color Combo) -->
+    <header class="landing-nav">
+      <a href="/" class="landing-brand" title="PixKit Home &amp; Showcase">
+        <span class="brand-mark">✳</span>
+        <span class="brand-name">pixkit</span>
+      </a>
+      <div class="landing-nav-links">
+        <a href="/" class="landing-nav-link"><i class="fa-solid fa-house" style="font-size: 11px; margin-right: 4px;"></i>Home</a>
+        <a href="/#all-tools" class="landing-nav-link">All 21 Tools</a>
+        <a href="studio" class="landing-launch-btn">
+          Launch Studio <i class="fa-solid fa-arrow-right" style="font-size: 10px;"></i>
         </a>
-        <span class="privacy-page-badge">
-          <i class="fa-solid fa-shield-halved"></i> Privacy Policy
-        </span>
-      </div>
-
-      <div class="privacy-topbar-right">
-        <a href="studio" class="privacy-back-btn">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M19 12H5M12 19l-7-7 7-7"/>
-          </svg>
-          <span>Back to Studio</span>
-        </a>
-
-        <!-- Magic Animated Theme Toggle Button -->
-        <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle Light / Dark mode" onclick="toggleThemeAnimated(event)">
-          <svg class="sun-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="4"></circle>
-            <path d="M12 2v2"></path>
-            <path d="M12 20v2"></path>
-            <path d="m4.93 4.93 1.41 1.41"></path>
-            <path d="m17.66 17.66 1.41 1.41"></path>
-            <path d="M2 12h2"></path>
-            <path d="M20 12h2"></path>
-            <path d="m6.34 17.66-1.41 1.41"></path>
-            <path d="m19.07 4.93-1.41 1.41"></path>
-          </svg>
-          <svg class="moon-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3a6 6 0 0 0 9 9 9 0 1 1-9-9Z"></path>
-          </svg>
+        <!-- Guaranteed Visible Theme Switcher Icon -->
+        <button class="theme-btn" id="themeToggleBtn" aria-label="Toggle Light / Dark mode" title="Toggle Theme" onclick="toggleTheme(event)">
+          <i class="fa-solid fa-sun" id="themeIcon"></i>
         </button>
       </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="privacy-container">
+    <!-- Breadcrumbs -->
+    <nav class="breadcrumbs" aria-label="Breadcrumbs">
+      <a href="/">Home</a>
+      <span class="divider">/</span>
+      <span class="current">Privacy Policy</span>
+    </nav>
 
-      <!-- Hero Header -->
-      <section class="privacy-hero">
-        <div class="privacy-hero-pill">
-          <span class="dot"></span>
-          <span>100% Client-Side &amp; Serverless Architecture</span>
-        </div>
-        <h1 class="privacy-hero-title">
-          Privacy Policy.<br>
-          <span>Your data never leaves your device.</span>
-        </h1>
-        <p class="privacy-hero-lead">
-          PixKit Studio is engineered with an uncompromising privacy-first principle: <strong>your personal images, sensitive PDF files, and creative edits are processed 100% locally in your device's memory</strong>. We do not operate file upload servers, we do not inspect your media, and we never collect, track, or monetize your data.
-        </p>
-        <div class="privacy-hero-meta">
-          <span><i class="fa-regular fa-calendar-check"></i> Last Updated: November 12, 2026</span>
-          <span><i class="fa-solid fa-lock"></i> Zero-Server Verified</span>
-          <span><i class="fa-solid fa-earth-americas"></i> GDPR &amp; COPPA Compliant</span>
-        </div>
-      </section>
+    <!-- Hero Header -->
+    <section class="privacy-hero">
+      <div class="privacy-hero-badge">
+        <span class="dot"></span>
+        <span>100% Client-Side &amp; Serverless Architecture</span>
+      </div>
+      <h1 class="privacy-hero-title">
+        Privacy Policy.<br>
+        <span>Your data never leaves your device.</span>
+      </h1>
+      <p class="privacy-hero-lead">
+        PixKit Studio is engineered with an uncompromising privacy-first principle: <strong>your personal images, sensitive PDF files, and creative edits are processed 100% locally in your device's memory</strong>. We do not operate file upload servers, we do not inspect your media, and we never collect, track, or monetize your data.
+      </p>
+      <div class="privacy-hero-meta">
+        <span><i class="fa-regular fa-calendar-check"></i> Last Updated: November 12, 2026</span>
+        <span><i class="fa-solid fa-lock"></i> Zero-Server Verified</span>
+        <span><i class="fa-solid fa-earth-americas"></i> GDPR &amp; COPPA Compliant</span>
+      </div>
+    </section>
 
-      <!-- 4 Core Guarantees Cards -->
-      <div class="guarantees-grid">
-        <div class="guarantee-card">
-          <div class="guarantee-icon-wrap">
-            <i class="fa-solid fa-shield-virus"></i>
-          </div>
-          <h3>Zero Cloud Uploads</h3>
-          <p>Every edit, resize, conversion, and PDF operation runs strictly inside your web browser's RAM via WebAssembly and Canvas APIs.</p>
+    <!-- 4 Core Guarantees Cards -->
+    <div class="guarantees-grid">
+      <div class="guarantee-card">
+        <div class="guarantee-icon-wrap">
+          <i class="fa-solid fa-shield-virus"></i>
         </div>
+        <h3>Zero Cloud Uploads</h3>
+        <p>Every edit, resize, conversion, and PDF operation runs strictly inside your web browser's RAM via WebAssembly and Canvas APIs.</p>
+      </div>
 
-        <div class="guarantee-card">
-          <div class="guarantee-icon-wrap">
-            <i class="fa-solid fa-user-slash"></i>
-          </div>
-          <h3>No Accounts or Sign-Ups</h3>
-          <p>Use every single tool instantly without creating an account, sharing your email, or linking social media profiles.</p>
+      <div class="guarantee-card">
+        <div class="guarantee-icon-wrap">
+          <i class="fa-solid fa-user-slash"></i>
         </div>
+        <h3>No Accounts or Sign-Ups</h3>
+        <p>Use every single tool instantly without creating an account, sharing your email, or linking social media profiles.</p>
+      </div>
 
-        <div class="guarantee-card">
-          <div class="guarantee-icon-wrap">
-            <i class="fa-solid fa-ban"></i>
-          </div>
-          <h3>Zero Ads &amp; Trackers</h3>
-          <p>No third-party ad networks, no tracking beacons, no fingerprinting scripts, and zero cross-site behavioral profiling.</p>
+      <div class="guarantee-card">
+        <div class="guarantee-icon-wrap">
+          <i class="fa-solid fa-ban"></i>
         </div>
+        <h3>Zero Ads &amp; Trackers</h3>
+        <p>No third-party ad networks, no tracking beacons, no fingerprinting scripts, and zero cross-site behavioral profiling.</p>
+      </div>
 
-        <div class="guarantee-card">
-          <div class="guarantee-icon-wrap">
-            <i class="fa-solid fa-bolt"></i>
-          </div>
-          <h3>Works Offline (PWA)</h3>
-          <p>Once cached, PixKit runs completely offline without any internet connection required. True local-first software.</p>
+      <div class="guarantee-card">
+        <div class="guarantee-icon-wrap">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <h3>Works Offline (PWA)</h3>
+        <p>Once cached, PixKit runs completely offline without any internet connection required. True local-first software.</p>
+      </div>
+    </div>
+
+    <!-- Detailed Policy Document Card -->
+    <div class="policy-content-card">
+      
+      <div class="policy-intro">
+        <strong>PixKit Studio</strong> ("we", "our", or "the platform") is dedicated to providing creative image and document utility tools that protect individual privacy rights. This Privacy Policy details our operational practices, data boundaries, and local-first technological architecture across our web platform (<a href="https://pixkit.site" style="color: var(--tp-lime); text-decoration: none; font-weight: 600;">pixkit.site</a>) and Android mobile applications.
+      </div>
+
+      <!-- Section 1 -->
+      <div class="policy-section">
+        <div class="policy-section-header">
+          <span class="section-num">01</span>
+          <h2>Zero Personal Data Collection</h2>
+        </div>
+        <p>PixKit Studio is designed from the ground up as a zero-knowledge, local utility. We <strong>do not collect, harvest, store, transmit, or sell</strong> any of the following:</p>
+        <ul>
+          <li><strong>Personal Identity</strong>: Names, email addresses, phone numbers, home addresses, or identification numbers.</li>
+          <li><strong>Device &amp; Biometric Data</strong>: Hardware serial numbers, IMEI, MAC addresses, facial recognition geometry, or biometrics.</li>
+          <li><strong>Network Identifiers</strong>: We do not log, retain, or link IP addresses to your creative projects.</li>
+        </ul>
+        <div class="policy-callout">
+          <i class="fa-solid fa-check-double"></i> <strong>Key Takeaway:</strong> You can use PixKit completely anonymously. We don't know who you are, what files you open, or what you create.
         </div>
       </div>
 
-      <!-- Detailed Policy Document Card -->
-      <div class="policy-content-card">
-        
-        <div class="policy-intro">
-          <strong>PixKit Studio</strong> ("we", "our", or "the platform") is dedicated to providing creative image and document utility tools that protect individual privacy rights. This Privacy Policy details our operational practices, data boundaries, and local-first technological architecture across our web platform (<a href="https://pixkit.site" style="color: var(--accent-green); text-decoration: none; font-weight: 600;">pixkit.site</a>) and Android mobile applications.
+      <!-- Section 2 -->
+      <div class="policy-section">
+        <div class="policy-section-header">
+          <span class="section-num">02</span>
+          <h2>Local On-Device File Processing (How It Works)</h2>
         </div>
-
-        <!-- Section 1 -->
-        <div class="policy-section">
-          <div class="policy-section-header">
-            <span class="section-num">01</span>
-            <h2>Zero Personal Data Collection</h2>
-          </div>
-          <p>PixKit Studio is designed from the ground up as a zero-knowledge, local utility. We <strong>do not collect, harvest, store, transmit, or sell</strong> any of the following:</p>
-          <ul>
-            <li><strong>Personal Identity</strong>: Names, email addresses, phone numbers, home addresses, or identification numbers.</li>
-            <li><strong>Device &amp; Biometric Data</strong>: Hardware serial numbers, IMEI, MAC addresses, facial recognition geometry, or biometrics.</li>
-            <li><strong>Network Identifiers</strong>: We do not log, retain, or link IP addresses to your creative projects.</li>
-          </ul>
-          <div class="policy-callout">
-            <i class="fa-solid fa-check-double"></i> <strong>Key Takeaway:</strong> You can use PixKit completely anonymously. We don't know who you are, what files you open, or what you create.
-          </div>
-        </div>
-
-        <!-- Section 2 -->
-        <div class="policy-section">
-          <div class="policy-section-header">
-            <span class="section-num">02</span>
-            <h2>Local On-Device File Processing (How It Works)</h2>
-          </div>
-          <p>Unlike traditional online converters that upload your files to remote cloud servers to process them, PixKit executes all processing <strong>directly inside your web browser or device memory</strong>:</p>
-          <ul>
-            <li><strong>Image Operations</strong>: Resizing, cropping, tone adjustment, filters, drawing, format conversions (JPG, PNG, WebP, SVG, HEIC), and compression run entirely through HTML5 Canvas, WebGL, and browser Web Workers.</li>
-            <li><strong>PDF Suite Operations</strong>: Merging, splitting, rotating, compressing, and page deletions are handled through compiled client-side WebAssembly libraries executing purely in your local RAM.</li>
-            <li><strong>Immediate Memory Disposal</strong>: When you close or refresh your browser tab, memory used by your images is immediately cleared and recycled by your operating system.</li>
-          </ul>
-        </div>
-
-        <!-- Section 3 -->
-        <div class="policy-section">
-          <div class="policy-section-header">
-            <span class="section-num">03</span>
-            <h2>Device Storage Access &amp; Permissions</h2>
-          </div>
-          <p>PixKit requests access to your file system or photo library solely through standard browser file pickers (`&lt;input type="file"&gt;` or the File System Access API) when you deliberately choose to edit a file:</p>
-          <ul>
-            <li>We only read the specific files you select for editing.</li>
-            <li>We do not scan, index, inspect, or background-read your device storage or photo albums.</li>
-            <li>Exported files are saved back to your device via standard browser download triggers.</li>
-          </ul>
-        </div>
-
-        <!-- Section 4 -->
-        <div class="policy-section">
-          <div class="policy-section-header">
-            <span class="section-num">04</span>
-            <h2>No Third-Party Advertising or Profiling</h2>
-          </div>
-          <p>PixKit Studio is 100% ad-free. We do not integrate third-party ad networks (such as Google AdSense, Meta Audience Network, or programmatic display SDKs), behavioral retargeting pixels, or data brokers. Your activity is never sold or shared with any advertiser or commercial entity.</p>
-        </div>
-
-        <!-- Section 5 -->
-        <div class="policy-section">
-          <div class="policy-section-header">
-            <span class="section-num">05</span>
-            <h2>Cookies and Local Storage</h2>
-          </div>
-          <p>PixKit does not use tracking cookies or cross-site tracking technologies. We only utilize your browser's standard <strong>LocalStorage</strong> for the following purely functional, on-device preferences:</p>
-          <ul>
-            <li><code>pixkit_theme</code>: Saves your preferred visual theme (`dark` or `light`) so it remains comfortable on subsequent visits.</li>
-            <li><strong>Recent Works (Studio)</strong>: Saves your active canvas state locally on your machine so you don't lose work if you accidentally refresh. This data never leaves your device.</li>
-            <li><strong>Service Worker Cache</strong>: Allows PixKit's HTML, CSS, and JavaScript files to load instantly and function offline as a Progressive Web App (PWA).</li>
-          </ul>
-        </div>
-
-        <!-- Section 6 -->
-        <div class="policy-section">
-          <div class="policy-section-header">
-            <span class="section-num">06</span>
-            <h2>Third-Party Services &amp; Voluntary Support</h2>
-          </div>
-          <p>If you choose to voluntarily support PixKit through our <a href="support" style="color: var(--accent-green); text-decoration: none; font-weight: 600;">Support Page</a>:</p>
-          <ul>
-            <li>Payments are handled directly on secure external payment gateways (PayPal or official UPI apps).</li>
-            <li>PixKit never collects, sees, or stores your credit card numbers, CVVs, bank account numbers, or payment credentials.</li>
-            <li>If you voluntarily choose to appear on the Supporter Leaderboard, only your chosen public display name and message are recorded.</li>
-          </ul>
-        </div>
-
-        <!-- Section 7 -->
-        <div class="policy-section">
-          <div class="policy-section-header">
-            <span class="section-num">07</span>
-            <h2>Children's Privacy Protection (COPPA &amp; GDPR)</h2>
-          </div>
-          <p>Because PixKit Studio collects zero personal identifiable information from any user of any age, our services are fully compliant with the <strong>Children's Online Privacy Protection Act (COPPA)</strong> and the <strong>General Data Protection Regulation (GDPR)</strong>. PixKit is safe for students, educators, children, and professional creators alike.</p>
-        </div>
-
-        <!-- Section 8 -->
-        <div class="policy-section">
-          <div class="policy-section-header">
-            <span class="section-num">08</span>
-            <h2>Changes to This Policy</h2>
-          </div>
-          <p>We may periodically update this Privacy Policy to reflect enhancements in technology or regulatory requirements. Any modifications will be posted here with an updated "Last Updated" timestamp. Our core commitment—zero server file uploads and 100% client-side privacy—will never change.</p>
-        </div>
-
-        <!-- Contact Box -->
-        <div class="policy-contact-box">
-          <div class="policy-contact-info">
-            <h4>Have questions or need assistance?</h4>
-            <p>Our team is committed to transparency and open communication.</p>
-          </div>
-          <a href="mailto:support.pixkitstudio@gmail.com?subject=PixKit%20Privacy%20Inquiry" class="policy-email-btn">
-            <i class="fa-regular fa-envelope"></i> Contact PixKit Support
-          </a>
-        </div>
-
+        <p>Unlike traditional online converters that upload your files to remote cloud servers to process them, PixKit executes all processing <strong>directly inside your web browser or device memory</strong>:</p>
+        <ul>
+          <li><strong>Image Operations</strong>: Resizing, cropping, tone adjustment, filters, drawing, format conversions (JPG, PNG, WebP, SVG, HEIC), and compression run entirely through HTML5 Canvas, WebGL, and browser Web Workers.</li>
+          <li><strong>PDF Suite Operations</strong>: Merging, splitting, rotating, compressing, and page deletions are handled through compiled client-side WebAssembly libraries executing purely in your local RAM.</li>
+          <li><strong>Immediate Memory Disposal</strong>: When you close or refresh your browser tab, memory used by your images is immediately cleared and recycled by your operating system.</li>
+        </ul>
       </div>
 
-    </main>
-
-    <!-- Aceternity UI: Simple Footer With Four Grids -->
-    <footer class="aceternity-footer">
-      <div class="aceternity-footer-inner">
-        <div class="aceternity-footer-top">
-          <!-- Left: Brand, Copyright & Mission -->
-          <div class="aceternity-footer-brand">
-            <a href="studio" class="aceternity-brand-lockup" title="Launch PixKit Studio">
-              <div class="aceternity-brand-icon">✳</div>
-              <span>PixKit</span>
-            </a>
-            <p class="aceternity-copyright">© copyright PixKit Studio 2026. All rights reserved.</p>
-            <p class="aceternity-tagline">100% private, in-browser image &amp; document studio with zero server tracking.</p>
-            <p style="font-size: 13px; margin: 4px 0 0 0;">
-              <i class="fa-regular fa-envelope" style="color: var(--lime); margin-right: 6px;"></i>
-              <a href="mailto:support.pixkitstudio@gmail.com" style="color: var(--muted); text-decoration: none;">support.pixkitstudio@gmail.com</a>
-            </p>
-          </div>
-
-          <!-- Right: Navigation Links -->
-          <div class="aceternity-footer-links">
-            <div class="footer-col">
-              <h4>Studio</h4>
-              <ul>
-                <li><a href="studio">Open Studio</a></li>
-                <li><a href="studio#/edit">Image Editor</a></li>
-                <li><a href="studio#/convert">Format Converter</a></li>
-                <li><a href="studio#/document">PDF Tools</a></li>
-              </ul>
-            </div>
-
-            <div class="footer-col">
-              <h4>Tools</h4>
-              <ul>
-                <li><a href="resize-image">Resize Image</a></li>
-                <li><a href="compress-image">Compress Image</a></li>
-                <li><a href="crop-image">Crop Image</a></li>
-                <li><a href="merge-pdf">Merge PDF</a></li>
-                <li><a href="split-pdf">Split PDF</a></li>
-              </ul>
-            </div>
-
-            <div class="footer-col">
-              <h4>Community</h4>
-              <ul>
-                <li><a href="support">Support PixKit</a></li>
-                <li><a href="https://github.com/Hsgap/pixkit" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub</a></li>
-                <li><a href="mailto:support.pixkitstudio@gmail.com">Feedback</a></li>
-              </ul>
-            </div>
-          </div>
+      <!-- Section 3 -->
+      <div class="policy-section">
+        <div class="policy-section-header">
+          <span class="section-num">03</span>
+          <h2>Device Storage Access &amp; Permissions</h2>
         </div>
+        <p>PixKit requests access to your file system or photo library solely through standard browser file pickers (`&lt;input type="file"&gt;` or the File System Access API) when you deliberately choose to edit a file:</p>
+        <ul>
+          <li>We only read the specific files you select for editing.</li>
+          <li>We do not scan, index, inspect, or background-read your device storage or photo albums.</li>
+          <li>Exported files are saved back to your device via standard browser download triggers.</li>
+        </ul>
+      </div>
+
+      <!-- Section 4 -->
+      <div class="policy-section">
+        <div class="policy-section-header">
+          <span class="section-num">04</span>
+          <h2>No Third-Party Advertising or Profiling</h2>
+        </div>
+        <p>PixKit Studio is 100% ad-free. We do not integrate third-party ad networks (such as Google AdSense, Meta Audience Network, or programmatic display SDKs), behavioral retargeting pixels, or data brokers. Your activity is never sold or shared with any advertiser or commercial entity.</p>
+      </div>
+
+      <!-- Section 5 -->
+      <div class="policy-section">
+        <div class="policy-section-header">
+          <span class="section-num">05</span>
+          <h2>Cookies and Local Storage</h2>
+        </div>
+        <p>PixKit does not use tracking cookies or cross-site tracking technologies. We only utilize your browser's standard <strong>LocalStorage</strong> for the following purely functional, on-device preferences:</p>
+        <ul>
+          <li><code>pixkit_theme</code>: Saves your preferred visual theme (`dark` or `light`) so it remains comfortable on subsequent visits.</li>
+          <li><strong>Recent Works (Studio)</strong>: Saves your active canvas state locally on your machine so you don't lose work if you accidentally refresh. This data never leaves your device.</li>
+          <li><strong>Service Worker Cache</strong>: Allows PixKit's HTML, CSS, and JavaScript files to load instantly and function offline as a Progressive Web App (PWA).</li>
+        </ul>
+      </div>
+
+      <!-- Section 6 -->
+      <div class="policy-section">
+        <div class="policy-section-header">
+          <span class="section-num">06</span>
+          <h2>Third-Party Services &amp; Voluntary Support</h2>
+        </div>
+        <p>If you choose to voluntarily support PixKit through our <a href="support" style="color: var(--tp-lime); text-decoration: none; font-weight: 600;">Support Page</a>:</p>
+        <ul>
+          <li>Payments are handled directly on secure external payment gateways (PayPal or official UPI apps).</li>
+          <li>PixKit never collects, sees, or stores your credit card numbers, CVVs, bank account numbers, or payment credentials.</li>
+          <li>If you voluntarily choose to appear on the Supporter Leaderboard, only your chosen public display name and message are recorded.</li>
+        </ul>
+      </div>
+
+      <!-- Section 7 -->
+      <div class="policy-section">
+        <div class="policy-section-header">
+          <span class="section-num">07</span>
+          <h2>Children's Privacy Protection (COPPA &amp; GDPR)</h2>
+        </div>
+        <p>Because PixKit Studio collects zero personal identifiable information from any user of any age, our services are fully compliant with the <strong>Children's Online Privacy Protection Act (COPPA)</strong> and the <strong>General Data Protection Regulation (GDPR)</strong>. PixKit is safe for students, educators, children, and professional creators alike.</p>
+      </div>
+
+      <!-- Section 8 -->
+      <div class="policy-section">
+        <div class="policy-section-header">
+          <span class="section-num">08</span>
+          <h2>Changes to This Policy</h2>
+        </div>
+        <p>We may periodically update this Privacy Policy to reflect enhancements in technology or regulatory requirements. Any modifications will be posted here with an updated "Last Updated" timestamp. Our core commitment—zero server file uploads and 100% client-side privacy—will never change.</p>
+      </div>
+
+      <!-- Contact Box -->
+      <div class="policy-contact-box">
+        <div class="policy-contact-info">
+          <h4>Have questions or need assistance?</h4>
+          <p>Our team is committed to transparency and open communication.</p>
+        </div>
+        <a href="mailto:support.pixkitstudio@gmail.com?subject=PixKit%20Privacy%20Inquiry" class="policy-email-btn">
+          <i class="fa-regular fa-envelope"></i> Contact PixKit Support
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Exact SEO Page Footer (.landing-footer) -->
+    <footer class="landing-footer">
+      <div class="landing-footer-copy">
+        <div>© 2026 PixKit Studio. Built for privacy, speed, and clean workflow.</div>
+        <div class="landing-footer-artan">
+          <span>A product of</span>
+          <a href="https://artan.myportfolio.com/" target="_blank" rel="noopener" class="artan-text-link" title="Visit Artàn Visual Portfolio">Artàn Visual</a>
+          <span class="artan-badge" title="Artàn Visual">
+            <img src="icons/artan-logo.png" alt="Artàn" class="artan-badge-logo">
+          </span>
+        </div>
+      </div>
+      <div class="landing-footer-links">
+        <a href="/">Home</a>
+        <a href="/#all-tools">All 21 Tools</a>
+        <a href="privacy-policy">Privacy Policy</a>
+        <a href="studio">Studio</a>
+        <a href="support">Support PixKit</a>
+        <a href="mailto:support.pixkitstudio@gmail.com">Contact Support</a>
+        <a href="https://github.com/Hsgap/pixkit" target="_blank" rel="noopener">GitHub</a>
       </div>
     </footer>
 
   </div>
 
-  <!-- Theme Toggle Script (With Smooth Circular Expansion Animation) -->
+  <!-- Theme Manager Script (Exact SEO Pages Logic with Circular View Transition) -->
   <script>
-    function toggleThemeAnimated(event) {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const nextTheme = isDark ? 'light' : 'dark';
+    function updateThemeIcon(theme) {
+      const icon = document.getElementById('themeIcon');
+      if (!icon) return;
+      if (theme === 'dark') {
+        icon.className = 'fa-solid fa-sun';
+      } else {
+        icon.className = 'fa-solid fa-moon';
+      }
+    }
+
+    // Sync theme icon on load
+    (function syncIcon() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      updateThemeIcon(current);
+    })();
+
+    function toggleTheme(event) {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
 
       // Fallback for browsers without View Transitions API
       if (!document.startViewTransition) {
-        document.documentElement.setAttribute('data-theme', nextTheme);
-        localStorage.setItem('pixkit_theme', nextTheme);
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('pixkit_theme', next);
+        localStorage.setItem('pixkit-theme', next);
+        updateThemeIcon(next);
         return;
       }
 
-      const btn = document.getElementById('theme-toggle-btn');
+      const btn = document.getElementById('themeToggleBtn');
       const rect = btn?.getBoundingClientRect();
       const x = rect ? rect.left + rect.width / 2 : (event?.clientX ?? window.innerWidth / 2);
       const y = rect ? rect.top + rect.height / 2 : (event?.clientY ?? window.innerHeight / 2);
@@ -956,8 +954,10 @@
       );
 
       const transition = document.startViewTransition(() => {
-        document.documentElement.setAttribute('data-theme', nextTheme);
-        localStorage.setItem('pixkit_theme', nextTheme);
+        document.documentElement.setAttribute('data-theme', next);
+        localStorage.setItem('pixkit_theme', next);
+        localStorage.setItem('pixkit-theme', next);
+        updateThemeIcon(next);
       });
 
       transition.ready.then(() => {
