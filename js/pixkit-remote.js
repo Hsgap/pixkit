@@ -9,7 +9,9 @@
 (function (window) {
   'use strict';
 
-  const DEFAULT_CONFIG_URL = 'https://admin.pixkit.site/config/ecosystem-state.json';
+  const RTDB_ENDPOINT = 'https://pixkit-a7862-default-rtdb.asia-southeast1.firebasedatabase.app/ecosystem.json';
+  const STATIC_FALLBACK_URL = 'https://admin.pixkit.site/config/ecosystem-state.json';
+  const DEFAULT_CONFIG_URL = RTDB_ENDPOINT;
   const STORAGE_KEY = 'pixkit_remote_ecosystem_cache';
 
   const FIREBASE_CONFIG = {
@@ -40,11 +42,12 @@
   const PixKitRemote = {
     state: null,
     platform: 'web', // 'web' | 'mobile'
-    appVersion: '1.0.0',
+    appVersion: '1.0.2',
     configUrl: DEFAULT_CONFIG_URL,
     listeners: [],
     _toastTimer: null,
     _evictToastTimer: null,
+    _eventSource: null,
 
     detectPlatform: function () {
       if (window.Capacitor) {
@@ -55,12 +58,12 @@
 
     init: async function (options = {}) {
       this.platform = options.platform || this.detectPlatform();
-      this.appVersion = options.appVersion || window.PIXKIT_APP_VERSION || '1.0.0';
+      this.appVersion = options.appVersion || window.PIXKIT_APP_VERSION || '1.0.2';
       this.configUrl = options.configUrl || DEFAULT_CONFIG_URL;
 
       this.injectStyles();
 
-      // 1. Load cached state first for immediate UI
+      // 1. Load cached state first for immediate UI responsiveness
       try {
         const cached = localStorage.getItem(STORAGE_KEY);
         if (cached) {
@@ -69,17 +72,18 @@
         }
       } catch (_) {}
 
-      // 2. Connect to Realtime Firebase Stream
+      // 2. Connect to Realtime Stream (EventSource SSE or Firebase RTDB)
       this.connectRealtimeStream();
 
       // 3. Initial sync from Cloud
       await this.sync();
 
-      // 4. Poll periodically (every 60s) or when returning to foreground
-      setInterval(() => this.sync(), 60000);
+      // 4. Poll every 15s and immediately on app resume or tab focus
+      setInterval(() => this.sync(), 15000);
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) this.sync();
       });
+      window.addEventListener('focus', () => this.sync());
     },
 
     injectStyles: function () {
@@ -120,6 +124,7 @@
     },
 
     connectRealtimeStream: function () {
+      // 1. Try Firebase RTDB SDK if available
       try {
         const db = getRTDB();
         if (db) {
@@ -134,16 +139,60 @@
               this.notifyListeners();
             }
           });
+          return;
         }
-      } catch (err) {
-        console.warn('[PixKitRemote] Realtime stream notice:', err);
+      } catch (_) {}
+
+      // 2. Direct Real-Time Streaming via Server-Sent Events (SSE) - 100% Native, zero external dependencies!
+      if (typeof window.EventSource !== 'undefined') {
+        try {
+          if (this._eventSource) {
+            this._eventSource.close();
+            this._eventSource = null;
+          }
+          const es = new EventSource(RTDB_ENDPOINT);
+          this._eventSource = es;
+
+          es.addEventListener('put', (event) => {
+            try {
+              const payload = JSON.parse(event.data);
+              if (payload && payload.data && typeof payload.data === 'object') {
+                if (payload.path === '/' || !payload.path) {
+                  this.state = payload.data;
+                } else {
+                  if (!this.state) this.state = {};
+                  const pathParts = payload.path.replace(/^\//, '').split('/');
+                  let cur = this.state;
+                  for (let i = 0; i < pathParts.length - 1; i++) {
+                    if (!cur[pathParts[i]] || typeof cur[pathParts[i]] !== 'object') {
+                      cur[pathParts[i]] = {};
+                    }
+                    cur = cur[pathParts[i]];
+                  }
+                  if (pathParts.length > 0) {
+                    cur[pathParts[pathParts.length - 1]] = payload.data;
+                  }
+                }
+                try {
+                  localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+                } catch (_) {}
+                this.evaluateState();
+                this.notifyListeners();
+              }
+            } catch (_) {}
+          });
+
+          es.onerror = () => {
+            this.sync();
+          };
+        } catch (_) {}
       }
     },
 
     sync: async function () {
       let loaded = false;
 
-      // Try Firebase once
+      // 1. Try Firebase RTDB SDK
       try {
         const db = getRTDB();
         if (db) {
@@ -151,7 +200,7 @@
           const val = snap.val();
           if (val && typeof val === 'object') {
             this.state = val;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(val)); } catch (_) {}
             this.evaluateState();
             this.notifyListeners();
             loaded = true;
@@ -161,21 +210,38 @@
 
       if (loaded) return;
 
-      // Fallback: HTTP fetch from admin.pixkit.site
+      // 2. Direct Live HTTP fetch from Firebase RTDB (bypasses static file caching completely)
       try {
-        const res = await fetch(this.configUrl + '?t=' + Date.now());
+        const res = await fetch(RTDB_ENDPOINT + '?t=' + Date.now(), { cache: 'no-store' });
         if (res.ok) {
           const fresh = await res.json();
-          this.state = fresh;
-          try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
-          } catch (_) {}
-          this.evaluateState();
-          this.notifyListeners();
+          if (fresh && typeof fresh === 'object') {
+            this.state = fresh;
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh)); } catch (_) {}
+            this.evaluateState();
+            this.notifyListeners();
+            loaded = true;
+          }
         }
-      } catch (err) {
-        // Fallback silently to cached state if network offline
-      }
+      } catch (_) {}
+
+      if (loaded) return;
+
+      // 3. Static fallback if Firebase is blocked or offline
+      try {
+        const res = await fetch(STATIC_FALLBACK_URL + '?t=' + Date.now(), { cache: 'no-store' });
+        if (res.ok) {
+          const fresh = await res.json();
+          if (fresh && typeof fresh === 'object') {
+            this.state = fresh;
+            try {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(fresh));
+            } catch (_) {}
+            this.evaluateState();
+            this.notifyListeners();
+          }
+        }
+      } catch (_) {}
     },
 
     onUpdate: function (cb) {
@@ -197,10 +263,27 @@
       return false;
     },
 
-    // Check if a specific tool or community feature flag is enabled for current platform
+    // Check if a specific tool or community feature flag is enabled for current platform & version
     isFeatureEnabled: function (category, toolKey) {
-      if (!this.state || !this.state.featureFlags) return true;
+      if (!this.state) return true;
+
+      // 1. Check Per-Version Feature Overrides FIRST (takes highest precedence)
+      let clientVersion = this.appVersion || '1.0.2';
+      if (clientVersion === '1.0.1') clientVersion = '1.0.2';
+      
+      const registry = this.state.versionRegistry ? (this.state.versionRegistry[this.platform] || []) : [];
+      const versionEntry = Array.isArray(registry) ? registry.find(v => v.versionName === clientVersion) : null;
+
+      if (versionEntry && versionEntry.featureOverrides && typeof versionEntry.featureOverrides === 'object') {
+        if (versionEntry.featureOverrides[toolKey] !== undefined) {
+          return !!versionEntry.featureOverrides[toolKey];
+        }
+      }
+
+      // 2. Check Platform-level Feature Flags
       const flags = this.state.featureFlags;
+      if (!flags) return true;
+
       if (flags[this.platform] && flags[this.platform][category] && flags[this.platform][category][toolKey] !== undefined) {
         return !!flags[this.platform][category][toolKey];
       }
@@ -224,6 +307,7 @@
         'rotate': { cat: 'editTools', key: 'rotateFlip', name: 'Rotate & Flip' },
         'rotate-image': { cat: 'editTools', key: 'rotateFlip', name: 'Rotate & Flip' },
         'rotateflip': { cat: 'editTools', key: 'rotateFlip', name: 'Rotate & Flip' },
+        'rotate-flip': { cat: 'editTools', key: 'rotateFlip', name: 'Rotate & Flip' },
         'compress': { cat: 'editTools', key: 'compress', name: 'Compress Image' },
         'compress-image': { cat: 'editTools', key: 'compress', name: 'Compress Image' },
         'adjust': { cat: 'editTools', key: 'adjust', name: 'Adjust Tones' },
@@ -232,16 +316,21 @@
         'filter': { cat: 'editTools', key: 'filters', name: 'Preset Filters' },
         'draw': { cat: 'editTools', key: 'drawShapes', name: 'Draw & Shapes' },
         'drawshapes': { cat: 'editTools', key: 'drawShapes', name: 'Draw & Shapes' },
+        'draw-shapes': { cat: 'editTools', key: 'drawShapes', name: 'Draw & Shapes' },
         'text': { cat: 'editTools', key: 'addText', name: 'Add Text' },
         'addtext': { cat: 'editTools', key: 'addText', name: 'Add Text' },
+        'add-text': { cat: 'editTools', key: 'addText', name: 'Add Text' },
         'blur': { cat: 'editTools', key: 'adjust', name: 'Blur Tool' },
         'blur-image': { cat: 'editTools', key: 'adjust', name: 'Blur Tool' },
+        'blur-focus': { cat: 'editTools', key: 'adjust', name: 'Blur & Focus' },
 
         // Convert Tools
         'convert-format': { cat: 'convertTools', key: 'formatConverter', name: 'Format Converter' },
         'convert': { cat: 'convertTools', key: 'formatConverter', name: 'Format Converter' },
         'convert-image': { cat: 'convertTools', key: 'formatConverter', name: 'Format Converter' },
         'formatconverter': { cat: 'convertTools', key: 'formatConverter', name: 'Format Converter' },
+        'format-converter': { cat: 'convertTools', key: 'formatConverter', name: 'Format Converter' },
+        'format': { cat: 'convertTools', key: 'formatConverter', name: 'Format Converter' },
         'convert-svg': { cat: 'convertTools', key: 'svgToPng', name: 'SVG to PNG Converter' },
         'svg-to-png': { cat: 'convertTools', key: 'svgToPng', name: 'SVG to PNG Converter' },
         'svgtopng': { cat: 'convertTools', key: 'svgToPng', name: 'SVG to PNG Converter' },
@@ -251,12 +340,15 @@
         'heictojpg': { cat: 'convertTools', key: 'heicToJpg', name: 'HEIC to JPG Converter' },
         'convert-pdf': { cat: 'convertTools', key: 'imageToPdf', name: 'Image to PDF' },
         'imagetopdf': { cat: 'convertTools', key: 'imageToPdf', name: 'Image to PDF' },
+        'image-to-pdf': { cat: 'convertTools', key: 'imageToPdf', name: 'Image to PDF' },
+        'image-to-pdf-convert': { cat: 'convertTools', key: 'imageToPdf', name: 'Image to PDF' },
         'convert-ico': { cat: 'convertTools', key: 'imageToIco', name: 'Image to ICO' },
         'png-to-ico': { cat: 'convertTools', key: 'imageToIco', name: 'Image to ICO' },
         'image-to-ico': { cat: 'convertTools', key: 'imageToIco', name: 'Image to ICO' },
         'favicon-generator': { cat: 'convertTools', key: 'imageToIco', name: 'Favicon Generator' },
         'convert-base64': { cat: 'convertTools', key: 'imageToBase64', name: 'Image to Base64' },
         'image-to-base64': { cat: 'convertTools', key: 'imageToBase64', name: 'Image to Base64' },
+        'imagetobase64': { cat: 'convertTools', key: 'imageToBase64', name: 'Image to Base64' },
 
         // PDF Tools
         'doc-merge-pdf': { cat: 'pdfTools', key: 'mergePdf', name: 'Merge PDF' },
@@ -282,6 +374,19 @@
         'rotatepdf': { cat: 'pdfTools', key: 'rotatePdf', name: 'Rotate PDF' },
         'doc-delete-pdf': { cat: 'pdfTools', key: 'deletePdfPages', name: 'Delete PDF Pages' },
         'delete-pdf-pages': { cat: 'pdfTools', key: 'deletePdfPages', name: 'Delete PDF Pages' },
+        'deletepdfpages': { cat: 'pdfTools', key: 'deletePdfPages', name: 'Delete PDF Pages' },
+
+        // Community Features
+        'leaderboard': { cat: 'community', key: 'leaderboard', name: 'Supporter Leaderboard' },
+        'supportmodal': { cat: 'community', key: 'supportModal', name: 'Donate / Support' },
+        'support': { cat: 'community', key: 'supportModal', name: 'Donate / Support' },
+        'donate': { cat: 'community', key: 'supportModal', name: 'Donate / Support' },
+        'recentfiles': { cat: 'community', key: 'recentFiles', name: 'Recent Files' },
+        'recent': { cat: 'community', key: 'recentFiles', name: 'Recent Files' }
+      };
+
+      return toolMap[id] || null;
+    },
         'deletepdfpages': { cat: 'pdfTools', key: 'deletePdfPages', name: 'Delete PDF Pages' }
       };
 
@@ -350,6 +455,17 @@
         console.warn(`[PixKitRemote] Tool "${toolInfo.name}" (${currentTool}) has been disabled remotely by admin. Evicting user to studio home.`);
         
         this.showToolEvictedToast(toolInfo.name);
+
+        if (this.platform === 'mobile') {
+          setTimeout(() => {
+            if (typeof window.go === 'function') {
+              window.go('tools');
+            } else {
+              window.location.href = 'tools.html';
+            }
+          }, 1200);
+          return;
+        }
 
         // Check if on dedicated SEO tool page
         const pathname = window.location.pathname || '';
@@ -650,33 +766,46 @@
       }
     },
 
-    // Visually update tool cards and buttons in Home/Edit/Convert/Doc suites and landing pages
+    // Visually update tool cards and buttons in Home/Edit/Convert/Doc suites, hubs and landing pages
     applyToolCardsState: function () {
       const toolCards = document.querySelectorAll(
-        '[onclick*="openToolWorkspace"], .tool-row-card, .shortcut-pill, .seo-tool-card, a[href*="resize-image"], a[href*="crop-image"], a[href*="merge-pdf"], a[href*="split-pdf"], a[href*="compress-"], a[href*="convert-"]'
+        '[onclick*="openToolWorkspace"], [onclick*="go("], .tool-row-card, .shortcut-pill, .seo-tool-card, .quick, .toolrow, a[href*=".html"]'
       );
 
       toolCards.forEach(card => {
         let toolId = null;
         const onclickAttr = card.getAttribute('onclick') || '';
-        const match = onclickAttr.match(/openToolWorkspace\(['"]([^'"]+)['"]\)/);
+        let match = onclickAttr.match(/openToolWorkspace\(['"]([^'"]+)['"]\)/);
         if (match && match[1]) {
           toolId = match[1];
         } else {
-          const href = card.getAttribute('href') || '';
-          const hrefMatch = href.match(/([a-zA-Z0-9_-]+)(?:\.html)?$/);
-          if (hrefMatch && hrefMatch[1]) {
-            toolId = hrefMatch[1];
+          match = onclickAttr.match(/go\(['"]([^'"]+)['"]\)/);
+          if (match && match[1]) {
+            toolId = match[1];
+          } else {
+            const href = card.getAttribute('href') || '';
+            const hrefMatch = href.match(/([a-zA-Z0-9_-]+)(?:\.html)?$/);
+            if (hrefMatch && hrefMatch[1]) {
+              toolId = hrefMatch[1];
+            }
           }
         }
 
         if (!toolId) return;
-        const toolInfo = this.getToolInfo(toolId);
+        const cleanToolId = String(toolId).toLowerCase().trim();
+        if (['home', 'tools', 'files', 'settings', 'complete', 'privacy-policy', 'terms'].includes(cleanToolId)) {
+          return;
+        }
+
+        const toolInfo = this.getToolInfo(cleanToolId);
         if (!toolInfo) return;
 
         const isEnabled = this.isFeatureEnabled(toolInfo.cat, toolInfo.key);
         if (!isEnabled) {
           card.classList.add('pixkit-tool-card-disabled');
+          card.style.opacity = '0.35';
+          card.style.filter = 'grayscale(1)';
+          card.style.cursor = 'not-allowed';
           card.setAttribute('data-disabled-notice', toolInfo.name + ' is paused for maintenance');
 
           // Intercept click in capturing phase before workspace or navigation can fire
@@ -695,6 +824,9 @@
           }
         } else {
           card.classList.remove('pixkit-tool-card-disabled');
+          card.style.opacity = '';
+          card.style.filter = '';
+          card.style.cursor = '';
           card.removeAttribute('data-disabled-notice');
           if (card._pixkitDisabledHandler) {
             card.removeEventListener('click', card._pixkitDisabledHandler, true);
@@ -752,45 +884,24 @@
     enforceVersionPolicy: function () {
       if (!this.state) return;
 
-      const clientVersion = this.appVersion || '1.0.2';
+      let clientVersion = this.appVersion || '1.0.2';
+      if (clientVersion === '1.0.1') clientVersion = '1.0.2';
       const isMobile = this.platform === 'mobile';
 
       // 1. Check Version Registry (Per-Version Controls)
       const registry = this.state.versionRegistry ? (this.state.versionRegistry[this.platform] || []) : [];
       const versionEntry = Array.isArray(registry) ? registry.find(v => v.versionName === clientVersion) : null;
 
-      // Apply Per-Version Feature Overrides (if any)
-      if (versionEntry && versionEntry.featureOverrides && typeof versionEntry.featureOverrides === 'object') {
-        try {
-          for (const [toolKey, isEnabled] of Object.entries(versionEntry.featureOverrides)) {
-            if (isEnabled === false) {
-              const toolEl = document.querySelector(`[data-tool="${toolKey}"], #tool-${toolKey}, .tool-${toolKey}`);
-              if (toolEl) {
-                toolEl.style.opacity = '0.4';
-                toolEl.style.filter = 'grayscale(1)';
-                toolEl.style.pointerEvents = 'none';
-                toolEl.setAttribute('title', 'Tool temporarily disabled on this version. Please update on Google Play.');
-              }
-            }
-          }
-        } catch (_) {}
-      }
-
-      // Check Per-Version Targeted Banner
-      if (versionEntry && versionEntry.customMessage && versionEntry.customMessage.enabled && versionEntry.customMessage.text) {
-        this.renderVersionCustomBanner(versionEntry.customMessage.text);
-      } else {
-        this.removeVersionCustomBanner();
-      }
-
       // Check Per-Version Master Kill-Switch
       if (versionEntry && versionEntry.disabled) {
         this.renderForceUpdateOverlay({
-          latestVersion: this.state.versionControl?.mobile?.latestVersion || '1.0.2',
+          latestVersion: this.state.versionControl?.mobile?.latestVersion || '1.0.3',
           updateUrl: versionEntry.updatePrompt?.updateUrl || this.state.versionControl?.mobile?.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio',
           notes: versionEntry.disabledMessage || `Version ${clientVersion} has been retired. Please update to continue creating.`
         }, clientVersion, 'Version Retired');
         return;
+      } else {
+        this.removeForceUpdateOverlay();
       }
 
       // Check Per-Version Update Prompt
