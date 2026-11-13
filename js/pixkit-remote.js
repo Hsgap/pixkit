@@ -750,12 +750,89 @@
     },
 
     enforceVersionPolicy: function () {
-      if (!this.state || !this.state.versionControl) return;
+      if (!this.state) return;
 
-      const policy = this.state.versionControl[this.platform];
+      const clientVersion = this.appVersion || '1.0.2';
+      const isMobile = this.platform === 'mobile';
+
+      // 1. Check Version Registry (Per-Version Controls)
+      const registry = this.state.versionRegistry ? (this.state.versionRegistry[this.platform] || []) : [];
+      const versionEntry = Array.isArray(registry) ? registry.find(v => v.versionName === clientVersion) : null;
+
+      // Apply Per-Version Feature Overrides (if any)
+      if (versionEntry && versionEntry.featureOverrides && typeof versionEntry.featureOverrides === 'object') {
+        try {
+          for (const [toolKey, isEnabled] of Object.entries(versionEntry.featureOverrides)) {
+            if (isEnabled === false) {
+              const toolEl = document.querySelector(`[data-tool="${toolKey}"], #tool-${toolKey}, .tool-${toolKey}`);
+              if (toolEl) {
+                toolEl.style.opacity = '0.4';
+                toolEl.style.filter = 'grayscale(1)';
+                toolEl.style.pointerEvents = 'none';
+                toolEl.setAttribute('title', 'Tool temporarily disabled on this version. Please update on Google Play.');
+              }
+            }
+          }
+        } catch (_) {}
+      }
+
+      // Check Per-Version Targeted Banner
+      if (versionEntry && versionEntry.customMessage && versionEntry.customMessage.enabled && versionEntry.customMessage.text) {
+        this.renderVersionCustomBanner(versionEntry.customMessage.text);
+      } else {
+        this.removeVersionCustomBanner();
+      }
+
+      // Check Per-Version Master Kill-Switch
+      if (versionEntry && versionEntry.disabled) {
+        this.renderForceUpdateOverlay({
+          latestVersion: this.state.versionControl?.mobile?.latestVersion || '1.0.2',
+          updateUrl: versionEntry.updatePrompt?.updateUrl || this.state.versionControl?.mobile?.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio',
+          notes: versionEntry.disabledMessage || `Version ${clientVersion} has been retired. Please update to continue creating.`
+        }, clientVersion, 'Version Retired');
+        return;
+      }
+
+      // Check Per-Version Update Prompt
+      if (versionEntry && versionEntry.updatePrompt && versionEntry.updatePrompt.enabled) {
+        const prompt = versionEntry.updatePrompt;
+        const targetVer = prompt.targetVersion || this.state.versionControl?.mobile?.latestVersion || '1.0.2';
+        const isForce = prompt.type === 'force';
+
+        if (isForce) {
+          this.renderForceUpdateOverlay({
+            latestVersion: targetVer,
+            updateUrl: prompt.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio',
+            notes: Array.isArray(prompt.notes) ? prompt.notes.join('\n') : (prompt.notes || 'Performance enhancements and bug fixes.')
+          }, clientVersion, prompt.title || 'Mandatory Update Required');
+          return;
+        } else {
+          // Optional update: check 24hr cooldown
+          const cooldownKey = 'pixkit_update_cooldown_' + targetVer;
+          let isCooling = false;
+          try {
+            const until = parseInt(localStorage.getItem(cooldownKey) || '0', 10);
+            if (Date.now() < until) isCooling = true;
+          } catch (_) {}
+
+          if (!isCooling) {
+            this.renderMobileUpdateDialog({
+              title: prompt.title || `PixKit ${targetVer} Available!`,
+              notes: prompt.notes || ['Performance improvements', 'Bug fixes'],
+              targetVersion: targetVer,
+              updateUrl: prompt.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio'
+            });
+            return;
+          }
+        }
+      } else {
+        this.removeMobileUpdateDialog();
+      }
+
+      // Fallback: General Version Policy (Fleet Wide Policy)
+      const policy = this.state.versionControl ? this.state.versionControl[this.platform] : null;
       if (!policy) return;
 
-      const clientVersion = this.appVersion || '1.0.0';
       const minVer = policy.minSupportedVersion || '1.0.0';
       const latestVer = policy.latestVersion || '1.0.0';
       const forceUpdate = !!policy.forceUpdate;
@@ -763,7 +840,7 @@
       const isBelowMin = this.semverCompare(clientVersion, minVer) < 0;
       const isBelowLatest = this.semverCompare(clientVersion, latestVer) < 0;
 
-      // 1. Hard Force Update Gate
+      // Hard Force Update Gate
       if (isBelowMin && forceUpdate) {
         this.renderForceUpdateOverlay(policy, clientVersion);
         return;
@@ -771,24 +848,148 @@
         this.removeForceUpdateOverlay();
       }
 
-      // 2. Soft Update Notification (web/desktop only; mobile updates are handled via Play Store)
-      if (this.platform !== 'mobile' && isBelowLatest) {
+      // Soft Update Notification for Web/Desktop
+      if (!isMobile && isBelowLatest) {
         const dismissedKey = 'pixkit_dismissed_update_' + latestVer;
         try {
           if (!sessionStorage.getItem(dismissedKey)) {
             this.renderSoftUpdateToast(policy, clientVersion);
           }
         } catch (_) {}
-      } else {
+      } else if (!isMobile) {
         this.removeSoftUpdateToast();
       }
     },
 
-    renderForceUpdateOverlay: function (policy, clientVersion) {
+    renderMobileUpdateDialog: function (config) {
+      let modal = document.getElementById('pixkit-mobile-update-modal');
+      const targetVer = config.targetVersion || '1.0.2';
+      const title = config.title || `PixKit ${targetVer} is Available!`;
+      const updateUrl = config.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio';
+      const notesList = Array.isArray(config.notes) ? config.notes : [config.notes || 'Bug fixes and improvements'];
+
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'pixkit-mobile-update-modal';
+        modal.style.cssText = `
+          position: fixed;
+          inset: 0;
+          z-index: 9999999;
+          background: rgba(0, 0, 0, 0.75);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+          padding: 0;
+          font-family: -apple-system, BlinkMacSystemFont, "DM Sans", "Segoe UI", Roboto, sans-serif;
+          animation: modalFadeIn 0.22s ease-out;
+        `;
+        document.body.appendChild(modal);
+      }
+
+      const notesHtml = notesList.map(n => `
+        <li style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 11.5px; color: #b5b8aa; line-height: 1.45;">
+          <span style="color: #d7f36a; font-weight: 800; line-height: 1.2;">✓</span>
+          <span>${this.escapeHtml(n)}</span>
+        </li>
+      `).join('');
+
+      modal.innerHTML = `
+        <div style="width: 100%; max-width: 440px; background: linear-gradient(180deg, #1f2119 0%, #13140e 100%); border: 1px solid #36392c; border-top: 1px solid rgba(255, 255, 255, 0.16); border-radius: 26px 26px 0 0; padding: 24px 20px 32px; box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6); box-sizing: border-box;">
+          <div style="width: 40px; height: 4px; background: #3c4033; border-radius: 999px; margin: 0 auto 18px;"></div>
+          
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+            <div style="width: 32px; height: 32px; border-radius: 10px; background: #d7f36a; color: #101204; display: grid; place-items: center; font-size: 20px; font-weight: 800;">
+              ✳
+            </div>
+            <div>
+              <span style="font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: #d7f36a; font-weight: 800; display: block;">NEW RELEASE AVAILABLE</span>
+              <h3 style="margin: 0; font-size: 17px; font-weight: 800; color: #ffffff; letter-spacing: -0.4px;">${this.escapeHtml(title)}</h3>
+            </div>
+          </div>
+
+          <div style="background: rgba(0, 0, 0, 0.35); border: 1px solid #282a20; border-radius: 14px; padding: 12px 14px; margin-bottom: 18px;">
+            <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #d7f36a; letter-spacing: 0.5px; margin-bottom: 8px;">What's New in v${this.escapeHtml(targetVer)}:</div>
+            <ul style="margin: 0; padding: 0; list-style: none;">
+              ${notesHtml}
+            </ul>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 9px;">
+            <a href="${this.escapeHtml(updateUrl)}" target="_blank" onclick="PixKitRemote.handleOpenStore('${this.escapeHtml(updateUrl)}')" style="display: block; text-align: center; background: linear-gradient(180deg, #e4fb7c 0%, #d7f36a 55%, #c0de4d 100%); color: #15170d; font-weight: 800; font-size: 13.5px; padding: 13px 20px; border-radius: 14px; text-decoration: none; border: 1px solid #a8c838; border-top: 1px solid #f2ffd0; box-shadow: 0 4px 18px rgba(215, 243, 106, 0.38); cursor: pointer;">
+              Update on Google Play &rarr;
+            </a>
+            <button type="button" onclick="PixKitRemote.dismissMobileUpdate('${this.escapeHtml(targetVer)}')" style="background: rgba(255, 255, 255, 0.04); border: 1px solid #2d3025; color: #9fa197; font-weight: 700; font-size: 12px; padding: 10px 18px; border-radius: 12px; cursor: pointer;">
+              Remind Me Later
+            </button>
+          </div>
+        </div>
+      `;
+    },
+
+    dismissMobileUpdate: function (targetVer) {
+      try {
+        // Set 24 hour cooldown in localStorage
+        const cooldownKey = 'pixkit_update_cooldown_' + targetVer;
+        localStorage.setItem(cooldownKey, String(Date.now() + 86400000));
+      } catch (_) {}
+      this.removeMobileUpdateDialog();
+    },
+
+    removeMobileUpdateDialog: function () {
+      const modal = document.getElementById('pixkit-mobile-update-modal');
+      if (modal) modal.remove();
+    },
+
+    handleOpenStore: function (url) {
+      try {
+        if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser) {
+          window.Capacitor.Plugins.Browser.open({ url: url });
+        }
+      } catch (_) {}
+    },
+
+    renderVersionCustomBanner: function (text) {
+      let banner = document.getElementById('pixkit-version-custom-banner');
+      if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'pixkit-version-custom-banner';
+        banner.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 999990;
+          background: linear-gradient(90deg, #1b2e10 0%, #15220c 100%);
+          border-bottom: 1px solid #36501c;
+          color: #d7f36a;
+          padding: 8px 16px;
+          font-size: 11px;
+          font-weight: 700;
+          text-align: center;
+          font-family: -apple-system, BlinkMacSystemFont, "DM Sans", sans-serif;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+        `;
+        document.body.appendChild(banner);
+      }
+      banner.innerHTML = `<span>⚡</span> <span>${this.escapeHtml(text)}</span>`;
+    },
+
+    removeVersionCustomBanner: function () {
+      const banner = document.getElementById('pixkit-version-custom-banner');
+      if (banner) banner.remove();
+    },
+
+    renderForceUpdateOverlay: function (policy, clientVersion, customTitle) {
       let overlay = document.getElementById('pixkit-force-update-screen');
-      const latestVer = policy.latestVersion || '1.2.0';
+      const latestVer = policy.latestVersion || '1.0.2';
       const updateUrl = policy.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio';
       const notes = policy.notes || 'Critical security update and performance enhancements.';
+      const heading = customTitle || 'Update to Continue';
 
       if (!overlay) {
         overlay = document.createElement('div');
@@ -820,7 +1021,7 @@
           <div style="display:inline-block; padding: 4px 12px; border-radius: 999px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); font-size: 11px; font-weight: 800; color: #EF4444; text-transform: uppercase; margin-bottom: 12px;">
             Mandatory Update Required
           </div>
-          <h2 style="font-size: 22px; font-weight: 800; margin: 0 0 10px; color: #FFFFFF; letter-spacing: -0.02em;">Update to Continue</h2>
+          <h2 style="font-size: 22px; font-weight: 800; margin: 0 0 10px; color: #FFFFFF; letter-spacing: -0.02em;">${this.escapeHtml(heading)}</h2>
           <p style="font-size: 13.5px; line-height: 1.5; color: #9FA197; margin: 0 0 18px;">
             Your installed version (<strong>v${this.escapeHtml(clientVersion)}</strong>) is no longer supported. Please update to <strong>v${this.escapeHtml(latestVer)}</strong> to safely continue using PixKit.
           </p>
@@ -829,7 +1030,7 @@
             <div>${this.escapeHtml(notes)}</div>
           </div>
           <div>
-            <a href="${this.escapeHtml(updateUrl)}" target="_blank" style="display: block; width: 100%; box-sizing: border-box; padding: 13px 24px; border-radius: 14px; background: #D7F36A; color: #121310; font-size: 14px; font-weight: 800; text-decoration: none; transition: transform 0.15s ease;">
+            <a href="${this.escapeHtml(updateUrl)}" target="_blank" onclick="PixKitRemote.handleOpenStore('${this.escapeHtml(updateUrl)}')" style="display: block; width: 100%; box-sizing: border-box; padding: 13px 24px; border-radius: 14px; background: #D7F36A; color: #121310; font-size: 14px; font-weight: 800; text-decoration: none; transition: transform 0.15s ease;">
               Update via Google Play &rarr;
             </a>
           </div>
