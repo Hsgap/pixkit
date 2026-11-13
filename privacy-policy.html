@@ -564,33 +564,103 @@
     }
 
     /* ==========================================================================
-       Exact SEO Page Footer (.landing-footer)
+       Aceternity UI: Simple Footer With Four Grids
        ========================================================================== */
-    .landing-footer {
+    .aceternity-footer {
       border-top: 1px solid var(--tp-border);
-      padding-top: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 13px;
-      color: var(--tp-muted);
-      flex-wrap: wrap;
-      gap: 16px;
+      padding: 72px 0 24px;
+      margin-top: 60px;
+      width: 100%;
+      position: relative;
+      background: var(--tp-bg);
+      z-index: 10;
+      overflow: hidden;
     }
 
-    .landing-footer-copy {
+    .aceternity-footer-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .aceternity-footer-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 56px;
+      margin-bottom: 48px;
+    }
+
+    /* Left Brand Column */
+    .aceternity-footer-brand {
+      flex: 1.1;
+      max-width: 320px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 12px;
     }
 
-    .landing-footer-artan {
+    .aceternity-brand-lockup {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--tp-ink);
+      user-select: none;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      width: fit-content;
+    }
+
+    .aceternity-brand-lockup:hover {
+      transform: translateY(-1px);
+    }
+
+    .aceternity-brand-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: var(--tp-lime);
+      color: #121310;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(215, 243, 106, 0.35);
+      transition: transform 0.25s ease;
+    }
+
+    .aceternity-brand-lockup:hover .aceternity-brand-icon {
+      transform: rotate(15deg) scale(1.08);
+    }
+
+    .aceternity-brand-name {
+      font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--tp-ink);
+      letter-spacing: -0.02em;
+    }
+
+    .aceternity-copyright {
       font-size: 13px;
       color: var(--tp-muted);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .aceternity-parent-brand {
+      font-size: 13px;
+      color: var(--tp-muted);
+      line-height: 1.5;
+      display: flex;
+      align-items: center;
+      gap: 8px;
       flex-wrap: wrap;
+      margin: 0;
     }
 
     .artan-text-link {
@@ -636,21 +706,158 @@
       pointer-events: none;
     }
 
-    .landing-footer-links {
+    .aceternity-contact-email {
+      font-size: 13px;
+      margin: 4px 0 8px 0;
       display: flex;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 18px;
     }
 
-    .landing-footer-links a {
+    .aceternity-contact-email a {
       color: var(--tp-muted);
       text-decoration: none;
       transition: color 0.2s;
     }
 
-    .landing-footer-links a:hover {
+    .aceternity-contact-email a:hover {
+      color: var(--tp-lime);
+    }
+
+    .aceternity-tagline {
+      font-size: 12px;
+      color: var(--tp-muted);
+      line-height: 1.5;
+      margin: 2px 0 0 0;
+    }
+
+    .footer-active-users {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--tp-muted);
+      margin: 8px 0 0 0;
+    }
+
+    .speed-counter-number {
+      display: inline-flex;
+      align-items: center;
+      background: var(--accent-green-bg);
       color: var(--tp-ink);
+      border: 1px solid var(--accent-green-border);
+      border-radius: 12px;
+      padding: 2px 10px;
+      font-weight: 700;
+      font-size: 11.5px;
+      letter-spacing: 0.02em;
+    }
+
+    /* Right Four Grids Navigation */
+    .aceternity-footer-grids {
+      flex: 2.2;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 36px;
+    }
+
+    .aceternity-grid-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .aceternity-grid-title {
+      font-family: 'Manrope', sans-serif;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--tp-ink);
+      margin: 0 0 16px 0;
+      letter-spacing: -0.01em;
+    }
+
+    .aceternity-grid-links {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .aceternity-grid-links a {
+      font-size: 13px;
+      color: var(--tp-muted);
+      text-decoration: none;
+      transition: color 0.15s ease, transform 0.15s ease;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    .aceternity-grid-links a:hover {
+      color: var(--tp-ink);
+      transform: translateX(2px);
+    }
+
+    /* Big Aceternity Interactive Watermark Brand Name at Bottom */
+    .aceternity-footer-watermark {
+      width: 100%;
+      text-align: center;
+      padding-top: 40px;
+      padding-bottom: 10px;
+      user-select: none;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    .aceternity-footer-watermark::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(180deg, var(--tp-bg) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .aceternity-watermark-canvas {
+      display: block;
+      width: 100%;
+      max-width: 1200px;
+      height: clamp(80px, 14vw, 190px);
+      user-select: none;
+      touch-action: none;
+      position: relative;
+      z-index: 1;
+      cursor: crosshair;
+    }
+
+    @media (max-width: 960px) {
+      .aceternity-footer-top {
+        flex-direction: column;
+        gap: 40px;
+      }
+      .aceternity-footer-brand {
+        max-width: 100%;
+      }
+      .aceternity-footer-grids {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 32px;
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .aceternity-footer-grids {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      .aceternity-footer {
+        padding: 50px 0 16px;
+      }
     }
 
     @media (max-width: 680px) {
@@ -666,10 +873,6 @@
       .policy-content-card {
         padding: 28px 20px;
         border-radius: 18px;
-      }
-      .landing-footer {
-        flex-direction: column;
-        align-items: flex-start;
       }
       .policy-contact-box {
         flex-direction: column;
@@ -887,26 +1090,90 @@
 
     </div>
 
-    <!-- Exact SEO Page Footer (.landing-footer) -->
-    <footer class="landing-footer">
-      <div class="landing-footer-copy">
-        <div>© 2026 PixKit Studio. Built for privacy, speed, and clean workflow.</div>
-        <div class="landing-footer-artan">
-          <span>A product of</span>
-          <a href="https://artan.myportfolio.com/" target="_blank" rel="noopener" class="artan-text-link" title="Visit Artàn Visual Portfolio">Artàn Visual</a>
-          <span class="artan-badge" title="Artàn Visual">
-            <img src="icons/artan-logo.png" alt="Artàn" class="artan-badge-logo">
-          </span>
+    <!-- Aceternity UI: Simple Footer With Four Grids -->
+    <footer class="aceternity-footer">
+      <div class="aceternity-footer-inner">
+        <div class="aceternity-footer-top">
+          <!-- Left: Brand, Copyright & Mission -->
+          <div class="aceternity-footer-brand">
+            <a href="studio" class="aceternity-brand-lockup" title="Launch PixKit Studio">
+              <div class="aceternity-brand-icon">✳</div>
+              <span class="aceternity-brand-name">PixKit</span>
+            </a>
+            <p class="aceternity-copyright">© copyright PixKit Studio 2026. All rights reserved.</p>
+            <p class="aceternity-parent-brand">
+              <span>A product of</span>
+              <a href="https://artan.myportfolio.com/" target="_blank" rel="noopener" class="artan-text-link" title="Visit Artàn Visual Portfolio">Artàn Visual</a>
+              <span class="artan-badge" title="Artàn Visual">
+                <img src="icons/artan-logo.png" alt="Artàn" class="artan-badge-logo">
+              </span>
+            </p>
+            <p class="aceternity-contact-email"><i class="fa-regular fa-envelope" style="color: var(--tp-lime); margin-right: 6px;"></i><a href="mailto:support.pixkitstudio@gmail.com?subject=PixKit%20Studio%20Support">support.pixkitstudio@gmail.com</a></p>
+            <p class="aceternity-tagline">100% private, in-browser image &amp; document studio with zero server tracking.</p>
+
+            <!-- Clean Minimalist Inline Active Users Counter -->
+            <p class="footer-active-users" id="liveSpeedCounterWidget" title="Active users in-browser right now">
+              <span class="active-users-label">Active users:</span>
+              <span class="speed-counter-number" id="speedCounterNumber"><span class="speed-digit-char active">1</span></span>
+            </p>
+          </div>
+
+          <!-- Right: Four Grids (Pages, Tools, Legal, Connect) -->
+          <div class="aceternity-footer-grids">
+            <!-- Grid 1: Pages -->
+            <div class="aceternity-grid-col">
+              <h4 class="aceternity-grid-title">Pages</h4>
+              <ul class="aceternity-grid-links">
+                <li><a href="/#all-tools">All 21 Tools</a></li>
+                <li><a href="studio#/home">Studio Home</a></li>
+                <li><a href="studio#/edit">Edit Images</a></li>
+                <li><a href="studio#/convert">Convert Formats</a></li>
+                <li><a href="studio#/document">PDF &amp; Documents</a></li>
+              </ul>
+            </div>
+
+            <!-- Grid 2: Tools -->
+            <div class="aceternity-grid-col">
+              <h4 class="aceternity-grid-title">Tools</h4>
+              <ul class="aceternity-grid-links">
+                <li><a href="studio#/edit">Resize &amp; Crop</a></li>
+                <li><a href="studio#/edit">Compress Image</a></li>
+                <li><a href="studio#/convert">HEIC to JPG</a></li>
+                <li><a href="studio#/document">PDF to Images</a></li>
+                <li><a href="studio#/document">Merge &amp; Split PDF</a></li>
+              </ul>
+            </div>
+
+            <!-- Grid 3: Legal -->
+            <div class="aceternity-grid-col">
+              <h4 class="aceternity-grid-title">Legal</h4>
+              <ul class="aceternity-grid-links">
+                <li><a href="privacy-policy">Privacy Policy</a></li>
+                <li><a href="studio#/settings">Zero-Server Shield</a></li>
+                <li><a href="studio#/settings">Local Storage Only</a></li>
+                <li><a href="mailto:support.pixkitstudio@gmail.com?subject=PixKit%20Privacy%20Inquiry">Contact Us</a></li>
+              </ul>
+            </div>
+
+            <!-- Grid 4: Connect -->
+            <div class="aceternity-grid-col">
+              <h4 class="aceternity-grid-title">Connect</h4>
+              <ul class="aceternity-grid-links">
+                <li><a href="studio">Launch Studio</a></li>
+                <li><a href="support">Support PixKit</a></li>
+                <li><a href="studio#/settings">Studio Settings</a></li>
+                <li><a href="mailto:support.pixkitstudio@gmail.com?subject=PixKit%20Studio%20Support"><i class="fa-solid fa-envelope" style="margin-right: 4px;"></i> Contact Support</a></li>
+                <li><a href="https://github.com/Hsgap/pixkit" target="_blank" rel="noopener"><i class="fa-brands fa-github" style="margin-right: 4px;"></i> GitHub</a></li>
+              </ul>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="landing-footer-links">
-        <a href="/">Home</a>
-        <a href="/#all-tools">All 21 Tools</a>
-        <a href="privacy-policy">Privacy Policy</a>
-        <a href="studio">Studio</a>
-        <a href="support">Support PixKit</a>
-        <a href="mailto:support.pixkitstudio@gmail.com">Contact Support</a>
-        <a href="https://github.com/Hsgap/pixkit" target="_blank" rel="noopener">GitHub</a>
+
+        <!-- Big Aceternity Interactive Watermark Brand Name at Bottom -->
+        <div class="aceternity-footer-watermark" id="watermarkContainer" aria-label="PixKit Studio">
+          <canvas id="watermarkCanvas" class="aceternity-watermark-canvas"></canvas>
+          <span class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">PixKit Studio</span>
+        </div>
       </div>
     </footer>
 
@@ -975,6 +1242,246 @@
         );
       });
     }
+
+    /**
+     * Interactive Paintbrush Watermark Effect (Aceternity Custom Paint)
+     * Moving the cursor over the watermark acts like a paintbrush, revealing vibrant
+     * PixKit signature lime green (#D7F36A) strictly inside the letterforms.
+     * After 6 seconds of inactivity, the painted green smoothly dissolves (2.5s) back to subtle text.
+     */
+    (function initWatermarkPaintbrush() {
+      const container = document.getElementById('watermarkContainer');
+      const canvas = document.getElementById('watermarkCanvas');
+      if (!canvas || !container) return;
+
+      const ctx = canvas.getContext('2d');
+      const brushCanvas = document.createElement('canvas');
+      const brushCtx = brushCanvas.getContext('2d');
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+
+      let dpr = 1;
+      let width = 0;
+      let height = 0;
+      let fontSize = 0;
+      let fontString = '';
+      let centerX = 0;
+      let centerY = 0;
+
+      let lastMouse = null;
+      let hasPainted = false;
+      let brushFadeOpacity = 1.0;
+      let idleTimer = null;
+      let isFading = false;
+      let fadeAnimId = null;
+
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = Math.floor(rect.width * dpr);
+        height = Math.floor(rect.height * dpr);
+
+        if (width <= 0 || height <= 0) return;
+
+        canvas.width = width;
+        canvas.height = height;
+        brushCanvas.width = width;
+        brushCanvas.height = height;
+        tempCanvas.width = width;
+        tempCanvas.height = height;
+
+        fontSize = height * 0.95;
+        fontString = `800 ${fontSize}px 'Manrope', -apple-system, sans-serif`;
+        ctx.font = fontString;
+        if ('letterSpacing' in ctx) ctx.letterSpacing = '-0.05em';
+
+        const metrics = ctx.measureText('PixKit Studio');
+        if (metrics.width > width * 0.94) {
+          fontSize = fontSize * ((width * 0.94) / metrics.width);
+          fontString = `800 ${fontSize}px 'Manrope', -apple-system, sans-serif`;
+        }
+
+        centerX = width / 2;
+        centerY = height * 0.54;
+
+        redraw();
+      }
+
+      function redraw() {
+        if (!width || !height) return;
+
+        ctx.clearRect(0, 0, width, height);
+
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+        // 1. Draw Base Subtle Watermark Text with Top-Fade Gradient
+        ctx.save();
+        ctx.font = fontString;
+        if ('letterSpacing' in ctx) ctx.letterSpacing = '-0.05em';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        const baseGrad = ctx.createLinearGradient(0, centerY - fontSize * 0.5, 0, centerY + fontSize * 0.5);
+        if (isDark) {
+          baseGrad.addColorStop(0, 'rgba(18, 19, 16, 0)');
+          baseGrad.addColorStop(0.35, 'rgba(255, 255, 255, 0.03)');
+          baseGrad.addColorStop(1, 'rgba(255, 255, 255, 0.14)');
+        } else {
+          baseGrad.addColorStop(0, 'rgba(251, 251, 248, 0)');
+          baseGrad.addColorStop(0.35, 'rgba(0, 0, 0, 0.03)');
+          baseGrad.addColorStop(1, 'rgba(0, 0, 0, 0.12)');
+        }
+
+        ctx.fillStyle = baseGrad;
+        ctx.fillText('PixKit Studio', centerX, centerY);
+        ctx.restore();
+
+        // 2. Draw Painted Lime Green Layer (Clipped to brush strokes via source-in)
+        if (hasPainted && brushFadeOpacity > 0.005) {
+          tempCtx.clearRect(0, 0, width, height);
+
+          tempCtx.globalAlpha = brushFadeOpacity;
+          tempCtx.drawImage(brushCanvas, 0, 0);
+          tempCtx.globalAlpha = 1.0;
+
+          tempCtx.globalCompositeOperation = 'source-in';
+          tempCtx.font = fontString;
+          if ('letterSpacing' in tempCtx) tempCtx.letterSpacing = '-0.05em';
+          tempCtx.textAlign = 'center';
+          tempCtx.textBaseline = 'middle';
+
+          // Glow shadow pass
+          tempCtx.shadowColor = 'rgba(215, 243, 106, 0.75)';
+          tempCtx.shadowBlur = 28 * dpr;
+          tempCtx.fillStyle = '#D7F36A';
+          tempCtx.fillText('PixKit Studio', centerX, centerY);
+
+          // Crisp solid fill pass
+          tempCtx.shadowBlur = 0;
+          tempCtx.fillStyle = '#D7F36A';
+          tempCtx.fillText('PixKit Studio', centerX, centerY);
+
+          tempCtx.globalCompositeOperation = 'source-over';
+          ctx.drawImage(tempCanvas, 0, 0);
+        }
+      }
+
+      function drawBrushCircle(x, y, radius) {
+        const radGrad = brushCtx.createRadialGradient(x, y, 0, x, y, radius);
+        radGrad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+        radGrad.addColorStop(0.65, 'rgba(255, 255, 255, 0.85)');
+        radGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+        brushCtx.fillStyle = radGrad;
+        brushCtx.beginPath();
+        brushCtx.arc(x, y, radius, 0, Math.PI * 2);
+        brushCtx.fill();
+      }
+
+      function handlePaintMove(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        const x = (clientX - rect.left) * dpr;
+        const y = (clientY - rect.top) * dpr;
+
+        if (isFading) {
+          cancelAnimationFrame(fadeAnimId);
+          isFading = false;
+        }
+        brushFadeOpacity = 1.0;
+        hasPainted = true;
+
+        const brushRadius = Math.max(18 * dpr, fontSize * 0.18);
+
+        if (!lastMouse) {
+          lastMouse = { x, y };
+          drawBrushCircle(x, y, brushRadius);
+        } else {
+          const dist = Math.hypot(x - lastMouse.x, y - lastMouse.y);
+          const steps = Math.max(1, Math.ceil(dist / (4 * dpr)));
+          for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            const ix = lastMouse.x + (x - lastMouse.x) * t;
+            const iy = lastMouse.y + (y - lastMouse.y) * t;
+            drawBrushCircle(ix, iy, brushRadius);
+          }
+          lastMouse = { x, y };
+        }
+
+        redraw();
+
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => {
+          startFadeOut();
+        }, 6000);
+      }
+
+      function startFadeOut() {
+        if (!hasPainted || isFading) return;
+        isFading = true;
+        const fadeDuration = 2500;
+        const startTime = performance.now();
+        const startOpacity = brushFadeOpacity;
+
+        function animateFade(now) {
+          if (!isFading) return;
+          const elapsed = now - startTime;
+          const progress = Math.min(1, elapsed / fadeDuration);
+
+          const ease = 1 - Math.pow(1 - progress, 3);
+          brushFadeOpacity = Math.max(0, startOpacity * (1 - ease));
+
+          redraw();
+
+          if (progress < 1) {
+            fadeAnimId = requestAnimationFrame(animateFade);
+          } else {
+            brushCtx.clearRect(0, 0, width, height);
+            brushFadeOpacity = 1.0;
+            hasPainted = false;
+            isFading = false;
+            redraw();
+          }
+        }
+
+        fadeAnimId = requestAnimationFrame(animateFade);
+      }
+
+      // Mouse events
+      canvas.addEventListener('mousemove', (e) => {
+        handlePaintMove(e.clientX, e.clientY);
+      });
+
+      canvas.addEventListener('mouseleave', () => {
+        lastMouse = null;
+      });
+
+      // Touch events (mobile / tablets)
+      canvas.addEventListener('touchmove', (e) => {
+        if (e.touches && e.touches[0]) {
+          handlePaintMove(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: true });
+
+      canvas.addEventListener('touchend', () => {
+        lastMouse = null;
+      });
+
+      window.addEventListener('resize', () => {
+        resize();
+      });
+
+      const observer = new MutationObserver(() => {
+        redraw();
+      });
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+      resize();
+      setTimeout(resize, 60);
+      setTimeout(resize, 200);
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(resize);
+      }
+    })();
   </script>
 </body>
 </html>
