@@ -907,18 +907,10 @@
       // Check Per-Version Update Prompt
       if (versionEntry && versionEntry.updatePrompt && versionEntry.updatePrompt.enabled) {
         const prompt = versionEntry.updatePrompt;
-        const targetVer = prompt.targetVersion || this.state.versionControl?.mobile?.latestVersion || '1.0.2';
-        const isForce = prompt.type === 'force';
+        const targetVer = prompt.targetVersion || this.state.versionControl?.mobile?.latestVersion || '1.0.3';
+        const allowSkip = prompt.allowSkip !== false && prompt.type !== 'force';
 
-        if (isForce) {
-          this.renderForceUpdateOverlay({
-            latestVersion: targetVer,
-            updateUrl: prompt.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio',
-            notes: Array.isArray(prompt.notes) ? prompt.notes.join('\n') : (prompt.notes || 'Performance enhancements and bug fixes.')
-          }, clientVersion, prompt.title || 'Mandatory Update Required');
-          return;
-        } else {
-          // Optional update: check 24hr cooldown
+        if (allowSkip) {
           const cooldownKey = 'pixkit_update_cooldown_' + targetVer;
           let isCooling = false;
           try {
@@ -928,13 +920,23 @@
 
           if (!isCooling) {
             this.renderMobileUpdateDialog({
-              title: prompt.title || `PixKit ${targetVer} Available!`,
+              title: prompt.title || `PixKit ${targetVer} is Available`,
               notes: prompt.notes || ['Performance improvements', 'Bug fixes'],
               targetVersion: targetVer,
-              updateUrl: prompt.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio'
+              updateUrl: prompt.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio',
+              allowSkip: true
             });
             return;
           }
+        } else {
+          this.renderMobileUpdateDialog({
+            title: prompt.title || `PixKit ${targetVer} is Available`,
+            notes: prompt.notes || ['Performance improvements', 'Bug fixes'],
+            targetVersion: targetVer,
+            updateUrl: prompt.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio',
+            allowSkip: false
+          });
+          return;
         }
       } else {
         this.removeMobileUpdateDialog();
@@ -951,11 +953,40 @@
       const isBelowMin = this.semverCompare(clientVersion, minVer) < 0;
       const isBelowLatest = this.semverCompare(clientVersion, latestVer) < 0;
 
-      // Hard Force Update Gate
-      if (isBelowMin && forceUpdate) {
-        this.renderForceUpdateOverlay(policy, clientVersion);
-        return;
+      if ((isBelowMin && forceUpdate) || (isBelowLatest && policy.updatePrompt)) {
+        const allowSkip = policy.allowSkip !== false && !forceUpdate;
+        const targetVer = latestVer;
+
+        if (allowSkip) {
+          const cooldownKey = 'pixkit_update_cooldown_' + targetVer;
+          let isCooling = false;
+          try {
+            const until = parseInt(localStorage.getItem(cooldownKey) || '0', 10);
+            if (Date.now() < until) isCooling = true;
+          } catch (_) {}
+
+          if (!isCooling) {
+            this.renderMobileUpdateDialog({
+              title: policy.updateTitle || `PixKit ${targetVer} is Available`,
+              notes: Array.isArray(policy.notes) ? policy.notes : (policy.notes ? policy.notes.split('\n') : ['Bug fixes and performance improvements']),
+              targetVersion: targetVer,
+              updateUrl: policy.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio',
+              allowSkip: true
+            });
+            return;
+          }
+        } else {
+          this.renderMobileUpdateDialog({
+            title: policy.updateTitle || `PixKit ${targetVer} is Available`,
+            notes: Array.isArray(policy.notes) ? policy.notes : (policy.notes ? policy.notes.split('\n') : ['Bug fixes and performance improvements']),
+            targetVersion: targetVer,
+            updateUrl: policy.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio',
+            allowSkip: false
+          });
+          return;
+        }
       } else {
+        this.removeMobileUpdateDialog();
         this.removeForceUpdateOverlay();
       }
 
@@ -974,10 +1005,11 @@
 
     renderMobileUpdateDialog: function (config) {
       let modal = document.getElementById('pixkit-mobile-update-modal');
-      const targetVer = config.targetVersion || '1.0.2';
-      const title = config.title || `PixKit ${targetVer} is Available!`;
+      const targetVer = config.targetVersion || '1.0.3';
+      const title = config.title || `PixKit ${targetVer} is Available`;
       const updateUrl = config.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio';
-      const notesList = Array.isArray(config.notes) ? config.notes : [config.notes || 'Bug fixes and improvements'];
+      const notesList = Array.isArray(config.notes) ? config.notes : (typeof config.notes === 'string' ? config.notes.split('\n') : ['Bug fixes and performance improvements']);
+      const allowSkip = config.allowSkip !== false;
 
       if (!modal) {
         modal = document.createElement('div');
@@ -985,42 +1017,44 @@
         modal.style.cssText = `
           position: fixed;
           inset: 0;
-          z-index: 9999999;
-          background: rgba(0, 0, 0, 0.75);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
+          z-index: 999999999;
+          background: rgba(10, 11, 8, 0.82);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
           display: flex;
-          align-items: flex-end;
+          align-items: center;
           justify-content: center;
-          padding: 0;
+          padding: 20px;
+          box-sizing: border-box;
           font-family: -apple-system, BlinkMacSystemFont, "DM Sans", "Segoe UI", Roboto, sans-serif;
-          animation: modalFadeIn 0.22s ease-out;
+          animation: pixkitFadeIn 0.22s ease-out;
         `;
         document.body.appendChild(modal);
       }
 
-      const notesHtml = notesList.map(n => `
-        <li style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 11.5px; color: #b5b8aa; line-height: 1.45;">
+      const notesHtml = notesList.map(s => String(s).trim().replace(/^[-•*]\s*/, '')).filter(Boolean).map(n => `
+        <li style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; font-size: 12px; color: #c4c7b8; line-height: 1.45;">
           <span style="color: #d7f36a; font-weight: 800; line-height: 1.2;">✓</span>
           <span>${this.escapeHtml(n)}</span>
         </li>
       `).join('');
 
       modal.innerHTML = `
-        <div style="width: 100%; max-width: 440px; background: linear-gradient(180deg, #1f2119 0%, #13140e 100%); border: 1px solid #36392c; border-top: 1px solid rgba(255, 255, 255, 0.16); border-radius: 26px 26px 0 0; padding: 24px 20px 32px; box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6); box-sizing: border-box;">
-          <div style="width: 40px; height: 4px; background: #3c4033; border-radius: 999px; margin: 0 auto 18px;"></div>
+        <div style="width: 100%; max-width: 360px; background: linear-gradient(180deg, #181a13 0%, #12130e 100%); border: 1px solid #2a2d21; border-top: 1px solid rgba(215, 243, 106, 0.28); border-radius: 24px; padding: 26px 20px 22px; box-shadow: 0 16px 50px rgba(0, 0, 0, 0.75); box-sizing: border-box; text-align: center; animation: pixkitPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+          <div style="width: 48px; height: 48px; border-radius: 16px; background: rgba(215, 243, 106, 0.12); color: #d7f36a; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 14px; border: 1px solid rgba(215, 243, 106, 0.28);">
+            ✳
+          </div>
           
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-            <div style="width: 32px; height: 32px; border-radius: 10px; background: #d7f36a; color: #101204; display: grid; place-items: center; font-size: 20px; font-weight: 800;">
-              ✳
-            </div>
-            <div>
-              <span style="font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: #d7f36a; font-weight: 800; display: block;">NEW RELEASE AVAILABLE</span>
-              <h3 style="margin: 0; font-size: 17px; font-weight: 800; color: #ffffff; letter-spacing: -0.4px;">${this.escapeHtml(title)}</h3>
-            </div>
+          <div style="display: inline-block; padding: 3px 12px; border-radius: 999px; background: ${allowSkip ? 'rgba(215, 243, 106, 0.12)' : 'rgba(255, 255, 255, 0.08)'}; border: 1px solid ${allowSkip ? 'rgba(215, 243, 106, 0.25)' : 'rgba(255, 255, 255, 0.16)'}; font-size: 10.5px; font-weight: 800; color: ${allowSkip ? '#d7f36a' : '#f2f3ec'}; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px;">
+            ${allowSkip ? 'New Version Available' : 'Update Required'}
           </div>
 
-          <div style="background: rgba(0, 0, 0, 0.35); border: 1px solid #282a20; border-radius: 14px; padding: 12px 14px; margin-bottom: 18px;">
+          <h2 style="font-size: 19px; font-weight: 800; margin: 0 0 6px; color: #ffffff; letter-spacing: -0.4px;">${this.escapeHtml(title)}</h2>
+          <p style="font-size: 12.5px; line-height: 1.45; color: #9fa197; margin: 0 0 16px;">
+            ${allowSkip ? `A newer build (v${this.escapeHtml(targetVer)}) is ready. Update now for the latest features and fixes.` : `Your current app build requires an update to v${this.escapeHtml(targetVer)} to continue.`}
+          </p>
+
+          <div style="background: rgba(0, 0, 0, 0.35); border: 1px solid #282a20; border-radius: 14px; padding: 12px 14px; margin-bottom: 18px; text-align: left;">
             <div style="font-size: 10px; font-weight: 800; text-transform: uppercase; color: #d7f36a; letter-spacing: 0.5px; margin-bottom: 8px;">What's New in v${this.escapeHtml(targetVer)}:</div>
             <ul style="margin: 0; padding: 0; list-style: none;">
               ${notesHtml}
@@ -1028,29 +1062,35 @@
           </div>
 
           <div style="display: flex; flex-direction: column; gap: 9px;">
-            <a href="${this.escapeHtml(updateUrl)}" target="_blank" onclick="PixKitRemote.handleOpenStore('${this.escapeHtml(updateUrl)}')" style="display: block; text-align: center; background: linear-gradient(180deg, #e4fb7c 0%, #d7f36a 55%, #c0de4d 100%); color: #15170d; font-weight: 800; font-size: 13.5px; padding: 13px 20px; border-radius: 14px; text-decoration: none; border: 1px solid #a8c838; border-top: 1px solid #f2ffd0; box-shadow: 0 4px 18px rgba(215, 243, 106, 0.38); cursor: pointer;">
-              Update on Google Play &rarr;
+            <a href="${this.escapeHtml(updateUrl)}" target="_blank" onclick="PixKitRemote.handleOpenStore('${this.escapeHtml(updateUrl)}')" style="display: block; width: 100%; box-sizing: border-box; text-align: center; background: linear-gradient(180deg, #e4fb7c 0%, #d7f36a 55%, #c0de4d 100%); color: #14160d; font-weight: 800; font-size: 13.5px; padding: 13px 20px; border-radius: 14px; text-decoration: none; border: 1px solid #a8c838; border-top: 1px solid #f2ffd0; box-shadow: 0 4px 18px rgba(215, 243, 106, 0.3); cursor: pointer;">
+              Update via Google Play &rarr;
             </a>
-            <button type="button" onclick="PixKitRemote.dismissMobileUpdate('${this.escapeHtml(targetVer)}')" style="background: rgba(255, 255, 255, 0.04); border: 1px solid #2d3025; color: #9fa197; font-weight: 700; font-size: 12px; padding: 10px 18px; border-radius: 12px; cursor: pointer;">
-              Remind Me Later
-            </button>
+            ${allowSkip ? `
+              <button type="button" onclick="PixKitRemote.dismissMobileUpdate('${this.escapeHtml(targetVer)}')" style="width: 100%; box-sizing: border-box; background: rgba(255, 255, 255, 0.04); border: 1px solid #282a20; color: #9fa197; font-weight: 700; font-size: 12px; padding: 11px 18px; border-radius: 12px; cursor: pointer; transition: background 0.15s ease;">
+                Remind Me Later
+              </button>
+            ` : ''}
           </div>
         </div>
       `;
+      document.body.style.overflow = 'hidden';
     },
 
     dismissMobileUpdate: function (targetVer) {
       try {
-        // Set 24 hour cooldown in localStorage
         const cooldownKey = 'pixkit_update_cooldown_' + targetVer;
         localStorage.setItem(cooldownKey, String(Date.now() + 86400000));
       } catch (_) {}
       this.removeMobileUpdateDialog();
+      this.removeForceUpdateOverlay();
     },
 
     removeMobileUpdateDialog: function () {
       const modal = document.getElementById('pixkit-mobile-update-modal');
-      if (modal) modal.remove();
+      if (modal) {
+        modal.remove();
+        document.body.style.overflow = '';
+      }
     },
 
     handleOpenStore: function (url) {
@@ -1096,62 +1136,20 @@
     },
 
     renderForceUpdateOverlay: function (policy, clientVersion, customTitle) {
-      let overlay = document.getElementById('pixkit-force-update-screen');
-      const latestVer = policy.latestVersion || '1.0.2';
-      const updateUrl = policy.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio';
-      const notes = policy.notes || 'Critical security update and performance enhancements.';
-      const heading = customTitle || 'Update to Continue';
-
-      if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'pixkit-force-update-screen';
-        overlay.style.cssText = `
-          position: fixed;
-          inset: 0;
-          z-index: 999999999;
-          background: rgba(18, 19, 16, 0.98);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          color: #F2F3EC;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 24px;
-          text-align: center;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        `;
-        document.body.appendChild(overlay);
-      }
-
-      overlay.innerHTML = `
-        <div style="max-width: 440px; background: #1A1C16; border: 1px solid #292B23; padding: 36px 30px; border-radius: 24px; box-shadow: 0 24px 70px rgba(0,0,0,0.8);">
-          <div style="width: 58px; height: 58px; border-radius: 18px; background: rgba(239, 68, 68, 0.15); color: #EF4444; display: inline-flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 20px; border: 1px solid rgba(239, 68, 68, 0.35);">
-            ⚡
-          </div>
-          <div style="display:inline-block; padding: 4px 12px; border-radius: 999px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); font-size: 11px; font-weight: 800; color: #EF4444; text-transform: uppercase; margin-bottom: 12px;">
-            Mandatory Update Required
-          </div>
-          <h2 style="font-size: 22px; font-weight: 800; margin: 0 0 10px; color: #FFFFFF; letter-spacing: -0.02em;">${this.escapeHtml(heading)}</h2>
-          <p style="font-size: 13.5px; line-height: 1.5; color: #9FA197; margin: 0 0 18px;">
-            Your installed version (<strong>v${this.escapeHtml(clientVersion)}</strong>) is no longer supported. Please update to <strong>v${this.escapeHtml(latestVer)}</strong> to safely continue using PixKit.
-          </p>
-          <div style="background: #121310; border: 1px solid #262920; border-radius: 12px; padding: 12px 16px; text-align: left; font-size: 12px; color: #B5B7AC; line-height: 1.5; margin-bottom: 22px;">
-            <div style="font-weight: 800; color: #D7F36A; font-size: 11px; text-transform: uppercase; margin-bottom: 4px;">What's New:</div>
-            <div>${this.escapeHtml(notes)}</div>
-          </div>
-          <div>
-            <a href="${this.escapeHtml(updateUrl)}" target="_blank" onclick="PixKitRemote.handleOpenStore('${this.escapeHtml(updateUrl)}')" style="display: block; width: 100%; box-sizing: border-box; padding: 13px 24px; border-radius: 14px; background: #D7F36A; color: #121310; font-size: 14px; font-weight: 800; text-decoration: none; transition: transform 0.15s ease;">
-              Update via Google Play &rarr;
-            </a>
-          </div>
-        </div>
-      `;
-      document.body.style.overflow = 'hidden';
+      const allowSkip = policy.allowSkip === true;
+      const notes = Array.isArray(policy.notes) ? policy.notes : (typeof policy.notes === 'string' ? policy.notes.split('\n') : ['Performance enhancements', 'Bug fixes']);
+      this.renderMobileUpdateDialog({
+        title: customTitle || policy.updateTitle || `PixKit ${policy.latestVersion || '1.0.3'} is Available`,
+        notes: notes,
+        targetVersion: policy.latestVersion || '1.0.3',
+        updateUrl: policy.updateUrl || 'https://play.google.com/store/apps/details?id=com.pixkit.studio',
+        allowSkip: allowSkip
+      });
     },
 
     removeForceUpdateOverlay: function () {
-      const overlay = document.getElementById('pixkit-force-update-screen');
+      this.removeMobileUpdateDialog();
+      const overlay = document.getElementById('pixkit-force-update-screen') || document.getElementById('pixkit-mobile-force-update-screen');
       if (overlay) {
         overlay.remove();
         document.body.style.overflow = '';
