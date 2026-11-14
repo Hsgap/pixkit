@@ -780,177 +780,161 @@
       font-family: 'JetBrains Mono', monospace;
     }
 
-    /* Android Early Access Card */
-    .seo-android-card {
+    /* PixKit Android Compact Banner */
+    .pixkit-app-banner {
       background: var(--white);
       border: 1px solid var(--line);
-      border-radius: 24px;
-      padding: 38px 32px;
-      margin-bottom: 32px;
-      box-shadow: var(--shadow-card);
-      position: relative;
-      overflow: hidden;
-      transition: border-color 0.2s ease;
-    }
-
-    .seo-android-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, #D7F36A 0%, #34d399 50%, #D7F36A 100%);
-    }
-
-    .seo-android-badge {
-      display: inline-flex;
+      border-radius: 20px;
+      padding: 14px 20px;
+      margin-bottom: 30px;
+      display: flex;
       align-items: center;
-      gap: 7px;
-      padding: 5px 13px;
-      border-radius: 9999px;
-      font-size: 11.5px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      background: rgba(215, 243, 106, 0.16);
-      border: 1px solid rgba(215, 243, 106, 0.35);
-      color: #637713;
-      margin-bottom: 14px;
-      font-family: 'JetBrains Mono', monospace;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      transition: border-color 0.15s ease;
     }
 
-    [data-theme="dark"] .seo-android-badge {
-      color: #D7F36A;
-      background: rgba(215, 243, 106, 0.12);
+    .pixkit-app-banner:hover {
+      border-color: var(--line-strong, #85877F);
+    }
+
+    [data-theme="dark"] .pixkit-app-banner {
+      background: #1C1F16;
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: none;
+    }
+
+    [data-theme="dark"] .pixkit-app-banner:hover {
       border-color: rgba(215, 243, 106, 0.3);
     }
 
-    .seo-android-title {
-      font-size: clamp(22px, 3vw, 28px);
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--ink);
-      margin-bottom: 8px;
+    .app-banner-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
     }
 
-    .seo-android-subtitle {
-      font-size: 14.5px;
-      color: var(--muted);
-      max-width: 680px;
-      line-height: 1.55;
-      margin-bottom: 24px;
+    .app-banner-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+      display: block;
     }
 
-    .seo-android-steps-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-      margin-bottom: 18px;
-    }
-
-    .seo-step-box {
-      background: var(--stage);
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 22px;
+    .app-banner-meta {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      transition: all 0.2s ease;
-      text-align: left;
+      gap: 2px;
+      min-width: 0;
     }
 
-    .seo-step-box:hover {
-      border-color: var(--line-strong, #85877F);
-      transform: translateY(-2px);
+    .app-banner-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .seo-step-num {
-      display: inline-block;
-      align-self: flex-start;
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      padding: 3px 9px;
-      border-radius: 6px;
-      background: var(--soft);
-      color: var(--muted);
-      margin-bottom: 12px;
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    .seo-step-num.accent {
-      background: rgba(215, 243, 106, 0.2);
-      color: #55670f;
-    }
-
-    [data-theme="dark"] .seo-step-num.accent {
-      color: #D7F36A;
-      background: rgba(215, 243, 106, 0.15);
-    }
-
-    .seo-step-box h4 {
-      font-size: 16px;
+    .app-banner-name {
+      font-size: 15px;
       font-weight: 800;
       color: var(--ink);
-      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+      font-family: var(--font-display, 'DM Sans', sans-serif);
     }
 
-    .seo-step-box p {
-      font-size: 13px;
+    .app-banner-tag {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 2px 6px;
+      border-radius: 9999px;
+      background: rgba(215, 243, 106, 0.25);
+      color: #55670f;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1;
+    }
+
+    [data-theme="dark"] .app-banner-tag {
+      background: rgba(215, 243, 106, 0.16);
+      color: #D7F36A;
+    }
+
+    .app-banner-sub {
+      font-size: 12.5px;
       color: var(--muted);
-      line-height: 1.5;
-      margin-bottom: 18px;
-      flex-grow: 1;
+      line-height: 1.3;
     }
 
-    .seo-step-btn {
+    .app-banner-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .app-banner-btn {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
       gap: 8px;
-      padding: 12px 18px;
-      border-radius: 12px;
-      font-size: 13px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 12.5px;
       font-weight: 700;
       text-decoration: none;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
+      white-space: nowrap;
       cursor: pointer;
       font-family: 'DM Sans', sans-serif;
     }
 
-    .seo-step-btn.btn-group {
-      background: var(--white);
+    .app-banner-btn.btn-group {
+      background: var(--soft);
       border: 1px solid var(--line);
       color: var(--ink);
     }
 
-    .seo-step-btn.btn-group:hover {
-      background: var(--soft);
-      border-color: var(--ink);
+    .app-banner-btn.btn-group:hover {
+      background: var(--paper, #f0f1ea);
+      border-color: var(--line-strong, #85877F);
+      transform: translateY(-1px);
     }
 
-    .seo-step-btn.btn-play {
+    .app-banner-btn.btn-play {
       background: #D7F36A;
       color: #121310;
       border: 1px solid #D7F36A;
-      box-shadow: 0 4px 14px rgba(215, 243, 106, 0.3);
+      box-shadow: 0 2px 8px rgba(215, 243, 106, 0.28);
     }
 
-    .seo-step-btn.btn-play:hover {
-      background: #c7e559;
+    .app-banner-btn.btn-play:hover {
+      background: #c5e353;
+      border-color: #c5e353;
       transform: translateY(-1px);
-      box-shadow: 0 6px 18px rgba(215, 243, 106, 0.4);
+      box-shadow: 0 4px 14px rgba(215, 243, 106, 0.4);
     }
 
-    .seo-android-footer-note {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12.5px;
-      color: var(--muted);
+    @media (max-width: 720px) {
+      .pixkit-app-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 14px 16px;
+        gap: 12px;
+      }
+      .app-banner-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .app-banner-btn {
+        justify-content: center;
+      }
     }
 
     /* Privacy Banner */
@@ -1652,50 +1636,28 @@
 
       </div>
 
-      <!-- Android Early Access Banner -->
-      <div class="seo-android-card">
-        <div class="seo-android-header">
-          <div class="seo-android-badge">
-            <i class="fa-brands fa-android"></i>
-            <span>Google Play Early Access</span>
-          </div>
-          <h3 class="seo-android-title">PixKit for Android is Now in Testing</h3>
-          <p class="seo-android-subtitle">
-            Experience all 21 private image and document tools as a fast, native Android app with offline processing. Follow these 2 quick steps to test and install directly via Google Play:
-          </p>
-        </div>
-
-        <div class="seo-android-steps-grid">
-          <!-- Step 1 -->
-          <div class="seo-step-box">
-            <div class="seo-step-num">Step 1</div>
-            <div class="seo-step-content">
-              <h4>Join the Google Group</h4>
-              <p>Google Play requires joining the testers group to automatically authorize your Google account for download.</p>
-              <a href="https://groups.google.com/g/pixkit-studio-testers" target="_blank" rel="noopener" class="seo-step-btn btn-group">
-                <span>Join Testers Group (1-Click)</span>
-                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 11px;"></i>
-              </a>
+      <!-- Compact PixKit Android App Banner -->
+      <div class="pixkit-app-banner">
+        <div class="app-banner-left">
+          <img src="favicon.svg" alt="PixKit Android" class="app-banner-icon" width="42" height="42" />
+          <div class="app-banner-meta">
+            <div class="app-banner-title-row">
+              <span class="app-banner-name">PixKit for Android</span>
+              <span class="app-banner-tag">Beta</span>
             </div>
-          </div>
-
-          <!-- Step 2 -->
-          <div class="seo-step-box highlight">
-            <div class="seo-step-num accent">Step 2</div>
-            <div class="seo-step-content">
-              <h4>Install from Google Play</h4>
-              <p>Opt-in with your Google account to unlock the official Google Play Store testing install page.</p>
-              <a href="https://play.google.com/apps/testing/com.pixkit.studio" target="_blank" rel="noopener" class="seo-step-btn btn-play">
-                <i class="fa-brands fa-google-play"></i>
-                <span>Download on Google Play</span>
-              </a>
-            </div>
+            <span class="app-banner-sub">Download PixKit on mobile &bull; Closed Testing</span>
           </div>
         </div>
 
-        <div class="seo-android-footer-note">
-          <i class="fa-solid fa-circle-info" style="color: #10b981;"></i>
-          <span>💡 Tip: Sign in with the same Google/Gmail account for both steps to download smoothly.</span>
+        <div class="app-banner-actions">
+          <a href="https://groups.google.com/g/pixkit-studio-testers" target="_blank" rel="noopener" class="app-banner-btn btn-group" title="Step 1: Join Google Group to authorize testing access">
+            <span>1. Join Group</span>
+            <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 11px;"></i>
+          </a>
+          <a href="https://play.google.com/apps/testing/com.pixkit.studio" target="_blank" rel="noopener" class="app-banner-btn btn-play" title="Step 2: Install from Google Play">
+            <i class="fa-brands fa-google-play"></i>
+            <span>Google Play</span>
+          </a>
         </div>
       </div>
 

@@ -747,191 +747,162 @@ body.leaderboard-active .floating-dock-wrapper {
   padding-top: 12px;
 }
 
-/* Studio Android Testing Banner */
-.studio-android-card {
+/* ============================================================== */
+/* PIXKIT FOR ANDROID COMPACT PROMO BANNER                         */
+/* ============================================================== */
+.pixkit-app-banner {
   margin-top: 24px;
   background: var(--white);
   border: 1px solid var(--line);
-  border-radius: var(--radius-xl);
-  padding: 24px 28px;
+  border-radius: var(--radius-xl, 20px);
+  padding: 12px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  box-shadow: var(--shadow-card);
-  position: relative;
-  overflow: hidden;
-  transition: all var(--transition-normal);
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: all var(--transition-fast, 0.15s ease);
 }
 
-.studio-android-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: 4px;
-  background: linear-gradient(180deg, #D7F36A 0%, #34d399 100%);
+.pixkit-app-banner:hover {
+  border-color: var(--line-strong, #85877F);
 }
 
-[data-theme="dark"] .studio-android-card {
+[data-theme="dark"] .pixkit-app-banner {
   background: #1C1F16;
-  border-color: rgba(215, 243, 106, 0.2);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: none;
 }
 
-.studio-android-left {
-  flex: 1;
-  min-width: 0;
-}
-
-.studio-android-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 9999px;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  background: rgba(215, 243, 106, 0.16);
-  border: 1px solid rgba(215, 243, 106, 0.35);
-  color: #637713;
-  margin-bottom: 10px;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-[data-theme="dark"] .studio-android-badge {
-  color: #D7F36A;
-  background: rgba(215, 243, 106, 0.12);
+[data-theme="dark"] .pixkit-app-banner:hover {
   border-color: rgba(215, 243, 106, 0.3);
 }
 
-.studio-android-title {
-  font-size: 18px;
+.app-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.app-banner-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  display: block;
+}
+
+.app-banner-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.app-banner-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-banner-name {
+  font-size: 15px;
   font-weight: 800;
   color: var(--ink);
-  margin-bottom: 6px;
   letter-spacing: -0.01em;
-  font-family: var(--font-display);
+  line-height: 1.25;
+  font-family: var(--font-display, 'DM Sans', sans-serif);
 }
 
-.studio-android-desc {
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.5;
-  margin-bottom: 10px;
-  max-width: 540px;
-}
-
-.studio-android-tip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11.5px;
-  color: var(--muted);
-}
-
-.studio-android-tip i {
-  color: #10b981;
-}
-
-.studio-android-actions {
-  display: flex;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-.studio-step-btn {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 18px;
-  border-radius: var(--radius-lg, 16px);
-  text-decoration: none;
-  transition: all var(--transition-fast);
-  cursor: pointer;
-  min-width: 205px;
-}
-
-.studio-step-btn .step-badge {
+.app-banner-tag {
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 3px 8px;
-  border-radius: 6px;
-  background: var(--soft);
-  color: var(--muted);
+  padding: 2px 6px;
+  border-radius: 9999px;
+  background: rgba(215, 243, 106, 0.25);
+  color: #55670f;
   font-family: 'JetBrains Mono', monospace;
+  line-height: 1;
 }
 
-.studio-step-btn .step-badge.play {
-  background: rgba(18, 19, 16, 0.15);
-  color: #121310;
+[data-theme="dark"] .app-banner-tag {
+  background: rgba(215, 243, 106, 0.16);
+  color: #D7F36A;
 }
 
-[data-theme="dark"] .studio-step-btn .step-badge.play {
-  background: rgba(0, 0, 0, 0.25);
-  color: #121310;
+.app-banner-sub {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.3;
 }
 
-.studio-step-btn .step-text {
+.app-banner-actions {
   display: flex;
-  flex-direction: column;
-  text-align: left;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
-.studio-step-btn .step-text b {
-  font-size: 13px;
-  font-weight: 800;
-  line-height: 1.25;
+.app-banner-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all var(--transition-fast, 0.15s ease);
+  white-space: nowrap;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
 }
 
-.studio-step-btn .step-text small {
-  font-size: 11px;
-  opacity: 0.75;
-  line-height: 1.2;
-  margin-top: 2px;
-}
-
-.studio-step-btn.group-btn {
+.app-banner-btn.btn-group {
   background: var(--soft);
   border: 1px solid var(--line);
   color: var(--ink);
 }
 
-.studio-step-btn.group-btn:hover {
-  background: var(--paper);
-  border-color: var(--line-strong);
-  transform: translateY(-2px);
+.app-banner-btn.btn-group:hover {
+  background: var(--paper, #f0f1ea);
+  border-color: var(--line-strong, #85877F);
+  transform: translateY(-1px);
 }
 
-.studio-step-btn.play-btn {
-  background: var(--lime);
+.app-banner-btn.btn-play {
+  background: #D7F36A;
   color: #121310;
-  border: 1px solid var(--lime);
-  box-shadow: 0 4px 14px rgba(215, 243, 106, 0.28);
+  border: 1px solid #D7F36A;
+  box-shadow: 0 2px 8px rgba(215, 243, 106, 0.28);
 }
 
-.studio-step-btn.play-btn:hover {
+.app-banner-btn.btn-play:hover {
   background: #c5e353;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(215, 243, 106, 0.4);
+  border-color: #c5e353;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(215, 243, 106, 0.4);
 }
 
-@media (max-width: 950px) {
-  .studio-android-card {
+@media (max-width: 720px) {
+  .pixkit-app-banner {
     flex-direction: column;
     align-items: flex-start;
+    padding: 14px 16px;
+    gap: 12px;
   }
-  .studio-android-actions {
+  .app-banner-actions {
     width: 100%;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
-  .studio-step-btn {
-    width: 100%;
-    min-width: 0;
+  .app-banner-btn {
+    justify-content: center;
   }
 }
 
