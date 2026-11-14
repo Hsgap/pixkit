@@ -1924,25 +1924,38 @@
       <!-- 09. BLUR & FOCUS WORKSPACE                                     -->
       <!-- ============================================================== -->
       <section class="view" id="tool-blur-view">
-        <div class="workspace-header">
-          <div class="breadcrumb">
-            <a onclick="showView('edit')">Edit Image</a>
-            <span>/</span>
-            <strong>Blur & Focus</strong>
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 09 · Edit Suite</div>
+            <h1>Blur & Focus</h1>
+            <p>Radial bokeh focus, tilt-shift miniature effect, and Gaussian background blur.</p>
           </div>
-          <button class="back-btn" onclick="showView('edit')">
-            <span>←</span> Back to Tools
-          </button>
+          <button class="back-btn" onclick="showView('edit')">← Back to Edit Tools</button>
         </div>
 
         <div class="workspace-layout">
-          <div class="canvas-stage">
-            <div class="canvas-wrapper" style="position:relative;">
-              <canvas id="canvas-blur" class="stage-canvas"></canvas>
-              <canvas id="canvas-blur-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:auto; cursor:crosshair;"></canvas>
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <span class="stage-hint" id="blur-mode-hint">◎ Drag guide on canvas to reposition focus</span>
+              <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
+                <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
+              </div>
             </div>
-            <div class="canvas-meta">
-              <span id="meta-blur">Ready · Drag guide or paint to blur</span>
+            <div class="stage-viewport">
+              <div class="canvas-wrapper" style="position:relative;">
+                <canvas id="canvas-blur" class="stage-canvas"></canvas>
+                <canvas id="canvas-blur-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:auto; cursor:crosshair;"></canvas>
+              </div>
+            </div>
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">◎</span>
+                <div>
+                  <strong class="img-meta-name">mountain-view.jpg</strong>
+                  <small id="meta-blur">Ready · Drag guide or paint to blur</small>
+                </div>
+              </div>
               <label class="action-btn-sm" style="cursor:pointer;">
                 Replace image
                 <input type="file" accept="image/*" class="global-file-picker" hidden>

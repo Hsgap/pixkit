@@ -4354,15 +4354,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const tip = document.getElementById('blur-mode-tip');
+    const topHint = document.getElementById('blur-mode-hint');
     if (tip) {
       if (mode === 'radial') {
         tip.innerHTML = '<span>Tip: Drag the green bullseye to move focus. Dashed rings indicate sharp core and blur edge.</span>';
+        if (topHint) topHint.textContent = '◎ Bokeh lens: Drag guide on canvas to move focus';
       } else if (mode === 'tiltshift') {
         tip.innerHTML = '<span>Tip: Drag up or down on the canvas to move the miniature focus line.</span>';
+        if (topHint) topHint.textContent = '⌸ Tilt-shift: Drag line on canvas to shift focus band';
       } else if (mode === 'brush') {
         tip.innerHTML = '<span>Tip: Paint directly with your cursor or touch over any image area to blur it.</span>';
+        if (topHint) topHint.textContent = '🖌 Blur brush: Paint over areas you want to blur';
       } else {
         tip.innerHTML = '<span>Tip: Full frame blur applies uniform Gaussian blur across the entire image.</span>';
+        if (topHint) topHint.textContent = '▦ Full blur: Uniform blur applied to entire image';
       }
     }
 
