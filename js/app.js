@@ -9435,4 +9435,149 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cleanCurrentUrl();
   });
+
+  // ==============================================================
+  // FULLSCREEN IMAGE PREVIEW CONTROLLER
+  // ==============================================================
+  let fullscreenZoomScale = 1;
+
+  window.openFullscreenPreview = function() {
+    let sourceCanvas = null;
+
+    // Check active tool first
+    if (activeTool) {
+      const specific = document.getElementById(`canvas-${activeTool}`);
+      if (specific && specific.width > 0) sourceCanvas = specific;
+    }
+
+    // Fallback: check any visible canvas in active tool view
+    if (!sourceCanvas) {
+      const activeView = document.querySelector('.view.active');
+      if (activeView) {
+        const can = activeView.querySelector('canvas');
+        if (can && can.width > 0) sourceCanvas = can;
+      }
+    }
+
+    // Ultimate fallback: engine active canvas
+    if (!sourceCanvas && engine && engine.activeCanvas && engine.activeCanvas.width > 0) {
+      sourceCanvas = engine.activeCanvas;
+    }
+
+    if (!sourceCanvas) {
+      showToast('No image loaded to preview', 'info');
+      return;
+    }
+
+    const modal = document.getElementById('fullscreen-modal');
+    const img = document.getElementById('fullscreen-img');
+    const filenameEl = document.getElementById('fullscreen-filename');
+    const dimEl = document.getElementById('fullscreen-dim-badge');
+
+    if (!modal || !img) return;
+
+    try {
+      img.src = sourceCanvas.toDataURL('image/png');
+    } catch (e) {
+      try {
+        img.src = sourceCanvas.toDataURL();
+      } catch (err) {
+        console.warn('Canvas export failed:', err);
+      }
+    }
+
+    if (filenameEl) filenameEl.textContent = engine.filename || 'image-preview.png';
+    if (dimEl) dimEl.textContent = `${sourceCanvas.width} × ${sourceCanvas.height} px`;
+
+    fullscreenZoomScale = 1;
+    img.style.transform = `scale(1)`;
+    updateFullscreenZoomBadge();
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  window.closeFullscreenPreview = function() {
+    const modal = document.getElementById('fullscreen-modal');
+    if (!modal) return;
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
+
+  window.handleFullscreenBackdropClick = function(e) {
+    if (e.target.id === 'fullscreen-viewport' || e.target.id === 'fullscreen-modal') {
+      closeFullscreenPreview();
+    }
+  };
+
+  window.zoomFullscreenImage = function(delta) {
+    const img = document.getElementById('fullscreen-img');
+    if (!img) return;
+    fullscreenZoomScale = Math.max(0.25, Math.min(4.0, parseFloat((fullscreenZoomScale + delta).toFixed(2))));
+    img.style.transform = `scale(${fullscreenZoomScale})`;
+    updateFullscreenZoomBadge();
+  };
+
+  window.resetFullscreenZoom = function() {
+    fullscreenZoomScale = 1;
+    const img = document.getElementById('fullscreen-img');
+    if (img) img.style.transform = `scale(1)`;
+    updateFullscreenZoomBadge();
+  };
+
+  function updateFullscreenZoomBadge() {
+    const badge = document.getElementById('fullscreen-zoom-level');
+    if (badge) badge.textContent = `${Math.round(fullscreenZoomScale * 100)}%`;
+  }
+
+  window.handleFullscreenWheel = function(e) {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 0.15 : -0.15;
+    zoomFullscreenImage(delta);
+  };
+
+  window.toggleNativeFullscreen = function() {
+    if (!document.fullscreenElement) {
+      const modal = document.getElementById('fullscreen-modal');
+      if (modal && modal.requestFullscreen) {
+        modal.requestFullscreen().catch(() => {});
+      } else if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  };
+
+  // Keyboard shortcut for Fullscreen
+  window.addEventListener('keydown', (e) => {
+    const modal = document.getElementById('fullscreen-modal');
+    const isModalOpen = modal && modal.classList.contains('active');
+
+    if (e.key === 'Escape' && isModalOpen) {
+      closeFullscreenPreview();
+      return;
+    }
+
+    if (isModalOpen) {
+      if (e.key === '+' || e.key === '=') {
+        zoomFullscreenImage(0.25);
+      } else if (e.key === '-' || e.key === '_') {
+        zoomFullscreenImage(-0.25);
+      } else if (e.key === '0') {
+        resetFullscreenZoom();
+      }
+      return;
+    }
+
+    // If viewing any tool workspace and not typing in an input
+    const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
+    if ((e.key === 'f' || e.key === 'F') && !isTyping && activeTool) {
+      openFullscreenPreview();
+    }
+  });
 });

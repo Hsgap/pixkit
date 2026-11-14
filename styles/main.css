@@ -6019,3 +6019,193 @@ body.leaderboard-active .leaderboard-screen {
 .support-optin-input-wrap input:focus {
   border-color: var(--accent-green);
 }
+
+/* ============================================================== */
+/* FULLSCREEN IMAGE PREVIEW LIGHTBOX                               */
+/* ============================================================== */
+.viewport-fullscreen-btn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(24, 25, 20, 0.78);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #F5F6EE;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+  padding: 6px 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  z-index: 25;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+  transition: all 0.15s ease;
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.viewport-fullscreen-btn:hover {
+  background: #181914;
+  border-color: #D7F36A;
+  color: #D7F36A;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.viewport-fullscreen-btn:active {
+  transform: translateY(0);
+}
+
+/* Fullscreen Lightbox Backdrop */
+.fullscreen-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(14, 15, 12, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fullscreen-modal-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.fullscreen-modal-header {
+  height: 56px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(18, 19, 16, 0.6);
+  flex-shrink: 0;
+}
+
+.fullscreen-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #F5F6EE;
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.fullscreen-brand-mark {
+  color: #D7F36A;
+  font-size: 16px;
+}
+
+.fullscreen-dim-badge {
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #a0a297;
+}
+
+.fullscreen-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fullscreen-action-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #F5F6EE;
+  border-radius: 8px;
+  height: 32px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.fullscreen-action-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #D7F36A;
+}
+
+.fullscreen-close-btn {
+  background: rgba(229, 72, 77, 0.15);
+  border: 1px solid rgba(229, 72, 77, 0.35);
+  color: #ff8b8e;
+  border-radius: 8px;
+  height: 32px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 6px;
+  transition: all 0.15s ease;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.fullscreen-close-btn:hover {
+  background: #E5484D;
+  color: #fff;
+  border-color: #E5484D;
+}
+
+.fullscreen-modal-viewport {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: 24px;
+  position: relative;
+  cursor: grab;
+}
+
+.fullscreen-modal-viewport:active {
+  cursor: grabbing;
+}
+
+#fullscreen-img {
+  max-width: 90vw;
+  max-height: 80vh;
+  object-fit: contain;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  border-radius: 8px;
+  transition: transform 0.15s ease-out;
+  transform-origin: center center;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.fullscreen-modal-footer {
+  height: 38px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  color: #8c8e82;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(14, 15, 12, 0.8);
+  flex-shrink: 0;
+}
+
+.fullscreen-modal-footer b {
+  color: #F5F6EE;
+}

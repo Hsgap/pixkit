@@ -1139,11 +1139,13 @@
             <div class="stage-topbar">
               <span>Preview</span>
               <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen</button>
                 <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
                 <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
               </div>
             </div>
             <div class="stage-viewport">
+              <button class="viewport-fullscreen-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg><span>Full Screen</span></button>
               <div class="canvas-wrapper">
                 <canvas id="canvas-resize"></canvas>
               </div>
@@ -1227,11 +1229,13 @@
             <div class="stage-topbar">
               <span>Crop Framing</span>
               <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen</button>
                 <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
                 <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
               </div>
             </div>
             <div class="stage-viewport">
+              <button class="viewport-fullscreen-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg><span>Full Screen</span></button>
               <div class="canvas-wrapper crop-canvas-wrapper" style="position:relative;">
                 <canvas id="canvas-crop"></canvas>
                 <div id="crop-box" class="crop-overlay">
@@ -1333,11 +1337,13 @@
             <div class="stage-topbar">
               <span>Orientation</span>
               <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen</button>
                 <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
                 <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
               </div>
             </div>
             <div class="stage-viewport">
+              <button class="viewport-fullscreen-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg><span>Full Screen</span></button>
               <div class="canvas-wrapper">
                 <canvas id="canvas-rotate"></canvas>
               </div>
@@ -1402,12 +1408,14 @@
             <div class="stage-topbar">
               <span id="compress-stage-title">Compressed Live Preview</span>
               <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen</button>
                 <button class="stage-tool-btn" id="btn-compress-compare" onmousedown="showCompressOriginal(true)" onmouseup="showCompressOriginal(false)" ontouchstart="showCompressOriginal(true)" ontouchend="showCompressOriginal(false)">
                   <span>⇄ Hold to View Original</span>
                 </button>
               </div>
             </div>
             <div class="stage-viewport">
+              <button class="viewport-fullscreen-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg><span>Full Screen</span></button>
               <div class="canvas-wrapper">
                 <canvas id="canvas-compress"></canvas>
               </div>
@@ -1583,11 +1591,13 @@
             <div class="stage-topbar">
               <span>Live Tone Adjustments</span>
               <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen</button>
                 <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
                 <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
               </div>
             </div>
             <div class="stage-viewport">
+              <button class="viewport-fullscreen-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg><span>Full Screen</span></button>
               <div class="canvas-wrapper">
                 <canvas id="canvas-adjust"></canvas>
               </div>
@@ -1668,11 +1678,13 @@
             <div class="stage-topbar">
               <span>Filter Look</span>
               <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen</button>
                 <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
                 <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
               </div>
             </div>
             <div class="stage-viewport">
+              <button class="viewport-fullscreen-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg><span>Full Screen</span></button>
               <div class="canvas-wrapper">
                 <canvas id="canvas-filters"></canvas>
               </div>
@@ -1748,11 +1760,13 @@
             <div class="stage-topbar">
               <span class="stage-hint">✋ Click & drag text anywhere on canvas to reposition</span>
               <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen</button>
                 <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
                 <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
               </div>
             </div>
             <div class="stage-viewport">
+              <button class="viewport-fullscreen-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg><span>Full Screen</span></button>
               <div class="canvas-wrapper" style="cursor:grab;">
                 <canvas id="canvas-text"></canvas>
               </div>
@@ -1842,12 +1856,14 @@
             <div class="stage-topbar">
               <span class="stage-hint" id="draw-mode-hint">✎ Draw mode: Drag on canvas to draw</span>
               <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen</button>
                 <button class="stage-tool-btn" onclick="clearDrawings()">Clear All</button>
                 <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
                 <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
               </div>
             </div>
             <div class="stage-viewport">
+              <button class="viewport-fullscreen-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg><span>Full Screen</span></button>
               <div class="canvas-wrapper" style="cursor:crosshair;">
                 <canvas id="canvas-draw"></canvas>
               </div>
@@ -1938,11 +1954,13 @@
             <div class="stage-topbar">
               <span class="stage-hint" id="blur-mode-hint">◎ Drag guide on canvas to reposition focus</span>
               <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen</button>
                 <button class="stage-tool-btn" onclick="undoEdit()">↶ Undo</button>
                 <button class="stage-tool-btn" onclick="resetEdit()">Reset</button>
               </div>
             </div>
             <div class="stage-viewport">
+              <button class="viewport-fullscreen-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg><span>Full Screen</span></button>
               <div class="canvas-wrapper" style="position:relative;">
                 <canvas id="canvas-blur" class="stage-canvas"></canvas>
                 <canvas id="canvas-blur-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:auto; cursor:crosshair;"></canvas>
@@ -4413,6 +4431,42 @@
 
       </main>
 
+    </div>
+  </div>
+
+  <!-- Fullscreen Image Preview Lightbox Modal -->
+  <div id="fullscreen-modal" class="fullscreen-modal-backdrop" onclick="handleFullscreenBackdropClick(event)">
+    <div class="fullscreen-modal-header">
+      <div class="fullscreen-modal-title">
+        <span class="fullscreen-brand-mark">✳</span>
+        <strong id="fullscreen-filename" class="img-meta-name">mountain-view.jpg</strong>
+        <span class="fullscreen-dim-badge" id="fullscreen-dim-badge">1920 × 1080 px</span>
+      </div>
+      <div class="fullscreen-modal-actions">
+        <button class="fullscreen-action-btn" onclick="zoomFullscreenImage(-0.25)" title="Zoom Out (-)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </button>
+        <button class="fullscreen-action-btn" id="fullscreen-zoom-level" onclick="resetFullscreenZoom()" title="Reset Zoom (100%)">
+          100%
+        </button>
+        <button class="fullscreen-action-btn" onclick="zoomFullscreenImage(0.25)" title="Zoom In (+)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        </button>
+        <button class="fullscreen-action-btn" onclick="toggleNativeFullscreen()" title="Toggle Hardware Fullscreen">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        </button>
+        <button class="fullscreen-close-btn" onclick="closeFullscreenPreview()" title="Close Fullscreen (Esc)">
+          ✕ <span>Close</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="fullscreen-modal-viewport" id="fullscreen-viewport" onwheel="handleFullscreenWheel(event)">
+      <img id="fullscreen-img" alt="Fullscreen Image Preview" draggable="false" />
+    </div>
+
+    <div class="fullscreen-modal-footer">
+      <span>💡 Tip: Press <b>Esc</b> to exit &bull; Scroll or click buttons to zoom</span>
     </div>
   </div>
 
