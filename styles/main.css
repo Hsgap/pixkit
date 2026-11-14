@@ -6171,12 +6171,16 @@ body.leaderboard-active .leaderboard-screen {
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: auto;
+  overflow: hidden;
   padding: 24px;
   position: relative;
   cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
 }
 
+.fullscreen-modal-viewport.is-dragging,
 .fullscreen-modal-viewport:active {
   cursor: grabbing;
 }
@@ -6187,10 +6191,16 @@ body.leaderboard-active .leaderboard-screen {
   object-fit: contain;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   border-radius: 8px;
-  transition: transform 0.15s ease-out;
   transform-origin: center center;
   user-select: none;
   -webkit-user-select: none;
+  cursor: grab;
+  pointer-events: auto;
+  will-change: transform;
+}
+
+.fullscreen-modal-viewport.is-dragging #fullscreen-img {
+  cursor: grabbing;
 }
 
 .fullscreen-modal-footer {

@@ -9437,9 +9437,44 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ==============================================================
-  // FULLSCREEN IMAGE PREVIEW CONTROLLER
+  // FULLSCREEN IMAGE PREVIEW & PAN/ZOOM CONTROLLER
   // ==============================================================
   let fullscreenZoomScale = 1;
+  let fullscreenPanX = 0;
+  let fullscreenPanY = 0;
+  let isFullscreenDragging = false;
+  let dragStartX = 0;
+  let dragStartY = 0;
+  let dragStartPanX = 0;
+  let dragStartPanY = 0;
+  let hasDraggedMeaningfully = false;
+  let initialPinchDistance = 0;
+  let initialPinchScale = 1;
+
+  function applyFullscreenTransform(animate = false) {
+    const img = document.getElementById('fullscreen-img');
+    if (!img) return;
+
+    // Apply viewport bounds so image can't be dragged completely off-screen
+    const viewport = document.getElementById('fullscreen-viewport');
+    if (viewport) {
+      const vw = viewport.clientWidth || window.innerWidth;
+      const vh = viewport.clientHeight || window.innerHeight;
+      const maxPanX = Math.max(vw * 0.45, (img.clientWidth * fullscreenZoomScale * 0.5) + vw * 0.25);
+      const maxPanY = Math.max(vh * 0.45, (img.clientHeight * fullscreenZoomScale * 0.5) + vh * 0.25);
+      fullscreenPanX = Math.max(-maxPanX, Math.min(maxPanX, fullscreenPanX));
+      fullscreenPanY = Math.max(-maxPanY, Math.min(maxPanY, fullscreenPanY));
+    }
+
+    img.style.transition = animate ? 'transform 0.16s cubic-bezier(0.16, 1, 0.3, 1)' : 'none';
+    img.style.transform = `translate(${fullscreenPanX}px, ${fullscreenPanY}px) scale(${fullscreenZoomScale})`;
+    updateFullscreenZoomBadge();
+  }
+
+  function updateFullscreenZoomBadge() {
+    const badge = document.getElementById('fullscreen-zoom-level');
+    if (badge) badge.textContent = `${Math.round(fullscreenZoomScale * 100)}%`;
+  }
 
   window.openFullscreenPreview = function() {
     let sourceCanvas = null;
@@ -9490,8 +9525,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dimEl) dimEl.textContent = `${sourceCanvas.width} × ${sourceCanvas.height} px`;
 
     fullscreenZoomScale = 1;
-    img.style.transform = `scale(1)`;
-    updateFullscreenZoomBadge();
+    fullscreenPanX = 0;
+    fullscreenPanY = 0;
+    applyFullscreenTransform(false);
 
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -9509,35 +9545,69 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.handleFullscreenBackdropClick = function(e) {
+    if (hasDraggedMeaningfully) {
+      hasDraggedMeaningfully = false;
+      return;
+    }
+    // Only close if user clicked directly on background backdrop
     if (e.target.id === 'fullscreen-viewport' || e.target.id === 'fullscreen-modal') {
       closeFullscreenPreview();
     }
   };
 
   window.zoomFullscreenImage = function(delta) {
-    const img = document.getElementById('fullscreen-img');
-    if (!img) return;
-    fullscreenZoomScale = Math.max(0.25, Math.min(4.0, parseFloat((fullscreenZoomScale + delta).toFixed(2))));
-    img.style.transform = `scale(${fullscreenZoomScale})`;
-    updateFullscreenZoomBadge();
+    const prevScale = fullscreenZoomScale;
+    fullscreenZoomScale = Math.max(0.25, Math.min(5.0, parseFloat((fullscreenZoomScale + delta).toFixed(2))));
+    
+    // Scale existing pan proportionally so the focal area doesn't wildly jump
+    if (prevScale > 0) {
+      const ratio = fullscreenZoomScale / prevScale;
+      fullscreenPanX *= ratio;
+      fullscreenPanY *= ratio;
+    }
+
+    if (fullscreenZoomScale <= 1) {
+      fullscreenPanX = 0;
+      fullscreenPanY = 0;
+    }
+    applyFullscreenTransform(true);
   };
 
   window.resetFullscreenZoom = function() {
     fullscreenZoomScale = 1;
-    const img = document.getElementById('fullscreen-img');
-    if (img) img.style.transform = `scale(1)`;
-    updateFullscreenZoomBadge();
+    fullscreenPanX = 0;
+    fullscreenPanY = 0;
+    applyFullscreenTransform(true);
   };
-
-  function updateFullscreenZoomBadge() {
-    const badge = document.getElementById('fullscreen-zoom-level');
-    if (badge) badge.textContent = `${Math.round(fullscreenZoomScale * 100)}%`;
-  }
 
   window.handleFullscreenWheel = function(e) {
     e.preventDefault();
-    const delta = e.deltaY < 0 ? 0.15 : -0.15;
-    zoomFullscreenImage(delta);
+
+    // 1. Pinch gesture on Mac trackpad or Ctrl/Meta + wheel -> Zoom smoothly
+    if (e.ctrlKey || e.metaKey) {
+      const delta = e.deltaY < 0 ? 0.15 : -0.15;
+      zoomFullscreenImage(delta);
+      return;
+    }
+
+    // 2. If zoomed in (scale > 1), normal trackpad swipe / mouse wheel scrolls "here and there"
+    if (fullscreenZoomScale > 1) {
+      fullscreenPanX -= e.deltaX;
+      fullscreenPanY -= e.deltaY;
+      applyFullscreenTransform(false);
+      return;
+    }
+
+    // 3. At 1x zoom (scale == 1):
+    // Scrolling up (negative deltaY) zooms in
+    if (e.deltaY < -15 && Math.abs(e.deltaX) < 10) {
+      zoomFullscreenImage(0.25);
+    } else if (Math.abs(e.deltaX) > 5 || Math.abs(e.deltaY) > 5) {
+      // Allow panning around even at 100%
+      fullscreenPanX -= e.deltaX;
+      fullscreenPanY -= e.deltaY;
+      applyFullscreenTransform(false);
+    }
   };
 
   window.toggleNativeFullscreen = function() {
@@ -9553,7 +9623,110 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Keyboard shortcut for Fullscreen
+  // Attach Mouse & Touch Dragging Handlers
+  function initFullscreenPanAndZoom() {
+    const viewport = document.getElementById('fullscreen-viewport');
+    const img = document.getElementById('fullscreen-img');
+    if (!viewport || !img) return;
+
+    const onDragStart = (clientX, clientY) => {
+      isFullscreenDragging = true;
+      hasDraggedMeaningfully = false;
+      dragStartX = clientX;
+      dragStartY = clientY;
+      dragStartPanX = fullscreenPanX;
+      dragStartPanY = fullscreenPanY;
+      viewport.classList.add('is-dragging');
+    };
+
+    const onDragMove = (clientX, clientY) => {
+      if (!isFullscreenDragging) return;
+      const dx = clientX - dragStartX;
+      const dy = clientY - dragStartY;
+      if (Math.hypot(dx, dy) > 4) {
+        hasDraggedMeaningfully = true;
+      }
+      fullscreenPanX = dragStartPanX + dx;
+      fullscreenPanY = dragStartPanY + dy;
+      applyFullscreenTransform(false);
+    };
+
+    const onDragEnd = () => {
+      if (!isFullscreenDragging) return;
+      isFullscreenDragging = false;
+      viewport.classList.remove('is-dragging');
+    };
+
+    // Mouse Listeners
+    viewport.addEventListener('mousedown', (e) => {
+      if (e.target.closest('button')) return;
+      if (e.button !== 0) return; // Left button only
+      onDragStart(e.clientX, e.clientY);
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (isFullscreenDragging) {
+        onDragMove(e.clientX, e.clientY);
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      onDragEnd();
+    });
+
+    // Touch Listeners for Mobile / Tablets
+    viewport.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        onDragStart(e.touches[0].clientX, e.touches[0].clientY);
+      } else if (e.touches.length === 2) {
+        isFullscreenDragging = false;
+        initialPinchDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        initialPinchScale = fullscreenZoomScale;
+      }
+    }, { passive: true });
+
+    viewport.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1 && isFullscreenDragging) {
+        onDragMove(e.touches[0].clientX, e.touches[0].clientY);
+      } else if (e.touches.length === 2 && initialPinchDistance > 0) {
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const factor = dist / initialPinchDistance;
+        fullscreenZoomScale = Math.max(0.25, Math.min(5.0, parseFloat((initialPinchScale * factor).toFixed(2))));
+        applyFullscreenTransform(false);
+      }
+    }, { passive: true });
+
+    viewport.addEventListener('touchend', (e) => {
+      if (e.touches.length === 0) {
+        onDragEnd();
+        initialPinchDistance = 0;
+      }
+    });
+
+    // Double-click image to toggle between 100% and 200% zoom
+    img.addEventListener('dblclick', (e) => {
+      e.stopPropagation();
+      if (fullscreenZoomScale > 1) {
+        resetFullscreenZoom();
+      } else {
+        fullscreenZoomScale = 2;
+        const rect = viewport.getBoundingClientRect();
+        fullscreenPanX = (rect.width / 2 - (e.clientX - rect.left));
+        fullscreenPanY = (rect.height / 2 - (e.clientY - rect.top));
+        applyFullscreenTransform(true);
+      }
+    });
+  }
+
+  initFullscreenPanAndZoom();
+
+  // Keyboard Navigation for Fullscreen Modal
   window.addEventListener('keydown', (e) => {
     const modal = document.getElementById('fullscreen-modal');
     const isModalOpen = modal && modal.classList.contains('active');
@@ -9570,6 +9743,22 @@ document.addEventListener('DOMContentLoaded', () => {
         zoomFullscreenImage(-0.25);
       } else if (e.key === '0') {
         resetFullscreenZoom();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        fullscreenPanX += 60;
+        applyFullscreenTransform(true);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        fullscreenPanX -= 60;
+        applyFullscreenTransform(true);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        fullscreenPanY += 60;
+        applyFullscreenTransform(true);
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        fullscreenPanY -= 60;
+        applyFullscreenTransform(true);
       }
       return;
     }
