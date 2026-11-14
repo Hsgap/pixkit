@@ -104,7 +104,7 @@
     } catch (_) {}
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles/main.css?v=7.7">
+  <link rel="stylesheet" href="styles/main.css?v=8.0">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FBFBF8">
 </head>
@@ -4461,12 +4461,14 @@
       </div>
     </div>
 
-    <div class="fullscreen-modal-viewport" id="fullscreen-viewport" onwheel="handleFullscreenWheel(event)">
-      <img id="fullscreen-img" alt="Fullscreen Image Preview" draggable="false" />
+    <div class="fullscreen-modal-viewport" id="fullscreen-viewport">
+      <div class="fullscreen-img-stage" id="fullscreen-stage">
+        <img id="fullscreen-img" alt="Fullscreen Image Preview" draggable="false" />
+      </div>
     </div>
 
     <div class="fullscreen-modal-footer">
-      <span>💡 Tip: Click &amp; drag or swipe trackpad to scroll around &bull; Scroll / <b>+</b> / <b>-</b> to zoom &bull; Double-click to toggle 2x &bull; <b>Esc</b> to close</span>
+      <span>💡 Tip: Trackpad / mouse wheel scrolls &bull; Click &amp; drag to pan &bull; <b>+</b> / <b>-</b> to zoom &bull; Double-click to toggle 2x &bull; <b>Esc</b> to close</span>
     </div>
   </div>
 
@@ -4481,7 +4483,7 @@
   <!-- PixKit Remote Connector to admin.pixkit.site -->
   <script src="js/pixkit-remote.js"></script>
   <script src="js/engine.js?v=2.5"></script>
-  <script src="js/app.js?v=6.7"></script>
+  <script src="js/app.js?v=8.0"></script>
   <script src="js/support.js"></script>
   <script src="js/leaderboard.js"></script>
 </body>
