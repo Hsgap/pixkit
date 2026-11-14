@@ -1838,7 +1838,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </button>
           <div class="recent-empty-workflows">
             <span>Explore Suites:</span>
-            <span class="recent-empty-pill" onclick="showView('edit')">✎ 8 Edit Tools</span>
+            <span class="recent-empty-pill" onclick="showView('edit')">✎ 9 Edit Tools</span>
             <span class="recent-empty-pill" onclick="showView('convert')">⇄ 6 Convert Tools</span>
             <span class="recent-empty-pill" onclick="showView('document')">📄 7 PDF Tools</span>
           </div>
