@@ -6067,16 +6067,19 @@ body.leaderboard-active .leaderboard-screen {
   background: rgba(14, 15, 12, 0.94);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  display: flex;
+  display: none;
   flex-direction: column;
   opacity: 0;
-  pointer-events: none;
+  pointer-events: none !important;
+  visibility: hidden;
   transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fullscreen-modal-backdrop.active {
-  opacity: 1;
-  pointer-events: auto;
+  display: flex !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
 }
 
 .fullscreen-modal-header {

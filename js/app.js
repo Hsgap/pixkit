@@ -9552,6 +9552,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dimEl) dimEl.textContent = `${sourceCanvas.width} × ${sourceCanvas.height} px`;
 
     // Make modal active to read viewport geometry
+    modal.style.display = 'flex';
+    modal.style.visibility = 'visible';
+    modal.style.pointerEvents = 'auto';
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 
@@ -9580,7 +9583,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('fullscreen-modal');
     if (!modal) return;
     modal.classList.remove('active');
+    modal.style.display = 'none';
+    modal.style.visibility = 'hidden';
+    modal.style.pointerEvents = 'none';
     document.body.style.overflow = '';
+
+    // Clear any stuck drag states and restore cursor
+    isFullscreenDragging = false;
+    const viewport = document.getElementById('fullscreen-viewport');
+    if (viewport) viewport.classList.remove('is-dragging');
+    document.body.style.cursor = '';
 
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {});
