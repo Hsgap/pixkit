@@ -747,6 +747,194 @@ body.leaderboard-active .floating-dock-wrapper {
   padding-top: 12px;
 }
 
+/* Studio Android Testing Banner */
+.studio-android-card {
+  margin-top: 24px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-normal);
+}
+
+.studio-android-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #D7F36A 0%, #34d399 100%);
+}
+
+[data-theme="dark"] .studio-android-card {
+  background: #1C1F16;
+  border-color: rgba(215, 243, 106, 0.2);
+}
+
+.studio-android-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.studio-android-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: rgba(215, 243, 106, 0.16);
+  border: 1px solid rgba(215, 243, 106, 0.35);
+  color: #637713;
+  margin-bottom: 10px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+[data-theme="dark"] .studio-android-badge {
+  color: #D7F36A;
+  background: rgba(215, 243, 106, 0.12);
+  border-color: rgba(215, 243, 106, 0.3);
+}
+
+.studio-android-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+  font-family: var(--font-display);
+}
+
+.studio-android-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 10px;
+  max-width: 540px;
+}
+
+.studio-android-tip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.studio-android-tip i {
+  color: #10b981;
+}
+
+.studio-android-actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.studio-step-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: var(--radius-lg, 16px);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  min-width: 205px;
+}
+
+.studio-step-btn .step-badge {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--soft);
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.studio-step-btn .step-badge.play {
+  background: rgba(18, 19, 16, 0.15);
+  color: #121310;
+}
+
+[data-theme="dark"] .studio-step-btn .step-badge.play {
+  background: rgba(0, 0, 0, 0.25);
+  color: #121310;
+}
+
+.studio-step-btn .step-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.studio-step-btn .step-text b {
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.studio-step-btn .step-text small {
+  font-size: 11px;
+  opacity: 0.75;
+  line-height: 1.2;
+  margin-top: 2px;
+}
+
+.studio-step-btn.group-btn {
+  background: var(--soft);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.studio-step-btn.group-btn:hover {
+  background: var(--paper);
+  border-color: var(--line-strong);
+  transform: translateY(-2px);
+}
+
+.studio-step-btn.play-btn {
+  background: var(--lime);
+  color: #121310;
+  border: 1px solid var(--lime);
+  box-shadow: 0 4px 14px rgba(215, 243, 106, 0.28);
+}
+
+.studio-step-btn.play-btn:hover {
+  background: #c5e353;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(215, 243, 106, 0.4);
+}
+
+@media (max-width: 950px) {
+  .studio-android-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .studio-android-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+  .studio-step-btn {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
 /* EDIT CATEGORY: Tool Rows List */
 .tool-rows-list {
   display: flex;
@@ -5274,7 +5462,7 @@ body.dock-is-dragging * {
 
 /* Bottom Arrow Trigger on Home Screen (Simple arrow pointing downward, placed at bottom) */
 .leaderboard-bottom-arrow-wrap {
-  margin: 54px auto 32px;
+  margin: 42px auto 32px;
   display: flex;
   justify-content: center;
   align-items: center;
