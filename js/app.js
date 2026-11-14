@@ -9591,8 +9591,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Clear any stuck drag states and restore cursor
     isFullscreenDragging = false;
     const viewport = document.getElementById('fullscreen-viewport');
-    if (viewport) viewport.classList.remove('is-dragging');
+    if (viewport) {
+      viewport.classList.remove('is-dragging');
+      viewport.style.cursor = '';
+    }
+    const stage = document.getElementById('fullscreen-stage');
+    if (stage) stage.style.cursor = '';
+    const img = document.getElementById('fullscreen-img');
+    if (img) img.style.cursor = '';
+
     document.body.style.cursor = '';
+    document.documentElement.style.cursor = '';
 
     if (document.fullscreenElement) {
       document.exitFullscreen().catch(() => {});

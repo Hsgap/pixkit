@@ -6075,6 +6075,14 @@ body.leaderboard-active .leaderboard-screen {
   transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.fullscreen-modal-backdrop:not(.active),
+.fullscreen-modal-backdrop:not(.active) * {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
 .fullscreen-modal-backdrop.active {
   display: flex !important;
   opacity: 1 !important;
