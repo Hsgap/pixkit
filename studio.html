@@ -104,7 +104,7 @@
     } catch (_) {}
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles/main.css?v=8.13">
+  <link rel="stylesheet" href="styles/main.css?v=8.14">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FBFBF8">
 </head>
@@ -4380,6 +4380,33 @@
         </div>
       </div>
 
+      <!-- PDF Document Source Files Modal Dialog -->
+      <div id="pdf-sources-modal" class="modal-backdrop" onclick="handlePdfSourcesBackdropClick(event)">
+        <div class="modal-dialog pdf-sources-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-pdf-sources-title">
+          <div class="modal-header">
+            <div class="modal-title-group">
+              <span class="modal-icon" style="display:flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:10px; background:rgba(239, 68, 68, 0.1); color:#dc2626; font-size:17px; border:1px solid rgba(239, 68, 68, 0.2);">
+                <i class="fa-solid fa-layer-group"></i>
+              </span>
+              <div>
+                <h3 id="modal-pdf-sources-title">Document Source Files</h3>
+                <p id="modal-pdf-sources-sub">Actual files used to create this document</p>
+              </div>
+            </div>
+            <button class="modal-close-btn" onclick="closePdfSourcesModal()" title="Close (Esc)" aria-label="Close dialog">✕</button>
+          </div>
+          <div class="pdf-sources-meta-bar" id="pdf-sources-meta-bar">
+            <!-- Dynamic stats bar populated via JS -->
+          </div>
+          <div class="modal-body pdf-sources-body" id="pdf-sources-list">
+            <!-- Dynamically populated via JS -->
+          </div>
+          <div class="pdf-sources-footer" id="pdf-sources-footer">
+            <!-- Action buttons populated via JS -->
+          </div>
+        </div>
+      </div>
+
       <!-- Keyboard Shortcuts Modal Dialog -->
       <div id="shortcuts-modal" class="modal-backdrop" onclick="handleShortcutsBackdropClick(event)">
         <div class="modal-dialog shortcuts-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-shortcuts-title">
@@ -4820,7 +4847,7 @@
   <!-- PixKit Remote Connector to admin.pixkit.site -->
   <script src="js/pixkit-remote.js"></script>
   <script src="js/engine.js?v=2.5"></script>
-  <script src="js/app.js?v=8.13"></script>
+  <script src="js/app.js?v=8.14"></script>
   <script src="js/support.js"></script>
   <script src="js/leaderboard.js"></script>
 </body>

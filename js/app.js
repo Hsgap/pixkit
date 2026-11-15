@@ -1412,7 +1412,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (picker) picker.click();
   };
 
-  window.recordRecentFile = function(name, size, type, width, height, category, customBlob, customPreviewUrl, originTool) {
+  window.recordRecentFile = function(name, size, type, width, height, category, customBlob, customPreviewUrl, originTool, sourceFiles, operation) {
     if (!name || name === 'mountain-view.jpg') return;
     if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
       if (!window.PixKitRemote.isFeatureEnabled('community', 'recentFiles')) return;
@@ -1443,8 +1443,29 @@ document.addEventListener('DOMContentLoaded', () => {
       const fileCategory = category || getFileCategory({ name, type });
       const toolOrigin = originTool || (fileCategory === 'pdf' ? (activeTool || 'doc-pdf-to-images') : (activeTool || null));
 
+      // Sanitize sourceFiles for localStorage (lightweight metadata)
+      const lightSourceFiles = Array.isArray(sourceFiles) ? sourceFiles.map(s => ({
+        name: s.name,
+        size: s.size || 0,
+        type: s.type || 'application/pdf',
+        pageCount: s.pageCount || 1,
+        thumbUrl: s.thumbUrl ? (s.thumbUrl.length < 5000 ? s.thumbUrl : null) : null
+      })) : null;
+
       let recents = JSON.parse(localStorage.getItem('pixkit_recent_files') || '[]');
       recents = recents.filter(f => f.name !== name && f.name !== 'mountain-view.jpg');
+
+      // Purge any source files from top-level recents so only the product is shown
+      if (lightSourceFiles && lightSourceFiles.length > 0) {
+        const srcNames = new Set(lightSourceFiles.map(s => s.name));
+        recents = recents.filter(f => !srcNames.has(f.name));
+        srcNames.forEach(sn => {
+          if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.deleteRecentFile === 'function') {
+            PixKitStorage.deleteRecentFile(sn).catch(() => {});
+          }
+        });
+      }
+
       recents.unshift({
         name,
         size: size || (customBlob ? customBlob.size : 0),
@@ -1454,6 +1475,8 @@ document.addEventListener('DOMContentLoaded', () => {
         previewUrl: previewUrl || null,
         category: fileCategory,
         originTool: toolOrigin,
+        operation: operation || null,
+        sourceFiles: lightSourceFiles || null,
         timestamp: Date.now()
       });
       if (recents.length > 24) recents = recents.slice(0, 24);
@@ -1471,6 +1494,8 @@ document.addEventListener('DOMContentLoaded', () => {
           height: height || 0,
           category: fileCategory,
           originTool: toolOrigin,
+          operation: operation || null,
+          sourceFiles: sourceFiles || null,
           savedAt: Date.now()
         });
         PixKitStorage.pruneRecentFiles(top10);
@@ -1486,6 +1511,8 @@ document.addEventListener('DOMContentLoaded', () => {
               height: height || engine.activeCanvas.height,
               category: fileCategory,
               originTool: toolOrigin,
+              operation: operation || null,
+              sourceFiles: sourceFiles || null,
               savedAt: Date.now()
             });
             PixKitStorage.pruneRecentFiles(top10);
@@ -1908,6 +1935,229 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. Prompt user if memory was purged
     showToast(`High-resolution cache purged for "${name}". Please choose the file from disk.`);
     window.triggerActiveToolUpload();
+  };
+
+  // --- PDF Source Files Modal Controller ---
+  window.openPdfSourcesModal = async function(parentName, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    const modal = document.getElementById('pdf-sources-modal');
+    const titleEl = document.getElementById('modal-pdf-sources-title');
+    const subEl = document.getElementById('modal-pdf-sources-sub');
+    const metaBar = document.getElementById('pdf-sources-meta-bar');
+    const listEl = document.getElementById('pdf-sources-list');
+    const footerEl = document.getElementById('pdf-sources-footer');
+    if (!modal || !listEl) return;
+
+    let recents = [];
+    try {
+      recents = JSON.parse(localStorage.getItem('pixkit_recent_files') || '[]');
+    } catch (_) {
+      recents = [];
+    }
+
+    const fileMeta = recents.find(f => f.name === parentName);
+    let sourceFiles = (fileMeta && fileMeta.sourceFiles) ? fileMeta.sourceFiles : [];
+
+    let storageRecord = null;
+    try {
+      if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.getRecentFile === 'function') {
+        storageRecord = await PixKitStorage.getRecentFile(parentName);
+        if (storageRecord && Array.isArray(storageRecord.sourceFiles) && storageRecord.sourceFiles.length > 0) {
+          sourceFiles = storageRecord.sourceFiles;
+        }
+      }
+    } catch (_) {}
+
+    if (titleEl) titleEl.textContent = `Source Files: ${parentName}`;
+    if (subEl) subEl.textContent = `${sourceFiles.length} original file${sourceFiles.length === 1 ? '' : 's'} used to create this document`;
+
+    const totalBytes = sourceFiles.reduce((acc, s) => acc + (s.size || 0), 0);
+    const opLabel = (fileMeta?.operation || storageRecord?.operation || 'combined').toUpperCase();
+
+    if (metaBar) {
+      metaBar.innerHTML = `
+        <div><strong>Operation:</strong> ${opLabel}</div>
+        <div><strong>Input Files:</strong> ${sourceFiles.length}</div>
+        <div><strong>Combined Size:</strong> ${formatFileSize(totalBytes)}</div>
+      `;
+    }
+
+    if (!sourceFiles.length) {
+      listEl.innerHTML = `
+        <div style="text-align:center; padding:32px 16px; color:var(--muted);">
+          <div style="font-size:32px; margin-bottom:8px;">📁</div>
+          <div style="font-weight:700; color:var(--ink); margin-bottom:4px;">No Source Records Available</div>
+          <p style="font-size:12px;">This document does not have cached source files in your current browser.</p>
+        </div>
+      `;
+    } else {
+      let html = '';
+      sourceFiles.forEach((src, idx) => {
+        const isPdf = (src.type && src.type.includes('pdf')) || (src.name && src.name.toLowerCase().endsWith('.pdf'));
+        const sizeStr = formatFileSize(src.size || 0);
+        const metaStr = isPdf ? `PDF Document · ${sizeStr}${src.pageCount ? ` · ${src.pageCount} Page${src.pageCount > 1 ? 's' : ''}` : ''}` : `Image · ${sizeStr}`;
+
+        html += `
+          <div class="source-file-item">
+            <div class="source-file-left">
+              <span class="source-file-index">#${idx + 1}</span>
+              ${src.thumbUrl ? `
+                <img class="source-file-thumb" src="${src.thumbUrl}" alt="${escapeDockHtml(src.name)}">
+              ` : (isPdf ? `
+                <div class="recent-picker-pdf-tile">
+                  <i class="fa-solid fa-file-pdf"></i>
+                  <span>PDF</span>
+                </div>
+              ` : `
+                <div class="recent-picker-thumb-placeholder"><i class="fa-regular fa-image"></i></div>
+              `)}
+              <div class="source-file-details">
+                <div class="source-file-name" title="${escapeDockHtml(src.name)}">${escapeDockHtml(src.name)}</div>
+                <div class="source-file-meta">${metaStr}</div>
+              </div>
+            </div>
+            <div class="source-file-actions">
+              <button type="button" class="source-btn" onclick="downloadSourceItem('${escapeDockHtml(parentName)}', ${idx}, event)" title="Download this original file">
+                <i class="fa-solid fa-download"></i> <span>Download</span>
+              </button>
+              <button type="button" class="source-btn btn-primary-source" onclick="openSourceItemInStudio('${escapeDockHtml(parentName)}', ${idx}, event)" title="Open in Studio">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> <span>Open</span>
+              </button>
+            </div>
+          </div>
+        `;
+      });
+      listEl.innerHTML = html;
+    }
+
+    if (footerEl) {
+      footerEl.innerHTML = `
+        <button type="button" class="btn-secondary" onclick="closePdfSourcesModal()" style="padding:8px 16px; font-size:12px; font-weight:700;">
+          Close
+        </button>
+        ${sourceFiles.length > 1 ? `
+          <button type="button" class="btn-primary" onclick="downloadAllSourceItemsZip('${escapeDockHtml(parentName)}', event)" style="padding:8px 18px; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+            <i class="fa-solid fa-file-zipper"></i> <span>Download All Sources (ZIP)</span>
+          </button>
+        ` : ''}
+      `;
+    }
+
+    modal.classList.add('active');
+  };
+
+  window.closePdfSourcesModal = function() {
+    const modal = document.getElementById('pdf-sources-modal');
+    if (modal) modal.classList.remove('active');
+  };
+
+  window.handlePdfSourcesBackdropClick = function(event) {
+    if (event.target && event.target.id === 'pdf-sources-modal') {
+      window.closePdfSourcesModal();
+    }
+  };
+
+  window.downloadSourceItem = async function(parentName, index, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    try {
+      if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.getRecentFile === 'function') {
+        const record = await PixKitStorage.getRecentFile(parentName);
+        if (record && record.sourceFiles && record.sourceFiles[index]) {
+          const src = record.sourceFiles[index];
+          let blob = src.blob;
+          if (!blob && src.bytes) {
+            blob = new Blob([src.bytes], { type: src.type || 'application/pdf' });
+          }
+          if (blob) {
+            triggerBlobDownload(blob, src.name);
+            showToast(`Downloaded original source: ${src.name}`);
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Error downloading source file:', e);
+    }
+    showToast('Source file buffer not found in cache');
+  };
+
+  window.openSourceItemInStudio = async function(parentName, index, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    try {
+      if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.getRecentFile === 'function') {
+        const record = await PixKitStorage.getRecentFile(parentName);
+        if (record && record.sourceFiles && record.sourceFiles[index]) {
+          const src = record.sourceFiles[index];
+          let blob = src.blob;
+          if (!blob && src.bytes) {
+            blob = new Blob([src.bytes], { type: src.type || 'application/pdf' });
+          }
+          if (blob) {
+            window.closePdfSourcesModal();
+            const file = new File([blob], src.name, { type: src.type || 'application/pdf' });
+            if (src.type === 'application/pdf' || src.name.toLowerCase().endsWith('.pdf')) {
+              window.openToolWorkspace('doc-pdf-to-images');
+              setTimeout(() => {
+                if (window.handlePdfFileUpload) window.handlePdfFileUpload(file);
+              }, 120);
+            } else {
+              await handleImageFile(file);
+              if (!activeTool) window.showView('edit');
+            }
+            showToast(`Loaded "${src.name}" into workspace`);
+            return;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Error opening source file:', e);
+    }
+    showToast('Source file buffer not available in local cache');
+  };
+
+  window.downloadAllSourceItemsZip = async function(parentName, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (!window.JSZip) {
+      showToast('ZIP utility loading, please wait...');
+      return;
+    }
+    try {
+      const record = await PixKitStorage.getRecentFile(parentName);
+      if (!record || !record.sourceFiles || !record.sourceFiles.length) {
+        showToast('No source files found to package');
+        return;
+      }
+      showToast('Packaging source files into ZIP...');
+      const zip = new window.JSZip();
+      for (let i = 0; i < record.sourceFiles.length; i++) {
+        const src = record.sourceFiles[i];
+        let blob = src.blob;
+        if (!blob && src.bytes) {
+          blob = new Blob([src.bytes], { type: src.type || 'application/pdf' });
+        }
+        if (blob) {
+          zip.file(src.name, blob);
+        }
+      }
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const cleanBase = parentName.replace(/\.[^/.]+$/, "");
+      triggerBlobDownload(zipBlob, `${cleanBase}_sources.zip`);
+      showToast(`Downloaded all ${record.sourceFiles.length} source files in ZIP package!`);
+    } catch (err) {
+      showToast('Failed packaging ZIP: ' + err.message);
+    }
   };
 
   // Close dropdown on outside click
@@ -2481,11 +2731,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Clean out any default/sample images (e.g. mountain-view.jpg)
     let recents = rawRecents.filter(f => f && f.name && f.name !== 'mountain-view.jpg');
+
+    // Auto-heal: If merged_document.pdf exists without sourceFiles, group orphan exec-... PDFs into it
+    try {
+      const mergedDoc = recents.find(f => f && f.name && f.name.toLowerCase().includes('merged'));
+      if (mergedDoc && (!mergedDoc.sourceFiles || !mergedDoc.sourceFiles.length)) {
+        const orphanExecs = recents.filter(f => f && f.name && f.name.startsWith('exec-') && (f.category === 'pdf' || f.name.endsWith('.pdf')));
+        if (orphanExecs.length > 0) {
+          mergedDoc.operation = 'merge';
+          mergedDoc.sourceFiles = orphanExecs.map(o => ({
+            name: o.name,
+            size: o.size,
+            type: o.type || 'application/pdf',
+            thumbUrl: o.previewUrl || null,
+            pageCount: 1
+          }));
+          recents = recents.filter(f => !(f && f.name && f.name.startsWith('exec-') && (f.category === 'pdf' || f.name.endsWith('.pdf'))));
+          localStorage.setItem('pixkit_recent_files', JSON.stringify(recents));
+        }
+      }
+    } catch (_) {}
+
     if (recents.length !== rawRecents.length) {
       try {
         localStorage.setItem('pixkit_recent_files', JSON.stringify(recents));
       } catch (_) {}
     }
+
+    // Collect all child source file names so they don't show as separate duplicate cards
+    const childSourceNames = new Set();
+    recents.forEach(r => {
+      if (r && Array.isArray(r.sourceFiles)) {
+        r.sourceFiles.forEach(s => {
+          if (s && s.name) childSourceNames.add(s.name);
+        });
+      }
+    });
 
     // Only actual user uploaded/edited images qualify as active session
     const isRealUserImage = hasUserAddedImage && engine.filename && engine.filename !== 'mountain-view.jpg' && !engine.isSampleArtwork;
@@ -2514,7 +2795,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     recents.forEach(r => {
-      if (!hasActiveSession || r.name !== engine.filename) {
+      if ((!hasActiveSession || r.name !== engine.filename) && !childSourceNames.has(r.name)) {
         allFilesList.push({
           ...r,
           isCurrent: false,
@@ -2667,17 +2948,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const timeStr = formatDockTimeAgo(file.timestamp || Date.now());
         const sizeStr = formatFileSize(file.size);
         const isPdfDoc = file.category === 'pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf'));
+        const opLabels = {
+          'merge': 'Merged',
+          'split': 'Split',
+          'compress': 'Compressed',
+          'rotate': 'Rotated',
+          'delete': 'Pages Removed',
+          'convert': 'From Image',
+          'extract': 'Extracted'
+        };
+        const opBadge = file.operation ? (opLabels[file.operation] || file.operation.toUpperCase()) : 'Document';
         const resStr = isPdfDoc ? 'PDF Document' : (file.width && file.height ? `${file.width} × ${file.height} px` : '');
         const metaStr = resStr ? `${resStr} · ${sizeStr}` : sizeStr;
-        const catBadge = isPdfDoc ? 'PDF' : (file.category === 'convert' ? 'Convert' : 'Edit');
         const canResume = top10GlobalNames.has(file.name);
+        const hasSources = Array.isArray(file.sourceFiles) && file.sourceFiles.length > 0;
 
         html += `
           <div class="recent-file-card ${canResume ? '' : 'no-resume'}" style="--card-index: ${index};" onclick="${canResume ? `openRecentFromPage('${escapeDockHtml(file.name)}', false, event)` : `downloadRecentFileItem('${escapeDockHtml(file.name)}', event)`}">
             <div class="recent-card-top">
               <div class="recent-card-badges">
                 <span class="recent-fmt-badge ${isPdfDoc ? 'recent-fmt-badge-pdf' : ''}">${fmtLabel}</span>
-                <span class="recent-cat-badge ${isPdfDoc ? 'recent-cat-badge-pdf' : ''}">${catBadge}</span>
+                <span class="recent-cat-badge ${isPdfDoc ? 'recent-cat-badge-pdf' : ''}">${isPdfDoc ? opBadge : (file.category === 'convert' ? 'Convert' : 'Edit')}</span>
+                ${hasSources ? `
+                  <button type="button" class="recent-sources-chip" onclick="openPdfSourcesModal('${escapeDockHtml(file.name)}', event)" title="Click to view all ${file.sourceFiles.length} source file${file.sourceFiles.length > 1 ? 's' : ''} used">
+                    <i class="fa-solid fa-layer-group"></i> <span>${file.sourceFiles.length} Sources</span>
+                  </button>
+                ` : ''}
                 <span class="recent-time-ago">${timeStr}</span>
                 ${!canResume ? '<span class="recent-cat-badge" style="background:var(--soft); color:var(--muted); font-size:9.5px; border:1px solid var(--line);" title="Older file archived to optimize browser memory">Download Only</span>' : ''}
               </div>
@@ -2705,7 +3001,12 @@ document.addEventListener('DOMContentLoaded', () => {
                   <i class="fa-solid fa-pen-to-square"></i> <span>Open in Edit</span>
                 </button>
               ` : ''}
-              <button type="button" class="recent-action-btn btn-download" style="${!canResume ? 'grid-column: 1 / -1; width: 100%; justify-content: center;' : ''}" onclick="downloadRecentFileItem('${escapeDockHtml(file.name)}', event)" title="Download the latest edited file directly">
+              ${hasSources ? `
+                <button type="button" class="recent-action-btn btn-expand" onclick="openPdfSourcesModal('${escapeDockHtml(file.name)}', event)" title="View all source files used to create this document">
+                  <i class="fa-solid fa-up-right-and-down-left-from-center"></i> <span>Expand</span>
+                </button>
+              ` : ''}
+              <button type="button" class="recent-action-btn btn-download" style="${!canResume && !hasSources ? 'grid-column: 1 / -1; width: 100%; justify-content: center;' : ''}" onclick="downloadRecentFileItem('${escapeDockHtml(file.name)}', event)" title="Download the latest edited file directly">
                 <i class="fa-solid fa-download"></i> <span>Download Last Edit</span>
               </button>
             </div>
@@ -3329,6 +3630,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (recentPicker && recentPicker.classList.contains('active')) {
         e.preventDefault();
         window.closeRecentPickerModal();
+        return;
+      }
+      const pdfSourcesModal = document.getElementById('pdf-sources-modal');
+      if (pdfSourcesModal && pdfSourcesModal.classList.contains('active')) {
+        e.preventDefault();
+        window.closePdfSourcesModal();
         return;
       }
       const modal = document.getElementById('shortcuts-modal');
@@ -6749,8 +7056,16 @@ document.addEventListener('DOMContentLoaded', () => {
         pdfThumb = engine.activeCanvas.toDataURL('image/jpeg', 0.85);
       } catch (_) {}
     }
+    const imageSource = {
+      name: engine.filename || 'source_image.png',
+      size: engine.fileSize || 0,
+      type: engine.fileType || 'image/png',
+      thumbUrl: pdfThumb || null,
+      width: engine.activeCanvas?.width || 0,
+      height: engine.activeCanvas?.height || 0
+    };
     if (window.recordRecentFile) {
-      window.recordRecentFile(pdfFilename, res.byteSize, 'application/pdf', engine?.activeCanvas?.width || 0, engine?.activeCanvas?.height || 0, 'pdf', res.blob, pdfThumb, 'convert-pdf');
+      window.recordRecentFile(pdfFilename, res.byteSize, 'application/pdf', engine?.activeCanvas?.width || 0, engine?.activeCanvas?.height || 0, 'pdf', res.blob, pdfThumb, 'convert-pdf', [imageSource], 'convert');
     }
 
     const url = URL.createObjectURL(res.blob);
@@ -7625,11 +7940,6 @@ document.addEventListener('DOMContentLoaded', () => {
           file: file,
           thumbUrl: thumbUrl
         });
-
-        const fileBlob = file instanceof Blob ? file : new Blob([storedBytes], { type: 'application/pdf' });
-        if (window.recordRecentFile) {
-          window.recordRecentFile(name, size, 'application/pdf', 0, 0, 'pdf', fileBlob, thumbUrl || null, 'doc-merge-pdf');
-        }
       }
 
       showToast(`Added ${files.length} PDF document(s) to merge list.`);
@@ -7821,9 +8131,26 @@ document.addEventListener('DOMContentLoaded', () => {
       let outName = (document.getElementById('pdf-merge-output-name')?.value || 'merged_document.pdf').trim();
       if (!outName.toLowerCase().endsWith('.pdf')) outName += '.pdf';
 
+      const sourceFilesPayload = pdfMergeState.files.map(item => {
+        let b = null;
+        if (item.file instanceof Blob) {
+          b = item.file;
+        } else if (item.bytes) {
+          b = new Blob([item.bytes], { type: 'application/pdf' });
+        }
+        return {
+          name: item.name,
+          size: item.size || (b ? b.size : 0),
+          type: 'application/pdf',
+          pageCount: item.pageCount || 1,
+          thumbUrl: item.thumbUrl || null,
+          blob: b
+        };
+      });
+
       const mergeThumb = pdfMergeState.files[0]?.thumbUrl || null;
       if (window.recordRecentFile) {
-        window.recordRecentFile(outName, blob.size, 'application/pdf', 0, 0, 'pdf', blob, mergeThumb, 'doc-merge-pdf');
+        window.recordRecentFile(outName, blob.size, 'application/pdf', 0, 0, 'pdf', blob, mergeThumb, 'doc-merge-pdf', sourceFilesPayload, 'merge');
       }
 
       if (download) {
@@ -8037,16 +8364,6 @@ document.addEventListener('DOMContentLoaded', () => {
           selected: true,
           canvas: canvas
         });
-      }
-
-      let splitThumb = null;
-      if (pdfSplitState.pages[0]?.canvas) {
-        try {
-          splitThumb = pdfSplitState.pages[0].canvas.toDataURL('image/jpeg', 0.8);
-        } catch (_) {}
-      }
-      if (window.recordRecentFile) {
-        window.recordRecentFile(file.name, file.size, 'application/pdf', 0, 0, 'pdf', file, splitThumb, 'doc-split-pdf');
       }
 
       // Default suggested range
@@ -8426,8 +8743,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const bytes = await newPdf.save();
         const blob = new Blob([bytes], { type: 'application/pdf' });
         generatedFiles.push({ name: item.name, blob: blob });
+        const origSource = {
+          name: pdfSplitState.fileName || 'source_document.pdf',
+          size: pdfSplitState.fileSize || 0,
+          type: 'application/pdf',
+          pageCount: pdfSplitState.numPages || 1,
+          thumbUrl: pdfSplitState.pages[0]?.canvas?.toDataURL('image/jpeg', 0.8) || null,
+          blob: pdfSplitState.file instanceof Blob ? pdfSplitState.file : new Blob([pdfSplitState.bytes], { type: 'application/pdf' })
+        };
         if (window.recordRecentFile) {
-          window.recordRecentFile(item.name, blob.size, 'application/pdf', 0, 0, 'pdf', blob, null, 'doc-split-pdf');
+          window.recordRecentFile(item.name, blob.size, 'application/pdf', 0, 0, 'pdf', blob, null, 'doc-split-pdf', [origSource], 'split');
         }
       }
 
@@ -8755,12 +9080,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const base = fileName.replace(/\.pdf$/i, '');
       const outInput = document.getElementById('pdf-compress-output-name');
       if (outInput) outInput.value = `${base}_compressed.pdf`;
-
-      const compInputBlob = file instanceof Blob ? file : new Blob([uint8], { type: 'application/pdf' });
-      const compThumb = pdfCompressState.pages[0]?.thumbUrl || null;
-      if (window.recordRecentFile) {
-        window.recordRecentFile(fileName, fileSize, 'application/pdf', 0, 0, 'pdf', compInputBlob, compThumb, 'doc-compress-pdf');
-      }
 
       showToast(`Loaded "${fileName}" (${pdfCompressState.numPages} pages, ${formatPdfBytes(fileSize)})`);
       renderPdfCompressUI();
@@ -9138,8 +9457,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!outName.toLowerCase().endsWith('.pdf')) outName += '.pdf';
 
       const compThumb = pdfCompressState.pages[0]?.thumbUrl || null;
+      const origSource = {
+        name: pdfCompressState.name || 'original_document.pdf',
+        size: pdfCompressState.fileSize || 0,
+        type: 'application/pdf',
+        pageCount: pdfCompressState.numPages || 1,
+        thumbUrl: compThumb,
+        blob: pdfCompressState.file instanceof Blob ? pdfCompressState.file : new Blob([pdfCompressState.bytes], { type: 'application/pdf' })
+      };
       if (window.recordRecentFile) {
-        window.recordRecentFile(outName, compBlob.size, 'application/pdf', 0, 0, 'pdf', compBlob, compThumb, 'doc-compress-pdf');
+        window.recordRecentFile(outName, compBlob.size, 'application/pdf', 0, 0, 'pdf', compBlob, compThumb, 'doc-compress-pdf', [origSource], 'compress');
       }
 
       if (!download) {
@@ -9405,12 +9732,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      const rotThumb = pdfRotateState.pages[0]?.thumbUrl || null;
-      const rotInputBlob = file instanceof Blob ? file : new Blob([storedBytes], { type: 'application/pdf' });
-      if (window.recordRecentFile) {
-        window.recordRecentFile(pdfRotateState.fileName, pdfRotateState.fileSize, 'application/pdf', 0, 0, 'pdf', rotInputBlob, rotThumb, 'doc-rotate-pdf');
-      }
-
       showToast(`Loaded ${pdfRotateState.fileName} (${pdfRotateState.numPages} pages). Ready to rotate!`);
     } catch (err) {
       console.error('Error loading PDF for rotate:', err);
@@ -9645,8 +9966,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!outName.toLowerCase().endsWith('.pdf')) outName += '.pdf';
 
       const rotThumb = pdfRotateState.pages[0]?.thumbUrl || null;
+      const origSource = {
+        name: pdfRotateState.fileName || 'original_document.pdf',
+        size: pdfRotateState.fileSize || 0,
+        type: 'application/pdf',
+        pageCount: pdfRotateState.numPages || 1,
+        thumbUrl: rotThumb,
+        blob: pdfRotateState.file instanceof Blob ? pdfRotateState.file : new Blob([pdfRotateState.bytes], { type: 'application/pdf' })
+      };
       if (window.recordRecentFile) {
-        window.recordRecentFile(outName, blob.size, 'application/pdf', 0, 0, 'pdf', blob, rotThumb, 'doc-rotate-pdf');
+        window.recordRecentFile(outName, blob.size, 'application/pdf', 0, 0, 'pdf', blob, rotThumb, 'doc-rotate-pdf', [origSource], 'rotate');
       }
 
       if (download) {
@@ -9870,12 +10199,6 @@ document.addEventListener('DOMContentLoaded', () => {
           deleted: false,
           thumbUrl: thumbUrl
         });
-      }
-
-      const delThumb = pdfDeleteState.pages[0]?.thumbUrl || null;
-      const delInputBlob = file instanceof Blob ? file : new Blob([storedBytes], { type: 'application/pdf' });
-      if (window.recordRecentFile) {
-        window.recordRecentFile(pdfDeleteState.fileName, pdfDeleteState.fileSize, 'application/pdf', 0, 0, 'pdf', delInputBlob, delThumb, 'doc-delete-pdf');
       }
 
       showToast(`Loaded ${pdfDeleteState.fileName} (${pdfDeleteState.numPages} pages). Click pages to mark for deletion.`);
@@ -10163,8 +10486,16 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!outName.toLowerCase().endsWith('.pdf')) outName += '.pdf';
 
       const delThumb = pdfDeleteState.pages.find(p => !p.deleted)?.thumbUrl || null;
+      const origSource = {
+        name: pdfDeleteState.fileName || 'original_document.pdf',
+        size: pdfDeleteState.fileSize || 0,
+        type: 'application/pdf',
+        pageCount: pdfDeleteState.numPages || 1,
+        thumbUrl: delThumb,
+        blob: pdfDeleteState.file instanceof Blob ? pdfDeleteState.file : new Blob([pdfDeleteState.bytes], { type: 'application/pdf' })
+      };
       if (window.recordRecentFile) {
-        window.recordRecentFile(outName, blob.size, 'application/pdf', 0, 0, 'pdf', blob, delThumb, 'doc-delete-pdf');
+        window.recordRecentFile(outName, blob.size, 'application/pdf', 0, 0, 'pdf', blob, delThumb, 'doc-delete-pdf', [origSource], 'delete');
       }
 
       const deletedCount = pdfDeleteState.pages.length - keptIndices.length;
