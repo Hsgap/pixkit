@@ -104,7 +104,7 @@
     } catch (_) {}
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles/main.css?v=8.3">
+  <link rel="stylesheet" href="styles/main.css?v=8.4">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FBFBF8">
 </head>
@@ -2078,24 +2078,37 @@
       <!-- TOOL 10 WORKSPACE: FORMAT CONVERTER                            -->
       <!-- ============================================================== -->
       <section class="view" id="tool-convert-format-view">
-        <div class="workspace-header">
-          <div class="breadcrumb">
-            <a onclick="showView('convert')">Convert</a>
-            <span>/</span>
-            <strong>Format Converter</strong>
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 01 · Convert Suite</div>
+            <h1>Format Converter</h1>
+            <p>Convert between JPG, PNG, WEBP, AVIF, HEIC, and BMP with custom quality controls.</p>
           </div>
-          <button class="back-btn" onclick="showView('convert')">
-            <span>←</span> Back to Convert Tools
-          </button>
+          <button class="back-btn" onclick="showView('convert')">← Back to Convert Tools</button>
         </div>
 
         <div class="workspace-layout">
-          <div class="canvas-stage">
-            <div class="canvas-wrapper">
-              <canvas id="canvas-convert-format" class="stage-canvas"></canvas>
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <span>Preview</span>
+              <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen</button>
+              </div>
             </div>
-            <div class="canvas-meta">
-              <span id="meta-convert-format">Ready · Select target format</span>
+            <div class="stage-viewport">
+              <button class="viewport-fullscreen-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg><span>Full Screen</span></button>
+              <div class="canvas-wrapper">
+                <canvas id="canvas-convert-format"></canvas>
+              </div>
+            </div>
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">↗</span>
+                <div>
+                  <strong class="img-meta-name">mountain-view.jpg</strong>
+                  <small class="img-meta-dims" id="meta-convert-format">1600 × 1200 px</small>
+                </div>
+              </div>
               <label class="action-btn-sm" style="cursor:pointer;">
                 Replace image
                 <input type="file" accept="image/*" class="global-file-picker" hidden>
@@ -2204,24 +2217,37 @@
       <!-- TOOL 11 WORKSPACE: HEIC TO JPG                                 -->
       <!-- ============================================================== -->
       <section class="view" id="tool-convert-heic-view">
-        <div class="workspace-header">
-          <div class="breadcrumb">
-            <a onclick="showView('convert')">Convert</a>
-            <span>/</span>
-            <strong>HEIC to JPG</strong>
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 02 · Convert Suite</div>
+            <h1>HEIC to JPG Converter</h1>
+            <p>Convert Apple iPhone and iPad HEIC photos to standard high-quality JPG or PNG.</p>
           </div>
-          <button class="back-btn" onclick="showView('convert')">
-            <span>←</span> Back to Convert Tools
-          </button>
+          <button class="back-btn" onclick="showView('convert')">← Back to Convert Tools</button>
         </div>
 
         <div class="workspace-layout">
-          <div class="canvas-stage">
-            <div class="canvas-wrapper">
-              <canvas id="canvas-convert-heic" class="stage-canvas"></canvas>
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <span>Preview</span>
+              <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen</button>
+              </div>
             </div>
-            <div class="canvas-meta">
-              <span id="meta-convert-heic">Ready · Upload an iPhone HEIC photo</span>
+            <div class="stage-viewport">
+              <button class="viewport-fullscreen-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg><span>Full Screen</span></button>
+              <div class="canvas-wrapper">
+                <canvas id="canvas-convert-heic"></canvas>
+              </div>
+            </div>
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">↗</span>
+                <div>
+                  <strong class="img-meta-name">photo.heic</strong>
+                  <small class="img-meta-dims" id="meta-convert-heic">Ready · Upload an iPhone HEIC photo</small>
+                </div>
+              </div>
               <label class="action-btn-sm" style="cursor:pointer;">
                 Select HEIC Photo
                 <input type="file" id="picker-convert-heic" accept=".heic,.heif,image/heic,image/heif,image/*" onchange="handleHeicFileSelect(event)" hidden>
@@ -2321,24 +2347,37 @@
       <!-- TOOL 12 WORKSPACE: SVG TO PNG RASTERIZER                        -->
       <!-- ============================================================== -->
       <section class="view" id="tool-convert-svg-view">
-        <div class="workspace-header">
-          <div class="breadcrumb">
-            <a onclick="showView('convert')">Convert</a>
-            <span>/</span>
-            <strong>SVG to PNG</strong>
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 03 · Convert Suite</div>
+            <h1>SVG to PNG Rasterizer</h1>
+            <p>Rasterize scalable vector SVG graphics into ultra-sharp high-resolution PNG with alpha transparency.</p>
           </div>
-          <button class="back-btn" onclick="showView('convert')">
-            <span>←</span> Back to Convert Tools
-          </button>
+          <button class="back-btn" onclick="showView('convert')">← Back to Convert Tools</button>
         </div>
 
         <div class="workspace-layout">
-          <div class="canvas-stage">
-            <div class="canvas-wrapper">
-              <canvas id="canvas-convert-svg" class="stage-canvas"></canvas>
+          <div class="stage-container">
+            <div class="stage-topbar">
+              <span>Preview</span>
+              <div class="stage-topbar-tools">
+                <button class="stage-tool-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen</button>
+              </div>
             </div>
-            <div class="canvas-meta">
-              <span id="meta-convert-svg">Ready · Select SVG resolution scale</span>
+            <div class="stage-viewport">
+              <button class="viewport-fullscreen-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg><span>Full Screen</span></button>
+              <div class="canvas-wrapper">
+                <canvas id="canvas-convert-svg"></canvas>
+              </div>
+            </div>
+            <div class="stage-footer">
+              <div class="file-info">
+                <span class="tiny-icon">↗</span>
+                <div>
+                  <strong class="img-meta-name">vector.svg</strong>
+                  <small class="img-meta-dims" id="meta-convert-svg">Ready · Select SVG resolution scale</small>
+                </div>
+              </div>
               <label class="action-btn-sm" style="cursor:pointer;">
                 Select SVG File
                 <input type="file" id="picker-convert-svg" accept=".svg,image/svg+xml" onchange="handleSvgFileSelect(event)" hidden>
@@ -2482,15 +2521,13 @@
       <!-- TOOL 13 WORKSPACE: IMAGE TO ICO (FAVICON GENERATOR)             -->
       <!-- ============================================================== -->
       <section class="view" id="tool-convert-ico-view">
-        <div class="workspace-header">
-          <div class="breadcrumb">
-            <a onclick="showView('convert')">Convert</a>
-            <span>/</span>
-            <strong>Image to ICO</strong>
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 04 · Convert Suite</div>
+            <h1>Image to ICO Favicon</h1>
+            <p>Generate universal multi-resolution Windows .ICO favicons with instant real-world preview.</p>
           </div>
-          <button class="back-btn" onclick="showView('convert')">
-            <span>←</span> Back to Convert Tools
-          </button>
+          <button class="back-btn" onclick="showView('convert')">← Back to Convert Tools</button>
         </div>
 
         <div class="workspace-layout">
@@ -2582,14 +2619,16 @@
 
             <div class="stage-footer">
               <div class="file-info">
-                <span id="meta-convert-ico">Ready · Multi-resolution ICO generator</span>
+                <span class="tiny-icon">↗</span>
+                <div>
+                  <strong class="img-meta-name">mountain-view.jpg</strong>
+                  <small class="img-meta-dims" id="meta-convert-ico">Ready · Multi-resolution ICO generator</small>
+                </div>
               </div>
-              <div class="stage-actions">
-                <label class="btn-ghost btn-sm" style="cursor:pointer;">
-                  Replace image
-                  <input type="file" accept="image/*" class="global-file-picker" hidden>
-                </label>
-              </div>
+              <label class="action-btn-sm" style="cursor:pointer;">
+                Replace image
+                <input type="file" accept="image/*" class="global-file-picker" hidden>
+              </label>
             </div>
           </div>
 
@@ -2688,15 +2727,13 @@
       <!-- TOOL 14 WORKSPACE: IMAGE TO BASE64 (DATA URI & SNIPPET GEN)    -->
       <!-- ============================================================== -->
       <section class="view" id="tool-convert-base64-view">
-        <div class="workspace-header">
-          <div class="breadcrumb">
-            <a onclick="showView('convert')">Convert</a>
-            <span>/</span>
-            <strong>Image to Base64</strong>
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 05 · Convert Suite</div>
+            <h1>Image to Base64</h1>
+            <p>Encode any image into a self-contained Base64 Data URI string or ready-to-use code snippet.</p>
           </div>
-          <button class="back-btn" onclick="showView('convert')">
-            <span>←</span> Back to Convert Tools
-          </button>
+          <button class="back-btn" onclick="showView('convert')">← Back to Convert Tools</button>
         </div>
 
         <div class="workspace-layout">
@@ -2767,14 +2804,16 @@
 
             <div class="stage-footer">
               <div class="file-info">
-                <span id="meta-convert-base64">Ready · Base64 encoder</span>
+                <span class="tiny-icon">↗</span>
+                <div>
+                  <strong class="img-meta-name">mountain-view.jpg</strong>
+                  <small class="img-meta-dims" id="meta-convert-base64">Ready · Base64 encoder</small>
+                </div>
               </div>
-              <div class="stage-actions">
-                <label class="btn-ghost btn-sm" style="cursor:pointer;">
-                  Replace image
-                  <input type="file" accept="image/*" class="global-file-picker" hidden>
-                </label>
-              </div>
+              <label class="action-btn-sm" style="cursor:pointer;">
+                Replace image
+                <input type="file" accept="image/*" class="global-file-picker" hidden>
+              </label>
             </div>
           </div>
 
@@ -2878,15 +2917,13 @@
       <!-- TOOL 15 WORKSPACE: IMAGE TO PDF (DOCUMENT GENERATOR)           -->
       <!-- ============================================================== -->
       <section class="view" id="tool-convert-pdf-view">
-        <div class="workspace-header">
-          <div class="breadcrumb">
-            <a id="pdf-parent-crumb" onclick="navigatePdfBack()" style="cursor:pointer;">Document</a>
-            <span>/</span>
-            <strong id="pdf-title-crumb">Images to PDF</strong>
+        <div class="page-title">
+          <div>
+            <div class="eyebrow" id="pdf-parent-crumb">Tool 06 · Convert Suite</div>
+            <h1 id="pdf-title-crumb">Images to PDF</h1>
+            <p>Convert photos and documents into standard, clean PDF files for printing and sharing.</p>
           </div>
-          <button class="back-btn" onclick="navigatePdfBack()">
-            <span>←</span> <span id="pdf-back-btn-text">Back to Document Tools</span>
-          </button>
+          <button class="back-btn" onclick="navigatePdfBack()">← <span id="pdf-back-btn-text">Back to Convert Tools</span></button>
         </div>
 
         <div class="workspace-layout">
@@ -2913,14 +2950,16 @@
 
             <div class="stage-footer">
               <div class="file-info">
-                <span id="meta-convert-pdf">document.pdf · A4 Portrait · 1 Page</span>
+                <span class="tiny-icon">↗</span>
+                <div>
+                  <strong class="img-meta-name">mountain-view.jpg</strong>
+                  <small class="img-meta-dims" id="meta-convert-pdf">document.pdf · A4 Portrait · 1 Page</small>
+                </div>
               </div>
-              <div class="stage-actions">
-                <label class="btn-ghost btn-sm" style="cursor:pointer;">
-                  Replace image
-                  <input type="file" accept="image/*" class="global-file-picker" hidden>
-                </label>
-              </div>
+              <label class="action-btn-sm" style="cursor:pointer;">
+                Replace image
+                <input type="file" accept="image/*" class="global-file-picker" hidden>
+              </label>
             </div>
           </div>
 
@@ -4483,7 +4522,7 @@
   <!-- PixKit Remote Connector to admin.pixkit.site -->
   <script src="js/pixkit-remote.js"></script>
   <script src="js/engine.js?v=2.5"></script>
-  <script src="js/app.js?v=8.3"></script>
+  <script src="js/app.js?v=8.4"></script>
   <script src="js/support.js"></script>
   <script src="js/leaderboard.js"></script>
 </body>

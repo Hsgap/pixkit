@@ -641,14 +641,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (toolId === 'convert-pdf') {
-      lastCategoryOrigin = 'document';
+      const isFromDoc = (lastCategoryOrigin === 'document');
       const parentCrumb = document.getElementById('pdf-parent-crumb');
       const titleCrumb = document.getElementById('pdf-title-crumb');
       const backBtnText = document.getElementById('pdf-back-btn-text');
       
-      if (parentCrumb) parentCrumb.textContent = 'Document';
+      if (parentCrumb) parentCrumb.textContent = isFromDoc ? 'Tool 01 · Document Suite' : 'Tool 06 · Convert Suite';
       if (titleCrumb) titleCrumb.textContent = 'Images to PDF';
-      if (backBtnText) backBtnText.textContent = 'Back to Document Tools';
+      if (backBtnText) backBtnText.textContent = isFromDoc ? 'Back to Document Tools' : 'Back to Convert Tools';
     }
 
     // Check remote feature flag before opening workspace
