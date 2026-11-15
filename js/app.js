@@ -367,6 +367,97 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (e) {
         return false;
       }
+    },
+
+    async saveRecentFile(name, record) {
+      if (!name || name === 'mountain-view.jpg') return false;
+      try {
+        const db = await this.openDB();
+        if (!db) return false;
+        return new Promise((resolve) => {
+          const tx = db.transaction(this.storeName, 'readwrite');
+          const store = tx.objectStore(this.storeName);
+          store.put({ id: 'file_' + name, ...record, savedAt: Date.now() });
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        });
+      } catch (e) {
+        return false;
+      }
+    },
+
+    async getRecentFile(name) {
+      if (!name) return null;
+      try {
+        const db = await this.openDB();
+        if (!db) return null;
+        return new Promise((resolve) => {
+          const tx = db.transaction(this.storeName, 'readonly');
+          const store = tx.objectStore(this.storeName);
+          const req = store.get('file_' + name);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      } catch (e) {
+        return null;
+      }
+    },
+
+    async deleteRecentFile(name) {
+      if (!name) return false;
+      try {
+        const db = await this.openDB();
+        if (!db) return false;
+        return new Promise((resolve) => {
+          const tx = db.transaction(this.storeName, 'readwrite');
+          const store = tx.objectStore(this.storeName);
+          store.delete('file_' + name);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        });
+      } catch (e) {
+        return false;
+      }
+    },
+
+    async pruneRecentFiles(allowedNames) {
+      if (!Array.isArray(allowedNames)) return;
+      try {
+        const db = await this.openDB();
+        if (!db) return;
+        const tx = db.transaction(this.storeName, 'readwrite');
+        const store = tx.objectStore(this.storeName);
+        const req = store.getAllKeys();
+        req.onsuccess = () => {
+          const keys = req.result || [];
+          keys.forEach(k => {
+            if (typeof k === 'string' && k.startsWith('file_')) {
+              const fname = k.substring(5);
+              if (!allowedNames.includes(fname)) {
+                store.delete(k);
+              }
+            }
+          });
+        };
+      } catch (_) {}
+    },
+
+    async clearAllRecentFiles() {
+      try {
+        const db = await this.openDB();
+        if (!db) return;
+        const tx = db.transaction(this.storeName, 'readwrite');
+        const store = tx.objectStore(this.storeName);
+        const req = store.getAllKeys();
+        req.onsuccess = () => {
+          const keys = req.result || [];
+          keys.forEach(k => {
+            if (typeof k === 'string' && k.startsWith('file_')) {
+              store.delete(k);
+            }
+          });
+        };
+      } catch (_) {}
     }
   };
 
@@ -397,6 +488,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         await PixKitStorage.saveSession(sessionPayload);
 
+        // Also persist high-res edited blob in recent storage
+        await PixKitStorage.saveRecentFile(engine.filename, {
+          filename: engine.filename,
+          fileType: engine.fileType,
+          fileSize: engine.fileSize,
+          activeBlob,
+          width: engine.activeCanvas.width,
+          height: engine.activeCanvas.height,
+          savedAt: Date.now()
+        });
+
         // Fast metadata in localStorage
         localStorage.setItem('pixkit_saved_session', JSON.stringify({
           filename: engine.filename,
@@ -406,6 +508,14 @@ document.addEventListener('DOMContentLoaded', () => {
           currentHash: sessionPayload.currentHash,
           savedAt: sessionPayload.savedAt
         }));
+
+        // Limit cached blobs in memory/IndexedDB to top 10 recent files
+        try {
+          const recents = JSON.parse(localStorage.getItem('pixkit_recent_files') || '[]');
+          const top10 = recents.slice(0, 10).map(f => f.name);
+          if (!top10.includes(engine.filename)) top10.unshift(engine.filename);
+          PixKitStorage.pruneRecentFiles(top10);
+        } catch (_) {}
       } catch (e) {
         console.warn('Session auto-save error:', e);
       }
@@ -1200,6 +1310,24 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       if (recents.length > 24) recents = recents.slice(0, 24);
       localStorage.setItem('pixkit_recent_files', JSON.stringify(recents));
+
+      if (engine && engine.activeCanvas && engine.activeCanvas.width > 0 && !engine.isSampleArtwork && engine.filename === name) {
+        engine.activeCanvas.toBlob(blob => {
+          if (blob && typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.saveRecentFile === 'function') {
+            PixKitStorage.saveRecentFile(name, {
+              filename: name,
+              fileType: type || engine.fileType || 'image/png',
+              fileSize: size || engine.fileSize || 0,
+              activeBlob: blob,
+              width: width || engine.activeCanvas.width,
+              height: height || engine.activeCanvas.height,
+              savedAt: Date.now()
+            });
+            const top10 = recents.slice(0, 10).map(f => f.name);
+            PixKitStorage.pruneRecentFiles(top10);
+          }
+        }, 'image/png');
+      }
     } catch (e) {}
   };
 
@@ -1248,12 +1376,117 @@ document.addEventListener('DOMContentLoaded', () => {
     return 'edit';
   }
 
-  window.openRecentFromPage = async function(name, isCurrent) {
+  function triggerBlobDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => {
+      try { URL.revokeObjectURL(url); } catch (_) {}
+    }, 2000);
+  }
+
+  window.downloadRecentFileItem = async function(name, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    // 1. If currently active in engine
+    if (engine && engine.filename === name && hasUserAddedImage && engine.activeCanvas && engine.activeCanvas.width > 0) {
+      try {
+        const mimeType = engine.fileType || 'image/png';
+        engine.activeCanvas.toBlob((blob) => {
+          if (!blob) return;
+          triggerBlobDownload(blob, name);
+          showToast(`Downloaded latest edit of ${name}`);
+        }, mimeType);
+        return;
+      } catch (_) {}
+    }
+
+    // 2. High-res blob from IndexedDB recent store
+    try {
+      if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.getRecentFile === 'function') {
+        const record = await PixKitStorage.getRecentFile(name);
+        const blob = record ? (record.activeBlob || record.blob) : null;
+        if (blob) {
+          triggerBlobDownload(blob, name);
+          showToast(`Downloaded latest edit of ${name}`);
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // 3. Fallback to active session in PixKitStorage
+    try {
+      const session = await PixKitStorage.loadSession();
+      if (session && session.filename === name && session.activeBlob) {
+        triggerBlobDownload(session.activeBlob, name);
+        showToast(`Downloaded latest edit of ${name}`);
+        return;
+      }
+    } catch (_) {}
+
+    // 4. Fallback to preview thumbnail
+    try {
+      let recents = JSON.parse(localStorage.getItem('pixkit_recent_files') || '[]');
+      const fileMeta = recents.find(f => f.name === name);
+      if (fileMeta && fileMeta.previewUrl) {
+        const a = document.createElement('a');
+        a.href = fileMeta.previewUrl;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast(`Downloaded preview of ${name}`);
+        return;
+      }
+    } catch (_) {}
+
+    showToast(`No saved edit found for ${name}`);
+  };
+
+  window.downloadCurrentSessionFile = function(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (engine && engine.filename && engine.filename !== 'mountain-view.jpg' && hasUserAddedImage) {
+      window.downloadRecentFileItem(engine.filename, event);
+    } else {
+      showToast('No active session image to download');
+    }
+  };
+
+  window.openRecentFromPage = async function(name, isCurrent, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     if (isCurrent || (engine.filename === name && hasUserAddedImage && !engine.isSampleArtwork)) {
       window.showView('edit');
       showToast(`Resumed editing ${name}`);
       return;
     }
+    // 1. Try high-res blob from IndexedDB recent store
+    try {
+      if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.getRecentFile === 'function') {
+        const record = await PixKitStorage.getRecentFile(name);
+        const blob = record ? (record.activeBlob || record.blob) : null;
+        if (blob) {
+          const file = new File([blob], name, { type: record.fileType || 'image/png' });
+          await handleImageFile(file);
+          window.showView('edit');
+          showToast(`Loaded ${name} into editor`);
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // 2. Fallback to active session
     try {
       const session = await PixKitStorage.loadSession();
       if (session && session.filename === name && session.activeBlob) {
@@ -1264,6 +1497,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
     } catch (_) {}
+
+    // 3. Prompt user if memory purged
     showToast(`Select "${name}" to load high-resolution original`);
     window.triggerGlobalUpload();
   };
@@ -1277,6 +1512,10 @@ document.addEventListener('DOMContentLoaded', () => {
       let recents = JSON.parse(localStorage.getItem('pixkit_recent_files') || '[]');
       recents = recents.filter(f => f.name !== name && f.name !== 'mountain-view.jpg');
       localStorage.setItem('pixkit_recent_files', JSON.stringify(recents));
+
+      if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.deleteRecentFile === 'function') {
+        PixKitStorage.deleteRecentFile(name).catch(() => {});
+      }
 
       if (engine && engine.filename === name) {
         hasUserAddedImage = false;
@@ -1346,6 +1585,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (PixKitStorage && typeof PixKitStorage.clearSession === 'function') {
         PixKitStorage.clearSession().catch(() => {});
+      }
+      if (PixKitStorage && typeof PixKitStorage.clearAllRecentFiles === 'function') {
+        PixKitStorage.clearAllRecentFiles().catch(() => {});
       }
 
       hasUserAddedImage = false;
@@ -1953,6 +2195,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
           </div>
           <div class="recent-active-actions">
+            <button class="btn-secondary" onclick="downloadCurrentSessionFile(event)" style="display:inline-flex; align-items:center; gap:6px; padding:10px 18px; font-weight:700;">
+              <i class="fa-solid fa-download"></i> Download Last Edit
+            </button>
             <button class="btn-primary" onclick="showView('edit')" style="display:inline-flex; align-items:center; gap:6px; padding:10px 20px; font-weight:700;">
               Resume Editing →
             </button>
@@ -1966,15 +2211,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (gridList.length > 0) {
       html += `<div class="recent-files-grid">`;
-      gridList.forEach(file => {
+      gridList.forEach((file, index) => {
         const fmtLabel = getFormatBadgeLabel(file.name, file.type);
         const timeStr = formatDockTimeAgo(file.timestamp || Date.now());
         const sizeStr = formatFileSize(file.size);
         const resStr = file.width && file.height ? `${file.width} × ${file.height} px` : sizeStr;
         const catBadge = file.category === 'pdf' ? 'PDF' : (file.category === 'convert' ? 'Convert' : 'Edit');
+        const canResume = (index < 10);
 
         html += `
-          <div class="recent-file-card" onclick="openRecentFromPage('${escapeDockHtml(file.name)}', false)">
+          <div class="recent-file-card" onclick="openRecentFromPage('${escapeDockHtml(file.name)}', false, event)">
             <div class="recent-card-top">
               <div class="recent-card-badges">
                 <span class="recent-fmt-badge">${fmtLabel}</span>
@@ -1990,9 +2236,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="recent-card-meta">${resStr} · ${sizeStr}</div>
               </div>
             </div>
-            <div class="recent-card-footer">
-              <span>Open in Studio</span>
-              <span>→</span>
+            <div class="recent-card-actions">
+              ${canResume ? `
+                <button type="button" class="recent-action-btn btn-resume" onclick="openRecentFromPage('${escapeDockHtml(file.name)}', false, event)" title="Open in editor to continue editing">
+                  <i class="fa-solid fa-pen-to-square"></i> <span>Open in Edit</span>
+                </button>
+              ` : ''}
+              <button type="button" class="recent-action-btn btn-download" onclick="downloadRecentFileItem('${escapeDockHtml(file.name)}', event)" title="Download the latest edited file directly">
+                <i class="fa-solid fa-download"></i> <span>Download Last Edit</span>
+              </button>
             </div>
           </div>
         `;

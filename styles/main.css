@@ -3974,7 +3974,11 @@ body.dock-is-dragging * {
 }
 
 .recent-active-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 /* Recent Files Grid */
@@ -4130,6 +4134,82 @@ body.dock-is-dragging * {
 .recent-file-card:hover .recent-card-footer span:last-child {
   transform: translateX(3px);
   color: var(--lime-hover);
+}
+
+.recent-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  margin-top: 10px;
+}
+
+.recent-action-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  white-space: nowrap;
+  letter-spacing: -0.1px;
+}
+
+.recent-action-btn i {
+  font-size: 11px;
+}
+
+.recent-action-btn:hover {
+  border-color: var(--line-strong);
+}
+
+.recent-action-btn.btn-resume {
+  background: var(--lime);
+  border-color: var(--accent-lime-border);
+  color: #121310;
+}
+
+.recent-action-btn.btn-resume:hover {
+  background: var(--lime-hover);
+  box-shadow: 0 2px 8px rgba(184, 255, 75, 0.25);
+  transform: translateY(-1px);
+}
+
+.recent-action-btn.btn-download {
+  background: var(--white);
+  color: var(--ink);
+}
+
+.recent-action-btn.btn-download:hover {
+  background: var(--soft);
+  transform: translateY(-1px);
+}
+
+[data-theme="dark"] .recent-action-btn.btn-download {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+[data-theme="dark"] .recent-action-btn.btn-resume {
+  color: #0b0d07;
+}
+
+@media (max-width: 600px) {
+  .recent-card-actions {
+    flex-direction: column;
+  }
+  .recent-action-btn {
+    width: 100%;
+  }
 }
 
 /* Recent Files Empty State */
