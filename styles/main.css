@@ -4453,6 +4453,8 @@ body.dock-is-dragging * {
   cursor: pointer;
   transition: all var(--transition-normal);
   position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .recent-file-card:hover {
@@ -4471,7 +4473,8 @@ body.dock-is-dragging * {
 .recent-card-badges {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .recent-fmt-badge {
@@ -4654,6 +4657,67 @@ body.dock-is-dragging * {
   padding-top: 12px;
   border-top: 1px solid var(--line);
   margin-top: 10px;
+  box-sizing: border-box;
+}
+
+/* 3-Action Card (e.g. Open in Edit + Expand + Download Last Edit) */
+.recent-card-actions.has-three-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.recent-card-actions.has-three-actions .btn-resume {
+  grid-column: 1 / 2;
+  width: 100%;
+}
+
+.recent-card-actions.has-three-actions .btn-expand {
+  grid-column: 2 / 3;
+  width: 100%;
+}
+
+.recent-card-actions.has-three-actions .btn-download {
+  grid-column: 1 / -1;
+  width: 100%;
+  justify-content: center;
+}
+
+/* 2-Action Document with Expand (Archived/No-Resume) */
+.recent-card-actions.has-two-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recent-card-actions.has-two-actions .btn-expand {
+  flex: 0 0 auto;
+  min-width: 84px;
+}
+
+.recent-card-actions.has-two-actions .btn-download {
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
+}
+
+/* Standard 2-Action Image Card */
+.recent-card-actions:not(.has-three-actions):not(.has-two-actions) .btn-resume {
+  flex: 0 0 auto;
+  min-width: 96px;
+}
+
+.recent-card-actions:not(.has-three-actions):not(.has-two-actions) .btn-download {
+  flex: 1;
+  min-width: 0;
+  justify-content: center;
+}
+
+/* 1-Action Download Only */
+.recent-card-actions .btn-download:only-child {
+  width: 100%;
+  flex: 1 1 100%;
+  justify-content: center;
 }
 
 .recent-action-btn {
@@ -4662,7 +4726,7 @@ body.dock-is-dragging * {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 10px;
+  padding: 8px 9px;
   border-radius: var(--radius-sm);
   font-size: 11px;
   font-weight: 700;
@@ -4672,7 +4736,8 @@ body.dock-is-dragging * {
   background: var(--paper);
   color: var(--ink);
   white-space: nowrap;
-  letter-spacing: -0.1px;
+  letter-spacing: -0.15px;
+  box-sizing: border-box;
 }
 
 .recent-action-btn i {
@@ -4926,11 +4991,15 @@ body.dock-is-dragging * {
 }
 
 @media (max-width: 600px) {
-  .recent-card-actions {
+  .recent-card-actions,
+  .recent-card-actions.has-three-actions,
+  .recent-card-actions.has-two-actions {
+    display: flex;
     flex-direction: column;
+    gap: 8px;
   }
   .recent-action-btn {
-    width: 100%;
+    width: 100% !important;
   }
 }
 

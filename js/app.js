@@ -2962,6 +2962,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const metaStr = resStr ? `${resStr} · ${sizeStr}` : sizeStr;
         const canResume = top10GlobalNames.has(file.name);
         const hasSources = Array.isArray(file.sourceFiles) && file.sourceFiles.length > 0;
+        const actionClass = canResume && hasSources ? 'has-three-actions' : (hasSources ? 'has-two-actions' : '');
 
         html += `
           <div class="recent-file-card ${canResume ? '' : 'no-resume'}" style="--card-index: ${index};" onclick="${canResume ? `openRecentFromPage('${escapeDockHtml(file.name)}', false, event)` : `downloadRecentFileItem('${escapeDockHtml(file.name)}', event)`}">
@@ -2995,7 +2996,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="recent-card-meta">${metaStr}</div>
               </div>
             </div>
-            <div class="recent-card-actions">
+            <div class="recent-card-actions ${actionClass}">
               ${canResume ? `
                 <button type="button" class="recent-action-btn btn-resume" onclick="openRecentFromPage('${escapeDockHtml(file.name)}', false, event)" title="Open in editor to continue editing">
                   <i class="fa-solid fa-pen-to-square"></i> <span>Open in Edit</span>
@@ -3006,7 +3007,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   <i class="fa-solid fa-up-right-and-down-left-from-center"></i> <span>Expand</span>
                 </button>
               ` : ''}
-              <button type="button" class="recent-action-btn btn-download" style="${!canResume && !hasSources ? 'grid-column: 1 / -1; width: 100%; justify-content: center;' : ''}" onclick="downloadRecentFileItem('${escapeDockHtml(file.name)}', event)" title="Download the latest edited file directly">
+              <button type="button" class="recent-action-btn btn-download" onclick="downloadRecentFileItem('${escapeDockHtml(file.name)}', event)" title="Download the latest edited file directly">
                 <i class="fa-solid fa-download"></i> <span>Download Last Edit</span>
               </button>
             </div>
