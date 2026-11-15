@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const toast = document.createElement('div');
     toast.className = 'toast';
-    toast.innerHTML = `<span>✳</span><span>${message}</span>`;
+    toast.innerHTML = `<span class="toast-indicator"></span><span>${message}</span>`;
     container.appendChild(toast);
 
     setTimeout(() => {
@@ -54,6 +54,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2800);
   }
   window.showToast = showToast;
+
+  // Minimal Bottom-Right Image Upload Progress Loader
+  let uploadLoaderTimer = null;
+  function showImageUploadProgress(filename, progressPercent, statusText) {
+    let loader = document.getElementById('pixkit-upload-progress');
+    if (!loader) {
+      loader = document.createElement('div');
+      loader.id = 'pixkit-upload-progress';
+      loader.className = 'pixkit-upload-loader';
+      document.body.appendChild(loader);
+    }
+    clearTimeout(uploadLoaderTimer);
+    loader.classList.remove('fade-down');
+    void loader.offsetWidth;
+    loader.classList.add('visible');
+
+    const cleanName = (filename || 'image').length > 22 ? filename.substring(0, 19) + '...' : (filename || 'image');
+    const isComplete = progressPercent >= 100;
+    const pct = Math.min(100, Math.max(0, Math.round(progressPercent)));
+
+    loader.innerHTML = `
+      <div class="upload-loader-content">
+        <div class="upload-loader-icon">
+          ${isComplete ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2d6a4f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>` : `<span class="upload-loader-spinner"></span>`}
+        </div>
+        <div class="upload-loader-info">
+          <div class="upload-loader-header">
+            <span class="upload-loader-title">${escapeDockHtml(cleanName)}</span>
+            <span class="upload-loader-pct">${isComplete ? 'Ready' : pct + '%'}</span>
+          </div>
+          <div class="upload-loader-track">
+            <div class="upload-loader-bar" style="width: ${pct}%;"></div>
+          </div>
+          ${statusText ? `<div class="upload-loader-sub">${escapeDockHtml(statusText)}</div>` : ''}
+        </div>
+      </div>
+    `;
+
+    if (isComplete) {
+      uploadLoaderTimer = setTimeout(() => {
+        loader.classList.add('fade-down');
+        setTimeout(() => {
+          loader.classList.remove('visible', 'fade-down');
+        }, 360);
+      }, 1200);
+    }
+  }
+  window.showImageUploadProgress = showImageUploadProgress;
 
   // Initialize Magic UI Kinetic Text & Aceternity 3D Card & Floating Dock
   initKineticText();
@@ -895,12 +943,17 @@ document.addEventListener('DOMContentLoaded', () => {
   function handleImageFile(file) {
     if (!file || !file.type.startsWith('image/')) {
       showToast('Please select a valid image file (JPG, PNG, WEBP, etc.)');
-      return;
+      return Promise.reject('Invalid file');
     }
 
-    engine.loadFromFile(file).then(meta => {
+    showImageUploadProgress(file.name, 35, 'Reading image file...');
+    const progressTimer = setTimeout(() => {
+      showImageUploadProgress(file.name, 75, 'Rendering canvas stage...');
+    }, 120);
+
+    return engine.loadFromFile(file).then(meta => {
+      clearTimeout(progressTimer);
       hasUserAddedImage = true;
-      showToast(`Loaded ${meta.name} (${meta.width} × ${meta.height} px)`);
       syncMetadata();
       updateHeroPreview();
       persistCurrentSession();
@@ -908,23 +961,42 @@ document.addEventListener('DOMContentLoaded', () => {
         window.recordRecentFile(meta.name, file.size, file.type, meta.width, meta.height);
       }
 
+      showImageUploadProgress(meta.name, 100, `${meta.width} × ${meta.height} px`);
+
       if (activeTool) {
         initToolStage(activeTool);
       } else if (currentView === 'home') {
         window.showView('edit');
       }
       updateHistoryUI();
+      return meta;
     }).catch(err => {
+      clearTimeout(progressTimer);
       console.error(err);
       showToast('Failed to load image');
+      const loader = document.getElementById('pixkit-upload-progress');
+      if (loader) loader.classList.add('fade-down');
+      throw err;
     });
   }
 
   // File Inputs
   document.querySelectorAll('.global-file-picker').forEach(input => {
-    input.addEventListener('change', (e) => {
+    input.addEventListener('change', async (e) => {
       if (e.target.files && e.target.files.length > 0) {
-        handleImageFile(e.target.files[0]);
+        const files = Array.from(e.target.files);
+        if (files.length === 1) {
+          handleImageFile(files[0]);
+        } else {
+          for (let i = 0; i < files.length; i++) {
+            const f = files[i];
+            const pct = Math.round(((i + 1) / files.length) * 100);
+            showImageUploadProgress(f.name, pct, `Imported ${i + 1} of ${files.length} images`);
+            try {
+              await handleImageFile(f);
+            } catch (_) {}
+          }
+        }
         e.target.value = '';
       }
     });
@@ -1989,8 +2061,24 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.setRecentCategoryFilter = function(category) {
-    recentPageState.currentCategory = category || 'all';
-    window.renderRecentFilesPage();
+    if (recentPageState.currentCategory === category) return;
+    const container = document.getElementById('recent-files-page-container');
+    if (container) {
+      container.classList.add('category-switching');
+      container.classList.remove('category-entering');
+      setTimeout(() => {
+        recentPageState.currentCategory = category || 'all';
+        window.renderRecentFilesPage();
+        container.classList.remove('category-switching');
+        container.classList.add('category-entering');
+        setTimeout(() => {
+          container.classList.remove('category-entering');
+        }, 320);
+      }, 150);
+    } else {
+      recentPageState.currentCategory = category || 'all';
+      window.renderRecentFilesPage();
+    }
   };
 
   window.handleRecentSearch = function(query) {
@@ -2023,6 +2111,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('recent-files-page-container');
     const controlsBar = document.getElementById('recentControlsBar');
     if (!container) return;
+    if (!container.classList.contains('recent-files-container')) {
+      container.classList.add('recent-files-container');
+    }
 
     if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
       if (!window.PixKitRemote.isFeatureEnabled('community', 'recentFiles')) {
@@ -2220,7 +2311,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const canResume = (index < 10);
 
         html += `
-          <div class="recent-file-card" onclick="openRecentFromPage('${escapeDockHtml(file.name)}', false, event)">
+          <div class="recent-file-card" style="--card-index: ${index};" onclick="openRecentFromPage('${escapeDockHtml(file.name)}', false, event)">
             <div class="recent-card-top">
               <div class="recent-card-badges">
                 <span class="recent-fmt-badge">${fmtLabel}</span>

@@ -61,6 +61,50 @@
   --shadow-float: 0 12px 38px rgba(0, 0, 0, 0.5);
 }
 
+html {
+  scrollbar-gutter: stable;
+  scroll-behavior: smooth;
+}
+
+/* Custom Minimal Overlay Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.32);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.16) transparent;
+}
+
+[data-theme="dark"] * {
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -4210,6 +4254,198 @@ body.dock-is-dragging * {
   .recent-action-btn {
     width: 100%;
   }
+}
+
+/* Smooth Category Switch Transitions for Recent Files */
+.recent-files-container {
+  transition: opacity 0.16s cubic-bezier(0.16, 1, 0.3, 1), transform 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.recent-files-container.category-switching {
+  opacity: 0;
+  transform: translateY(8px) scale(0.995);
+  pointer-events: none;
+}
+
+.recent-files-container.category-entering {
+  animation: recentContainerFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes recentContainerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.recent-files-grid .recent-file-card {
+  animation: recentCardAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation-delay: calc(var(--card-index, 0) * 0.024s);
+}
+
+@keyframes recentCardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.recent-filter-pill {
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.recent-filter-pill:active {
+  transform: scale(0.96);
+}
+
+.recent-filter-pill.active {
+  transform: scale(1.02);
+}
+
+/* Minimal Floating Image Upload Progress Widget */
+.pixkit-upload-loader {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 10001;
+  background: var(--paper);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--line-strong);
+  border-radius: 14px;
+  padding: 10px 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  width: 270px;
+  max-width: calc(100vw - 40px);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.has-support-toast .pixkit-upload-loader,
+body:has(.support-toast-card.visible) .pixkit-upload-loader {
+  bottom: calc(var(--support-toast-height, 205px) + 36px);
+}
+
+.pixkit-upload-loader.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pixkit-upload-loader.fade-down {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.32s ease-out, transform 0.32s ease-out;
+}
+
+[data-theme="dark"] .pixkit-upload-loader {
+  background: rgba(26, 28, 22, 0.94);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+}
+
+.upload-loader-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.upload-loader-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.upload-loader-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--line-strong);
+  border-top-color: var(--lime);
+  border-radius: 50%;
+  animation: uploadSpin 0.75s linear infinite;
+  display: inline-block;
+}
+
+@keyframes uploadSpin {
+  to { transform: rotate(360deg); }
+}
+
+.upload-loader-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.upload-loader-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.upload-loader-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upload-loader-pct {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.upload-loader-track {
+  width: 100%;
+  height: 3.5px;
+  background: var(--line);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.upload-loader-bar {
+  height: 100%;
+  background: var(--lime);
+  border-radius: 9999px;
+  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.upload-loader-sub {
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toast-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lime);
+  display: inline-block;
+  flex-shrink: 0;
+  box-shadow: 0 0 6px var(--lime);
 }
 
 /* Recent Files Empty State */
