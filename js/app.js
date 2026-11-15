@@ -1712,7 +1712,8 @@ document.addEventListener('DOMContentLoaded', () => {
       recents = [];
     }
     recents = recents.filter(f => f.name && f.name !== 'mountain-view.jpg');
-    // Strictly limit to the 10 most recent files whose full image data is stored for resuming
+    // Sort newest first and strictly limit to the top 10 most recent files
+    recents.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     recents = recents.slice(0, 10);
 
     if (filterType === 'svg') {
@@ -2426,6 +2427,16 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    // Sort: active session first, then by timestamp descending (newest first)
+    allFilesList.sort((a, b) => {
+      if (a.isCurrent) return -1;
+      if (b.isCurrent) return 1;
+      return (b.timestamp || 0) - (a.timestamp || 0);
+    });
+
+    // Exactly the top 10 most recent files across the entire library can resume in editor
+    const top10GlobalNames = new Set(allFilesList.slice(0, 10).map(f => f.name));
+
     // Compute category counts
     const counts = {
       all: allFilesList.length,
@@ -2561,7 +2572,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sizeStr = formatFileSize(file.size);
         const resStr = file.width && file.height ? `${file.width} × ${file.height} px` : sizeStr;
         const catBadge = file.category === 'pdf' ? 'PDF' : (file.category === 'convert' ? 'Convert' : 'Edit');
-        const canResume = (index < 10);
+        const canResume = top10GlobalNames.has(file.name);
 
         html += `
           <div class="recent-file-card ${canResume ? '' : 'no-resume'}" style="--card-index: ${index};" onclick="${canResume ? `openRecentFromPage('${escapeDockHtml(file.name)}', false, event)` : `downloadRecentFileItem('${escapeDockHtml(file.name)}', event)`}">
