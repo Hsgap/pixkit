@@ -4,6 +4,11 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const engine = window.pixkitEngine;
+  if (engine && typeof engine.onChange === 'function') {
+    engine.onChange(() => {
+      updateHistoryUI();
+    });
+  }
   let currentView = 'home';
   let activeTool = null;
   let hasUserAddedImage = false;
@@ -894,6 +899,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (toolId === 'resize') {
       renderToCanvas('canvas-resize');
+      const rw = document.getElementById('resize-w');
+      const rh = document.getElementById('resize-h');
+      if (rw) rw.value = engine.activeCanvas.width;
+      if (rh) rh.value = engine.activeCanvas.height;
     } else if (toolId === 'crop') {
       renderToCanvas('canvas-crop');
       initCropOverlay();
@@ -948,8 +957,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Global History UI & Keybindings ---
   function updateHistoryUI() {
     const historyBar = document.getElementById('floating-history-bar');
+    const isEditTool = ['resize', 'crop', 'rotate', 'compress', 'adjust', 'filters', 'text', 'draw', 'blur'].includes(activeTool) || (currentView && ['tool-resize', 'tool-crop', 'tool-rotate', 'tool-compress', 'tool-adjust', 'tool-filters', 'tool-text', 'tool-draw', 'tool-blur'].includes(currentView));
+
     if (historyBar) {
-      if (hasUserAddedImage && currentView !== 'home') {
+      // Must ONLY be visible when inside an active editing tool workspace (tool-*)
+      // Must NEVER be visible on category screens (edit, convert, document), home, recent files, or settings!
+      if (isEditTool) {
         historyBar.classList.add('visible');
       } else {
         historyBar.classList.remove('visible');
@@ -960,31 +973,68 @@ document.addEventListener('DOMContentLoaded', () => {
     const redoBtn = document.getElementById('btn-global-redo');
     const badge = document.getElementById('history-status-badge');
 
-    if (undoBtn) undoBtn.disabled = !engine.canUndo();
-    if (redoBtn) redoBtn.disabled = !engine.canRedo();
+    const canUndo = (activeTool === 'draw' && typeof drawnShapes !== 'undefined' && drawnShapes.length > 0) || (engine && typeof engine.canUndo === 'function' && engine.canUndo());
+    const canRedo = engine && typeof engine.canRedo === 'function' && engine.canRedo();
 
-    if (badge && engine.historyStack[engine.historyIndex]) {
-      badge.textContent = engine.historyStack[engine.historyIndex].label;
+    if (undoBtn) {
+      undoBtn.disabled = !canUndo;
+      undoBtn.style.opacity = canUndo ? '1' : '0.4';
+      undoBtn.style.cursor = canUndo ? 'pointer' : 'not-allowed';
+    }
+    if (redoBtn) {
+      redoBtn.disabled = !canRedo;
+      redoBtn.style.opacity = canRedo ? '1' : '0.4';
+      redoBtn.style.cursor = canRedo ? 'pointer' : 'not-allowed';
+    }
+
+    if (badge) {
+      if (activeTool === 'draw' && typeof drawnShapes !== 'undefined' && drawnShapes.length > 0) {
+        badge.textContent = `${drawnShapes.length} shape${drawnShapes.length === 1 ? '' : 's'}`;
+      } else if (engine && engine.historyStack && engine.historyStack[engine.historyIndex]) {
+        badge.textContent = engine.historyStack[engine.historyIndex].label || 'Original';
+      } else {
+        badge.textContent = 'Original';
+      }
     }
   }
 
   window.handleGlobalUndo = function() {
-    if (engine.undo()) {
-      showToast('Undone edit');
+    // 1. If inside Draw tool and shapes are staged on canvas, undo last shape first
+    if (activeTool === 'draw' && typeof drawnShapes !== 'undefined' && drawnShapes.length > 0) {
+      drawnShapes.pop();
+      if (typeof redrawDrawCanvas === 'function') redrawDrawCanvas();
+      showToast('Undone shape drawing');
+      updateHistoryUI();
+      return;
+    }
+
+    // 2. Perform engine canvas undo
+    if (engine && engine.undo()) {
+      const currentLabel = engine.historyStack && engine.historyStack[engine.historyIndex]
+        ? engine.historyStack[engine.historyIndex].label
+        : 'Edit';
+      showToast(`Undone: ${currentLabel}`);
       syncMetadata();
       if (activeTool) initToolStage(activeTool);
       updateHistoryUI();
       persistCurrentSession();
+    } else {
+      showToast('No more edits to undo', 'info');
     }
   };
 
   window.handleGlobalRedo = function() {
-    if (engine.redo()) {
-      showToast('Redone edit');
+    if (engine && engine.redo()) {
+      const currentLabel = engine.historyStack && engine.historyStack[engine.historyIndex]
+        ? engine.historyStack[engine.historyIndex].label
+        : 'Edit';
+      showToast(`Redone: ${currentLabel}`);
       syncMetadata();
       if (activeTool) initToolStage(activeTool);
       updateHistoryUI();
       persistCurrentSession();
+    } else {
+      showToast('Nothing to redo', 'info');
     }
   };
 
@@ -2857,19 +2907,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Global Undo & Reset ---
   window.undoEdit = function() {
-    if (engine.undo()) {
-      showToast('Undone edit');
-      syncMetadata();
-      if (activeTool) initToolStage(activeTool);
-      persistCurrentSession();
-    }
+    window.handleGlobalUndo();
+  };
+
+  window.redoEdit = function() {
+    window.handleGlobalRedo();
   };
 
   window.resetEdit = function() {
+    if (activeTool === 'draw') {
+      drawnShapes = [];
+      if (typeof redrawDrawCanvas === 'function') redrawDrawCanvas();
+    }
     engine.resetToOriginal();
     showToast('Reset to original');
     syncMetadata();
     if (activeTool) initToolStage(activeTool);
+    updateHistoryUI();
     persistCurrentSession();
   };
 
@@ -2924,6 +2978,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast(`Resized to ${w} × ${h} px`);
     syncMetadata();
     renderToCanvas('canvas-resize');
+    updateHistoryUI();
 
     if (download) {
       await engine.download('jpg', 0.92);
@@ -3217,6 +3272,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderToCanvas('canvas-crop');
     cropBoxState = { x: 0.05, y: 0.05, w: 0.9, h: 0.9 };
     initCropOverlay();
+    updateHistoryUI();
 
     if (download) {
       await engine.download('jpg', 0.92);
@@ -3273,6 +3329,7 @@ document.addEventListener('DOMContentLoaded', () => {
     rotDeg = 0; fH = false; fV = false;
     syncMetadata();
     renderToCanvas('canvas-rotate');
+    updateHistoryUI();
 
     if (download) {
       await engine.download('jpg', 0.92);
@@ -3628,6 +3685,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('Applied adjustments');
     syncMetadata();
     renderToCanvas('canvas-adjust');
+    updateHistoryUI();
 
     if (download) {
       await engine.download('jpg', 0.92);
@@ -3672,6 +3730,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('Applied preset filter');
     syncMetadata();
     renderToCanvas('canvas-filters');
+    updateHistoryUI();
 
     if (download) {
       await engine.download('jpg', 0.92);
@@ -3847,6 +3906,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast(`Added text "${text}"`);
     syncMetadata();
     initTextCanvas();
+    updateHistoryUI();
 
     if (download) {
       await engine.download('jpg', 0.92);
@@ -4094,6 +4154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         drawnShapes.push(currentShapeBeingDrawn);
         currentShapeBeingDrawn = null;
         redrawDrawCanvas();
+        updateHistoryUI();
       }
     };
 
@@ -4140,6 +4201,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Committed drawings & shapes');
       drawnShapes = [];
       syncMetadata();
+      updateHistoryUI();
     }
     if (download) {
       await engine.download('jpg', 0.92);
