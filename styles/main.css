@@ -1173,6 +1173,43 @@ body.leaderboard-active .floating-dock-wrapper {
   object-fit: contain;
 }
 
+/* Stage Preview Smooth Image Transitions (Fade Down & Fade Up) */
+.stage-img-fade-down {
+  opacity: 0.15 !important;
+  transform: translateY(14px) scale(0.985) !important;
+  filter: blur(4px) !important;
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              filter 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  pointer-events: none !important;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.stage-img-fade-up-prep {
+  opacity: 0 !important;
+  transform: translateY(18px) scale(0.98) !important;
+  filter: blur(6px) !important;
+  transition: none !important;
+  pointer-events: none !important;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.stage-img-fade-up-active {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+  filter: blur(0px) !important;
+  transition: opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.38s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
 .stage-footer {
   border-top: 1px solid var(--line);
   padding: 12px 20px;

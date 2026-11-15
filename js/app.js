@@ -939,6 +939,71 @@ document.addEventListener('DOMContentLoaded', () => {
     handleRoute(targetRoute, true);
   });
 
+  // --- Stage Preview Smooth Image Transitions (Fade Down & Fade Up) ---
+  let stageTransitionTimer = null;
+
+  function getActivePreviewElements() {
+    const elements = new Set();
+    if (activeTool) {
+      const activeSection = document.getElementById(`tool-${activeTool}-view`);
+      if (activeSection) {
+        const wrappers = activeSection.querySelectorAll('.canvas-wrapper, #pdf-sheet-wrapper');
+        wrappers.forEach(el => elements.add(el));
+        if (elements.size === 0) {
+          const canvases = activeSection.querySelectorAll('.stage-viewport canvas');
+          canvases.forEach(c => elements.add(c.parentElement || c));
+        }
+      }
+    }
+    if (elements.size === 0) {
+      document.querySelectorAll('.view.active .stage-viewport .canvas-wrapper, .view.active #pdf-sheet-wrapper').forEach(el => elements.add(el));
+    }
+    if (elements.size === 0) {
+      document.querySelectorAll('.view.active .stage-viewport canvas').forEach(c => elements.add(c.parentElement || c));
+    }
+    if (currentView === 'home') {
+      const heroImg = document.getElementById('hero-preview-img');
+      if (heroImg) elements.add(heroImg);
+    }
+    return Array.from(elements);
+  }
+
+  function startPreviewFadeDown() {
+    clearTimeout(stageTransitionTimer);
+    const elements = getActivePreviewElements();
+    elements.forEach(el => {
+      el.classList.remove('stage-img-fade-up-prep', 'stage-img-fade-up-active');
+      el.classList.add('stage-img-fade-down');
+    });
+  }
+
+  function startPreviewFadeUp() {
+    clearTimeout(stageTransitionTimer);
+    const elements = getActivePreviewElements();
+    if (elements.length === 0) return;
+
+    elements.forEach(el => {
+      el.classList.remove('stage-img-fade-down');
+      el.classList.add('stage-img-fade-up-prep');
+      void el.offsetWidth;
+    });
+
+    requestAnimationFrame(() => {
+      elements.forEach(el => {
+        el.classList.add('stage-img-fade-up-active');
+      });
+
+      stageTransitionTimer = setTimeout(() => {
+        elements.forEach(el => {
+          el.classList.remove('stage-img-fade-up-prep', 'stage-img-fade-up-active', 'stage-img-fade-down');
+        });
+      }, 450);
+    });
+  }
+
+  window.startPreviewFadeDown = startPreviewFadeDown;
+  window.startPreviewFadeUp = startPreviewFadeUp;
+
   // --- Global File Upload Handling ---
   function handleImageFile(file) {
     if (!file || !file.type.startsWith('image/')) {
@@ -946,12 +1011,16 @@ document.addEventListener('DOMContentLoaded', () => {
       return Promise.reject('Invalid file');
     }
 
+    startPreviewFadeDown();
     showImageUploadProgress(file.name, 35, 'Reading image file...');
     const progressTimer = setTimeout(() => {
       showImageUploadProgress(file.name, 75, 'Rendering canvas stage...');
     }, 120);
 
-    return engine.loadFromFile(file).then(meta => {
+    return Promise.all([
+      engine.loadFromFile(file),
+      new Promise(r => setTimeout(r, 110))
+    ]).then(([meta]) => {
       clearTimeout(progressTimer);
       hasUserAddedImage = true;
       syncMetadata();
@@ -969,6 +1038,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window.showView('edit');
       }
       updateHistoryUI();
+
+      startPreviewFadeUp();
       return meta;
     }).catch(err => {
       clearTimeout(progressTimer);
@@ -976,6 +1047,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showToast('Failed to load image');
       const loader = document.getElementById('pixkit-upload-progress');
       if (loader) loader.classList.add('fade-down');
+      startPreviewFadeUp();
       throw err;
     });
   }
@@ -5439,24 +5511,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     showToast('Decoding HEIC photo in browser...');
+    startPreviewFadeDown();
     heicState.rawHeicBlob = file;
     heicState.rawHeicName = file.name;
     heicState.rawHeicSize = file.size;
     heicState.isHeicValid = true;
 
     try {
-      await engine.loadFromFile(file);
+      await Promise.all([
+        engine.loadFromFile(file),
+        new Promise(r => setTimeout(r, 110))
+      ]);
       hasUserAddedImage = true;
       syncMetadata();
       initConvertHeicStage();
       updateHistoryUI();
       persistCurrentSession();
+      startPreviewFadeUp();
       showToast(`Decoded ${file.name} (${engine.activeCanvas.width} × ${engine.activeCanvas.height} px)`);
     } catch (err) {
       console.error(err);
       heicState.isHeicValid = false;
       showToast('Failed to decode HEIC file. Please verify the file.');
       updateHeicButtonStates(false);
+      startPreviewFadeUp();
     }
   };
 
@@ -5797,6 +5875,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    startPreviewFadeDown();
     const reader = new FileReader();
     reader.onload = (event) => {
       const text = event.target.result;
@@ -5813,9 +5892,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       showToast(`Loaded vector ${file.name} (${dims.width} × ${dims.height} viewBox)`);
       initConvertSvgStage();
+      startPreviewFadeUp();
     };
     reader.onerror = () => {
       showToast('Failed to read SVG file');
+      startPreviewFadeUp();
     };
     reader.readAsText(file);
   };
