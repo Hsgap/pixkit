@@ -231,47 +231,12 @@
     .top-bar {
       position: absolute;
       top: 24px;
-      left: 36px;
       right: 36px;
       display: flex;
-      justify-content: space-between;
+      justify-content: flex-end;
       align-items: center;
       z-index: 10;
       pointer-events: auto;
-    }
-
-    /* Real-Time Astro Badge */
-    .time-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(12px);
-      border: 1px solid var(--line);
-      border-radius: 9999px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--muted);
-      box-shadow: var(--shadow-subtle);
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    [data-theme="dark"] .time-badge {
-      background: rgba(26, 28, 22, 0.8);
-    }
-
-    .time-badge .mode-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #059669;
-      box-shadow: 0 0 8px #059669;
-    }
-
-    [data-theme="dark"] .time-badge .mode-dot {
-      background: #34d399;
-      box-shadow: 0 0 8px #34d399;
     }
 
     .topbar-nav {
@@ -327,12 +292,7 @@
     @media (max-width: 768px) {
       .top-bar {
         top: 14px;
-        left: 16px;
         right: 16px;
-      }
-      .time-badge {
-        padding: 5px 10px;
-        font-size: 11px;
       }
       .btn-ghost-nav {
         display: none;
@@ -606,8 +566,14 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
-    .chip-emoji {
-      font-size: 13px;
+    .chip-icon {
+      font-size: 11px;
+      color: var(--muted);
+      transition: color 0.2s ease;
+    }
+
+    .hero-tool-chip:hover .chip-icon {
+      color: var(--ink);
     }
 
     .hero-privacy-strip {
@@ -1547,11 +1513,6 @@
 
   <!-- Top Floating Navigation Bar -->
   <header class="top-bar">
-    <div class="time-badge" id="astroBadge" title="Real-time Client-Side Status">
-      <span class="mode-dot"></span>
-      <span id="timeStatusText">100% In-Browser Private</span>
-    </div>
-
     <nav class="topbar-nav" aria-label="Main Navigation">
       <a href="#all-tools" class="btn-pill btn-ghost btn-ghost-nav">
         <i class="fa-solid fa-layer-group" style="font-size: 11px;"></i> All 21 Tools
@@ -1586,7 +1547,7 @@
       <!-- Primary Action Buttons Group -->
       <div class="hero-actions-group">
         <a href="studio" class="enter-studio-link" onclick="launchStudioWithSavedWork(event)">
-          Launch Studio ⚡ <i class="fa-solid fa-arrow-right" style="font-size: 11px;"></i>
+          Launch Studio <i class="fa-solid fa-arrow-right" style="font-size: 11px;"></i>
         </a>
         <a href="#all-tools" class="hero-explore-pill">
           Explore All 21 Tools <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
@@ -1597,16 +1558,16 @@
       <div class="hero-quick-tools" aria-label="Popular Tools Quick Launch">
         <span class="quick-tools-label">Quick Jump:</span>
         <a href="studio" onclick="launchStudioWithSavedWork(event, '#/document')" class="hero-tool-chip" title="Merge, Split &amp; Extract PDF">
-          <span class="chip-emoji">📄</span> Merge PDF
+          <i class="fa-solid fa-layer-group chip-icon"></i> Merge PDF
         </a>
         <a href="studio" onclick="launchStudioWithSavedWork(event, '#/tool/crop')" class="hero-tool-chip" title="Precision Crop &amp; Resize">
-          <span class="chip-emoji">✂️</span> Crop &amp; Resize
+          <i class="fa-solid fa-crop-simple chip-icon"></i> Crop &amp; Resize
         </a>
         <a href="studio" onclick="launchStudioWithSavedWork(event, '#/tool/compress')" class="hero-tool-chip" title="Compress Photos Privately">
-          <span class="chip-emoji">🗜️</span> Compress
+          <i class="fa-solid fa-compress chip-icon"></i> Compress
         </a>
         <a href="studio" onclick="launchStudioWithSavedWork(event, '#/convert')" class="hero-tool-chip" title="Convert Between Image Formats">
-          <span class="chip-emoji">🔄</span> Convert
+          <i class="fa-solid fa-repeat chip-icon"></i> Convert
         </a>
       </div>
 
