@@ -1539,7 +1539,7 @@ document.addEventListener('DOMContentLoaded', () => {
       event.stopPropagation();
     }
     if (isCurrent || (engine.filename === name && hasUserAddedImage && !engine.isSampleArtwork)) {
-      window.showView('edit');
+      if (!activeTool) window.showView('edit');
       showToast(`Resumed editing ${name}`);
       return;
     }
@@ -1551,7 +1551,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (blob) {
           const file = new File([blob], name, { type: record.fileType || 'image/png' });
           await handleImageFile(file);
-          window.showView('edit');
+          if (!activeTool) window.showView('edit');
           showToast(`Loaded ${name} into editor`);
           return;
         }
@@ -1564,7 +1564,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (session && session.filename === name && session.activeBlob) {
         const file = new File([session.activeBlob], name, { type: session.fileType || 'image/png' });
         await handleImageFile(file);
-        window.showView('edit');
+        if (!activeTool) window.showView('edit');
         showToast(`Loaded ${name} from storage`);
         return;
       }
@@ -1574,6 +1574,177 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast(`Select "${name}" to load high-resolution original`);
     window.triggerGlobalUpload();
   };
+
+  // --- Replace Image Dropdown & Quick Recent Picker ---
+  window.toggleReplaceDropdown = function(btn, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    const wrap = btn.closest('.replace-dropdown-wrap');
+    if (!wrap) return;
+    const isOpen = wrap.classList.contains('open');
+    window.closeAllReplaceDropdowns();
+    if (!isOpen) {
+      wrap.classList.add('open');
+    }
+  };
+
+  window.closeAllReplaceDropdowns = function() {
+    document.querySelectorAll('.replace-dropdown-wrap.open').forEach(w => w.classList.remove('open'));
+  };
+
+  window.closeRecentPickerModal = function() {
+    const modal = document.getElementById('recent-picker-modal');
+    if (modal) modal.classList.remove('active');
+  };
+
+  window.handleRecentPickerBackdropClick = function(event) {
+    if (event.target && event.target.id === 'recent-picker-modal') {
+      window.closeRecentPickerModal();
+    }
+  };
+
+  window.triggerActiveToolUpload = function() {
+    window.closeAllReplaceDropdowns();
+    let input = null;
+    if (activeTool) {
+      const view = document.getElementById(`tool-${activeTool}-view`);
+      if (view) {
+        input = view.querySelector('.replace-dropdown-menu input[type="file"]') || view.querySelector('input[type="file"]');
+      }
+    }
+    if (!input) {
+      input = document.querySelector('.global-file-picker');
+    }
+    if (input) {
+      input.click();
+    }
+  };
+
+  window.openRecentFilesPicker = async function(event, filterType) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    window.closeAllReplaceDropdowns();
+
+    const modal = document.getElementById('recent-picker-modal');
+    const container = document.getElementById('recent-picker-list');
+    if (!modal || !container) return;
+
+    let recents = [];
+    try {
+      recents = JSON.parse(localStorage.getItem('pixkit_recent_files') || '[]');
+    } catch (_) {
+      recents = [];
+    }
+    recents = recents.filter(f => f.name && f.name !== 'mountain-view.jpg');
+
+    if (filterType === 'svg') {
+      recents = recents.filter(f => (f.name || '').toLowerCase().endsWith('.svg') || (f.type || '').includes('svg'));
+    } else if (filterType === 'heic') {
+      recents = recents.filter(f => {
+        const ext = (f.name || '').toLowerCase().split('.').pop();
+        return ext === 'heic' || ext === 'heif' || (f.type || '').includes('heic') || (f.type || '').includes('heif');
+      });
+    }
+
+    if (recents.length === 0) {
+      container.innerHTML = `
+        <div class="recent-picker-empty">
+          <div class="recent-picker-empty-icon"><i class="fa-regular fa-images"></i></div>
+          <h4>No Recent Files Found</h4>
+          <p>${filterType ? `No recently opened ${filterType.toUpperCase()} files found.` : 'You have not opened or edited any images yet in this session.'}</p>
+          <button type="button" class="btn-primary" onclick="closeRecentPickerModal(); triggerActiveToolUpload();" style="display:inline-flex; align-items:center; gap:6px; padding:8px 18px; font-weight:600; font-size:12px;">
+            <i class="fa-solid fa-arrow-up-from-bracket"></i>
+            <span>Upload from Local</span>
+          </button>
+        </div>
+      `;
+    } else {
+      let html = '<div class="recent-picker-grid">';
+      recents.forEach(file => {
+        const isCur = (engine && engine.filename === file.name && hasUserAddedImage && !engine.isSampleArtwork);
+        const ext = (file.name.split('.').pop() || 'IMG').toUpperCase();
+        const dims = (file.width && file.height) ? `${file.width} × ${file.height} px` : (file.size ? formatFileSize(file.size) : '');
+        const timeStr = formatDockTimeAgo(file.timestamp || Date.now());
+
+        html += `
+          <div class="recent-picker-card ${isCur ? 'is-current' : ''}" onclick="selectRecentForTool('${escapeDockHtml(file.name)}')">
+            ${file.previewUrl ? `
+              <img class="recent-picker-thumb" src="${file.previewUrl}" alt="${escapeDockHtml(file.name)}">
+            ` : `
+              <div class="recent-picker-thumb-placeholder"><i class="fa-regular fa-image"></i></div>
+            `}
+            <div class="recent-picker-info">
+              <div class="recent-picker-name" title="${escapeDockHtml(file.name)}">${escapeDockHtml(file.name)}</div>
+              <div class="recent-picker-meta">
+                <span class="recent-picker-badge">${ext}</span>
+                ${isCur ? '<span class="recent-picker-current-tag">Active</span>' : ''}
+                <span>${dims}</span>
+                <span>· ${timeStr}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    modal.classList.add('active');
+  };
+
+  window.selectRecentForTool = async function(name) {
+    window.closeRecentPickerModal();
+    if (engine && engine.filename === name && hasUserAddedImage && !engine.isSampleArtwork) {
+      showToast(`"${name}" is already loaded in the workspace`);
+      return;
+    }
+
+    showImageUploadProgress(name, 35, 'Loading from recents...');
+
+    // 1. Try high-res blob from IndexedDB PixKitStorage
+    try {
+      if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.getRecentFile === 'function') {
+        const record = await PixKitStorage.getRecentFile(name);
+        const blob = record ? (record.activeBlob || record.blob) : null;
+        if (blob) {
+          const file = new File([blob], name, { type: record.fileType || blob.type || 'image/png' });
+          await handleImageFile(file);
+          showToast(`Loaded "${name}" into workspace`);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Recent picker load error:', err);
+    }
+
+    // 2. Try session fallback
+    try {
+      if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.loadSession === 'function') {
+        const session = await PixKitStorage.loadSession();
+        if (session && session.filename === name && session.activeBlob) {
+          const file = new File([session.activeBlob], name, { type: session.fileType || 'image/png' });
+          await handleImageFile(file);
+          showToast(`Loaded "${name}" from storage`);
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // 3. Prompt user if memory was purged
+    showToast(`High-resolution cache purged for "${name}". Please choose the file from disk.`);
+    window.triggerActiveToolUpload();
+  };
+
+  // Close dropdown on outside click
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.replace-dropdown-wrap')) {
+      window.closeAllReplaceDropdowns();
+    }
+  });
 
   window.deleteRecentFileItem = function(name, event) {
     if (event) {
@@ -2952,6 +3123,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Escape: Context-aware Back / Dismiss
     if (e.key === 'Escape') {
       hideSequenceHud();
+      window.closeAllReplaceDropdowns();
+      const recentPicker = document.getElementById('recent-picker-modal');
+      if (recentPicker && recentPicker.classList.contains('active')) {
+        e.preventDefault();
+        window.closeRecentPickerModal();
+        return;
+      }
       const modal = document.getElementById('shortcuts-modal');
       if (modal && modal.classList.contains('active')) {
         e.preventDefault();

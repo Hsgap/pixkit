@@ -104,7 +104,7 @@
     } catch (_) {}
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles/main.css?v=8.7">
+  <link rel="stylesheet" href="styles/main.css?v=8.8">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FBFBF8">
 </head>
@@ -1158,10 +1158,29 @@
                   <small class="img-meta-dims">1600 × 1200 px</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;">
-                Replace image
-                <input type="file" accept="image/*" class="global-file-picker" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace image</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event)">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously edited images</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select an image from device</small>
+                    </div>
+                    <input type="file" accept="image/*" class="global-file-picker" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1268,10 +1287,29 @@
                   <small id="crop-status-label">Crop Selection</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;">
-                Replace image
-                <input type="file" accept="image/*" class="global-file-picker" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace image</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event)">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously edited images</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select an image from device</small>
+                    </div>
+                    <input type="file" accept="image/*" class="global-file-picker" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1356,10 +1394,29 @@
                   <small id="rotate-angle-info">Angle: 0°</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;">
-                Replace image
-                <input type="file" accept="image/*" class="global-file-picker" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace image</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event)">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously edited images</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select an image from device</small>
+                    </div>
+                    <input type="file" accept="image/*" class="global-file-picker" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1428,10 +1485,29 @@
                   <small id="compress-stat">Auto-calibrated optimal compression</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;">
-                Replace image
-                <input type="file" accept="image/*" class="global-file-picker" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace image</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event)">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously edited images</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select an image from device</small>
+                    </div>
+                    <input type="file" accept="image/*" class="global-file-picker" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1610,10 +1686,29 @@
                   <small>Real-time Tone Sliders</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;">
-                Replace image
-                <input type="file" accept="image/*" class="global-file-picker" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace image</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event)">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously edited images</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select an image from device</small>
+                    </div>
+                    <input type="file" accept="image/*" class="global-file-picker" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1697,10 +1792,29 @@
                   <small>Preset Looks</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;">
-                Replace image
-                <input type="file" accept="image/*" class="global-file-picker" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace image</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event)">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously edited images</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select an image from device</small>
+                    </div>
+                    <input type="file" accept="image/*" class="global-file-picker" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1779,10 +1893,29 @@
                   <small id="text-pos-readout">Drag text with cursor</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;">
-                Replace image
-                <input type="file" accept="image/*" class="global-file-picker" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace image</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event)">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously edited images</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select an image from device</small>
+                    </div>
+                    <input type="file" accept="image/*" class="global-file-picker" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1876,10 +2009,29 @@
                   <small id="shapes-count-label">0 shapes on canvas</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;">
-                Replace image
-                <input type="file" accept="image/*" class="global-file-picker" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace image</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event)">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously edited images</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select an image from device</small>
+                    </div>
+                    <input type="file" accept="image/*" class="global-file-picker" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1974,10 +2126,29 @@
                   <small id="meta-blur">Ready · Drag guide or paint to blur</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;">
-                Replace image
-                <input type="file" accept="image/*" class="global-file-picker" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace image</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event)">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously edited images</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select an image from device</small>
+                    </div>
+                    <input type="file" accept="image/*" class="global-file-picker" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2109,10 +2280,29 @@
                   <small class="img-meta-dims" id="meta-convert-format">1600 × 1200 px</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;">
-                Replace image
-                <input type="file" accept="image/*" class="global-file-picker" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace image</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event)">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously edited images</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select an image from device</small>
+                    </div>
+                    <input type="file" accept="image/*" class="global-file-picker" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2248,10 +2438,29 @@
                   <small class="img-meta-dims" id="meta-convert-heic">Ready · Upload an iPhone HEIC photo</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;">
-                Select HEIC Photo
-                <input type="file" id="picker-convert-heic" accept=".heic,.heif,image/heic,image/heif,image/*" onchange="handleHeicFileSelect(event)" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace image</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event, 'heic')">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously opened photos</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select .HEIC / .HEIF from device</small>
+                    </div>
+                    <input type="file" id="picker-convert-heic" accept=".heic,.heif,image/heic,image/heif,image/*" onchange="handleHeicFileSelect(event)" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2378,10 +2587,29 @@
                   <small class="img-meta-dims" id="meta-convert-svg">Ready · Select SVG resolution scale</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;">
-                Select SVG File
-                <input type="file" id="picker-convert-svg" accept=".svg,image/svg+xml" onchange="handleSvgFileSelect(event)" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace image</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event, 'svg')">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously opened SVGs</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select .SVG vector from device</small>
+                    </div>
+                    <input type="file" id="picker-convert-svg" accept=".svg,image/svg+xml" onchange="handleSvgFileSelect(event)" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2625,10 +2853,29 @@
                   <small class="img-meta-dims" id="meta-convert-ico">Ready · Multi-resolution ICO generator</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;">
-                Replace image
-                <input type="file" accept="image/*" class="global-file-picker" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace image</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event)">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously edited images</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select an image from device</small>
+                    </div>
+                    <input type="file" accept="image/*" class="global-file-picker" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2810,10 +3057,29 @@
                   <small class="img-meta-dims" id="meta-convert-base64">Ready · Base64 encoder</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;">
-                Replace image
-                <input type="file" accept="image/*" class="global-file-picker" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace image</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event)">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously edited images</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select an image from device</small>
+                    </div>
+                    <input type="file" accept="image/*" class="global-file-picker" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2956,10 +3222,29 @@
                   <small class="img-meta-dims" id="meta-convert-pdf">document.pdf · A4 Portrait · 1 Page</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;">
-                Replace image
-                <input type="file" accept="image/*" class="global-file-picker" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace image</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event)">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously edited images</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select an image from device</small>
+                    </div>
+                    <input type="file" accept="image/*" class="global-file-picker" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -4070,6 +4355,27 @@
         </button>
       </div>
 
+      <!-- Quick Recent Files Picker Modal -->
+      <div id="recent-picker-modal" class="modal-backdrop" onclick="handleRecentPickerBackdropClick(event)">
+        <div class="modal-dialog recent-picker-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-recent-picker-title">
+          <div class="modal-header">
+            <div class="modal-title-group">
+              <span class="modal-icon" style="display:flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:8px; background:var(--soft); color:var(--ink); font-size:16px;">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+              </span>
+              <div>
+                <h3 id="modal-recent-picker-title">Choose from Recent Files</h3>
+                <p>Select a previously edited image to load into the workspace</p>
+              </div>
+            </div>
+            <button class="modal-close-btn" onclick="closeRecentPickerModal()" title="Close (Esc)" aria-label="Close dialog">✕</button>
+          </div>
+          <div class="modal-body recent-picker-body" id="recent-picker-list">
+            <!-- Dynamically populated via JS -->
+          </div>
+        </div>
+      </div>
+
       <!-- Keyboard Shortcuts Modal Dialog -->
       <div id="shortcuts-modal" class="modal-backdrop" onclick="handleShortcutsBackdropClick(event)">
         <div class="modal-dialog shortcuts-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-shortcuts-title">
@@ -4510,7 +4816,7 @@
   <!-- PixKit Remote Connector to admin.pixkit.site -->
   <script src="js/pixkit-remote.js"></script>
   <script src="js/engine.js?v=2.5"></script>
-  <script src="js/app.js?v=8.7"></script>
+  <script src="js/app.js?v=8.8"></script>
   <script src="js/support.js"></script>
   <script src="js/leaderboard.js"></script>
 </body>

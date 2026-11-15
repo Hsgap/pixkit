@@ -1183,6 +1183,8 @@ body.leaderboard-active .floating-dock-wrapper {
   color: var(--muted);
   background: var(--topbar-bg);
   gap: 14px;
+  position: relative;
+  z-index: 15;
 }
 
 .file-info {
@@ -1215,6 +1217,119 @@ body.leaderboard-active .floating-dock-wrapper {
 .action-btn-sm:hover {
   background: var(--soft);
   border-color: var(--line-strong);
+}
+
+/* Replace Image Dropdown */
+.replace-dropdown-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.replace-dropdown-btn {
+  cursor: pointer;
+  user-select: none;
+}
+
+.replace-dropdown-btn .dropdown-chevron {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  color: var(--muted);
+  margin-left: 2px;
+}
+
+.replace-dropdown-wrap.open .replace-dropdown-btn {
+  background: var(--soft);
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.replace-dropdown-wrap.open .replace-dropdown-btn .dropdown-chevron {
+  transform: rotate(180deg);
+  color: var(--ink);
+}
+
+.replace-dropdown-menu {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: 0;
+  width: 236px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14), 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 6px;
+  z-index: 120;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(6px) scale(0.97);
+  transform-origin: bottom right;
+  transition: opacity 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.replace-dropdown-wrap.open .replace-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.replace-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  color: var(--ink);
+  width: 100%;
+  font-family: inherit;
+  user-select: none;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.replace-menu-item:hover {
+  background: var(--soft);
+}
+
+.replace-menu-item > i {
+  font-size: 13px;
+  color: var(--muted);
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.replace-menu-item:hover > i {
+  color: var(--ink);
+}
+
+.replace-item-texts {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.replace-item-texts strong {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.replace-item-texts small {
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 1px;
 }
 
 /* Settings Panels */
@@ -2573,6 +2688,170 @@ kbd {
   padding: 14px 22px;
   border-top: 1px solid var(--line);
   background: var(--white);
+}
+
+/* Quick Recent File Picker Modal */
+.recent-picker-dialog {
+  max-width: 580px;
+  max-height: 82vh;
+}
+
+.recent-picker-body {
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+  max-height: calc(82vh - 90px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.recent-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 560px) {
+  .recent-picker-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.recent-picker-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+  user-select: none;
+}
+
+.recent-picker-card:hover {
+  background: var(--soft);
+  border-color: var(--ink);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.recent-picker-card.is-current {
+  border-color: var(--accent-lime, #d7f36a);
+  background: rgba(215, 243, 106, 0.06);
+}
+
+.recent-picker-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--stage);
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.recent-picker-thumb-placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--stage);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.recent-picker-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.recent-picker-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 2px;
+}
+
+.recent-picker-meta {
+  font-size: 10.5px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.recent-picker-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--soft);
+  color: var(--muted);
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+}
+
+.recent-picker-current-tag {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--accent-lime, #d7f36a);
+  color: #141512;
+  text-transform: uppercase;
+}
+
+.recent-picker-empty {
+  padding: 36px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.recent-picker-empty-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.recent-picker-empty h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0 0 4px 0;
+}
+
+.recent-picker-empty p {
+  font-size: 12px;
+  color: var(--muted);
+  max-width: 320px;
+  margin: 0 0 16px 0;
+  line-height: 1.45;
 }
 
 /* Floating Sequence HUD Pill */
