@@ -1712,6 +1712,8 @@ document.addEventListener('DOMContentLoaded', () => {
       recents = [];
     }
     recents = recents.filter(f => f.name && f.name !== 'mountain-view.jpg');
+    // Strictly limit to the 10 most recent files whose full image data is stored for resuming
+    recents = recents.slice(0, 10);
 
     if (filterType === 'svg') {
       recents = recents.filter(f => (f.name || '').toLowerCase().endsWith('.svg') || (f.type || '').includes('svg'));
@@ -2554,7 +2556,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const canResume = (index < 10);
 
         html += `
-          <div class="recent-file-card" style="--card-index: ${index};" onclick="openRecentFromPage('${escapeDockHtml(file.name)}', false, event)">
+          <div class="recent-file-card ${canResume ? '' : 'no-resume'}" style="--card-index: ${index};" onclick="${canResume ? `openRecentFromPage('${escapeDockHtml(file.name)}', false, event)` : `downloadRecentFileItem('${escapeDockHtml(file.name)}', event)`}">
             <div class="recent-card-top">
               <div class="recent-card-badges">
                 <span class="recent-fmt-badge">${fmtLabel}</span>
