@@ -324,6 +324,25 @@
       box-shadow: 0 6px 18px rgba(34, 36, 31, 0.18);
     }
 
+    @media (max-width: 768px) {
+      .top-bar {
+        top: 14px;
+        left: 16px;
+        right: 16px;
+      }
+      .time-badge {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+      .btn-ghost-nav {
+        display: none;
+      }
+      .btn-pill {
+        padding: 8px 14px;
+        font-size: 12px;
+      }
+    }
+
     /* Center Hero Brand Display */
     .hero-stage {
       position: relative;
@@ -478,20 +497,151 @@
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      padding: 11px 24px;
+      padding: 12px 28px;
       background: var(--ink);
       color: var(--paper);
-      font-size: 13.5px;
-      font-weight: 600;
+      font-size: 14px;
+      font-weight: 700;
       border-radius: 9999px;
       text-decoration: none;
-      box-shadow: 0 4px 18px rgba(34, 36, 31, 0.12);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      border: 1px solid var(--ink);
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .enter-studio-link:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(34, 36, 31, 0.2);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.24), 0 0 16px rgba(215, 243, 106, 0.3);
+    }
+
+    .hero-actions-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .hero-explore-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 22px;
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      font-size: 13.5px;
+      font-weight: 600;
+      border-radius: 9999px;
+      text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--shadow-subtle);
+    }
+
+    [data-theme="dark"] .hero-explore-pill {
+      background: rgba(26, 28, 22, 0.7);
+    }
+
+    .hero-explore-pill:hover {
+      background: var(--soft);
+      border-color: var(--line-strong);
+      transform: translateY(-2px);
+      color: var(--ink);
+    }
+
+    .hero-quick-tools {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+      padding: 6px 14px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid var(--line);
+      border-radius: 9999px;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: var(--shadow-subtle);
+      max-width: 95vw;
+    }
+
+    [data-theme="dark"] .hero-quick-tools {
+      background: rgba(26, 28, 22, 0.55);
+    }
+
+    .quick-tools-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 0 4px;
+    }
+
+    .hero-tool-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink);
+      background: var(--paper);
+      border: 1px solid var(--line);
+      text-decoration: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .hero-tool-chip:hover {
+      border-color: var(--ink);
+      background: var(--white);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .chip-emoji {
+      font-size: 13px;
+    }
+
+    .hero-privacy-strip {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      opacity: 0.9;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .privacy-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .privacy-item i {
+      font-size: 11px;
+      color: #10b981;
+    }
+
+    [data-theme="dark"] .privacy-item i {
+      color: var(--lime);
+    }
+
+    .privacy-dot {
+      font-size: 10px;
+      opacity: 0.5;
     }
 
     /* Floating Controls Bar at Bottom */
@@ -1395,6 +1545,23 @@
   <!-- Ambient Light Vignette -->
   <div class="bg-ambient-vignette"></div>
 
+  <!-- Top Floating Navigation Bar -->
+  <header class="top-bar">
+    <div class="time-badge" id="astroBadge" title="Real-time Client-Side Status">
+      <span class="mode-dot"></span>
+      <span id="timeStatusText">100% In-Browser Private</span>
+    </div>
+
+    <nav class="topbar-nav" aria-label="Main Navigation">
+      <a href="#all-tools" class="btn-pill btn-ghost btn-ghost-nav">
+        <i class="fa-solid fa-layer-group" style="font-size: 11px;"></i> All 21 Tools
+      </a>
+      <a href="studio" class="btn-pill btn-primary" onclick="launchStudioWithSavedWork(event)">
+        Open Studio <i class="fa-solid fa-arrow-right" style="font-size: 11px;"></i>
+      </a>
+    </nav>
+  </header>
+
   <!-- Center Stage Brand -->
   <main class="hero-stage">
     <div class="center-brand-wrap" id="centerBrand">
@@ -1411,19 +1578,46 @@
 
       <!-- Pure Text Encrypted Animation -->
       <div class="encrypted-text-container" id="encryptedContainer" title="Hover or click to decrypt">
-        <span class="encrypted-text" id="encryptedText" data-text="Your private in-browser image studio">
-          Your private in-browser image studio
+        <span class="encrypted-text" id="encryptedText" data-text="Your private in-browser image studio &amp; PDF toolkit">
+          Your private in-browser image studio &amp; PDF toolkit
         </span>
       </div>
       
-      <a href="studio" class="enter-studio-link" onclick="launchStudioWithSavedWork(event)">
-        Launch Studio <i class="fa-solid fa-arrow-right" style="font-size: 11px;"></i>
-      </a>
+      <!-- Primary Action Buttons Group -->
+      <div class="hero-actions-group">
+        <a href="studio" class="enter-studio-link" onclick="launchStudioWithSavedWork(event)">
+          Launch Studio ⚡ <i class="fa-solid fa-arrow-right" style="font-size: 11px;"></i>
+        </a>
+        <a href="#all-tools" class="hero-explore-pill">
+          Explore All 21 Tools <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+        </a>
+      </div>
 
-      <!-- Smooth Scroll Button to Explore All Tools -->
-      <a href="#all-tools" class="scroll-down-hint">
-        Explore All 21 Free Tools <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
-      </a>
+      <!-- Quick Tool Access Chips (High-Converting Instant Jumps) -->
+      <div class="hero-quick-tools" aria-label="Popular Tools Quick Launch">
+        <span class="quick-tools-label">Quick Jump:</span>
+        <a href="studio" onclick="launchStudioWithSavedWork(event, '#/document')" class="hero-tool-chip" title="Merge, Split &amp; Extract PDF">
+          <span class="chip-emoji">📄</span> Merge PDF
+        </a>
+        <a href="studio" onclick="launchStudioWithSavedWork(event, '#/tool/crop')" class="hero-tool-chip" title="Precision Crop &amp; Resize">
+          <span class="chip-emoji">✂️</span> Crop &amp; Resize
+        </a>
+        <a href="studio" onclick="launchStudioWithSavedWork(event, '#/tool/compress')" class="hero-tool-chip" title="Compress Photos Privately">
+          <span class="chip-emoji">🗜️</span> Compress
+        </a>
+        <a href="studio" onclick="launchStudioWithSavedWork(event, '#/convert')" class="hero-tool-chip" title="Convert Between Image Formats">
+          <span class="chip-emoji">🔄</span> Convert
+        </a>
+      </div>
+
+      <!-- Micro Trust & Privacy Assurance -->
+      <div class="hero-privacy-strip">
+        <span class="privacy-item"><i class="fa-solid fa-shield-halved"></i> 100% In-Browser</span>
+        <span class="privacy-dot">•</span>
+        <span class="privacy-item"><i class="fa-solid fa-cloud-slash"></i> Zero Cloud Uploads</span>
+        <span class="privacy-dot">•</span>
+        <span class="privacy-item"><i class="fa-solid fa-bolt"></i> No Sign-Up Needed</span>
+      </div>
     </div>
   </main>
 
