@@ -1412,14 +1412,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (picker) picker.click();
   };
 
-  window.recordRecentFile = function(name, size, type, width, height, category) {
+  window.recordRecentFile = function(name, size, type, width, height, category, customBlob, customPreviewUrl, originTool) {
     if (!name || name === 'mountain-view.jpg') return;
     if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
       if (!window.PixKitRemote.isFeatureEnabled('community', 'recentFiles')) return;
     }
     try {
-      let previewUrl = null;
-      if (engine && engine.activeCanvas && engine.activeCanvas.width > 0 && !engine.isSampleArtwork) {
+      let previewUrl = customPreviewUrl || null;
+      if (!previewUrl && engine && engine.activeCanvas && engine.activeCanvas.width > 0 && !engine.isSampleArtwork && engine.filename === name) {
         try {
           const thumbCanvas = document.createElement('canvas');
           const maxDim = 96;
@@ -1440,22 +1440,41 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (_) {}
       }
 
+      const fileCategory = category || getFileCategory({ name, type });
+      const toolOrigin = originTool || (fileCategory === 'pdf' ? (activeTool || 'doc-pdf-to-images') : (activeTool || null));
+
       let recents = JSON.parse(localStorage.getItem('pixkit_recent_files') || '[]');
       recents = recents.filter(f => f.name !== name && f.name !== 'mountain-view.jpg');
       recents.unshift({
         name,
-        size: size || 0,
-        type: type || 'image/png',
+        size: size || (customBlob ? customBlob.size : 0),
+        type: type || (customBlob ? customBlob.type : (fileCategory === 'pdf' ? 'application/pdf' : 'image/png')),
         width: width || (engine?.activeCanvas?.width || 0),
         height: height || (engine?.activeCanvas?.height || 0),
         previewUrl: previewUrl || null,
-        category: category || getFileCategory({ name, type }),
+        category: fileCategory,
+        originTool: toolOrigin,
         timestamp: Date.now()
       });
       if (recents.length > 24) recents = recents.slice(0, 24);
       localStorage.setItem('pixkit_recent_files', JSON.stringify(recents));
 
-      if (engine && engine.activeCanvas && engine.activeCanvas.width > 0 && !engine.isSampleArtwork && engine.filename === name) {
+      const top10 = recents.slice(0, 10).map(f => f.name);
+
+      if (customBlob && typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.saveRecentFile === 'function') {
+        PixKitStorage.saveRecentFile(name, {
+          filename: name,
+          fileType: type || customBlob.type || (fileCategory === 'pdf' ? 'application/pdf' : 'image/png'),
+          fileSize: size || customBlob.size || 0,
+          activeBlob: customBlob,
+          width: width || 0,
+          height: height || 0,
+          category: fileCategory,
+          originTool: toolOrigin,
+          savedAt: Date.now()
+        });
+        PixKitStorage.pruneRecentFiles(top10);
+      } else if (engine && engine.activeCanvas && engine.activeCanvas.width > 0 && !engine.isSampleArtwork && engine.filename === name) {
         engine.activeCanvas.toBlob(blob => {
           if (blob && typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.saveRecentFile === 'function') {
             PixKitStorage.saveRecentFile(name, {
@@ -1465,12 +1484,17 @@ document.addEventListener('DOMContentLoaded', () => {
               activeBlob: blob,
               width: width || engine.activeCanvas.width,
               height: height || engine.activeCanvas.height,
+              category: fileCategory,
+              originTool: toolOrigin,
               savedAt: Date.now()
             });
-            const top10 = recents.slice(0, 10).map(f => f.name);
             PixKitStorage.pruneRecentFiles(top10);
           }
         }, 'image/png');
+      }
+
+      if (typeof currentView !== 'undefined' && currentView === 'recent') {
+        window.renderRecentFilesPage();
       }
     } catch (e) {}
   };
@@ -1610,7 +1634,8 @@ document.addEventListener('DOMContentLoaded', () => {
       event.preventDefault();
       event.stopPropagation();
     }
-    if (isCurrent || (engine.filename === name && hasUserAddedImage && !engine.isSampleArtwork)) {
+    const isPdf = name.toLowerCase().endsWith('.pdf');
+    if (!isPdf && (isCurrent || (engine.filename === name && hasUserAddedImage && !engine.isSampleArtwork))) {
       if (!activeTool) window.showView('edit');
       showToast(`Resumed editing ${name}`);
       return;
@@ -1621,11 +1646,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const record = await PixKitStorage.getRecentFile(name);
         const blob = record ? (record.activeBlob || record.blob) : null;
         if (blob) {
-          const file = new File([blob], name, { type: record.fileType || 'image/png' });
-          await handleImageFile(file);
-          if (!activeTool) window.showView('edit');
-          showToast(`Loaded ${name} into editor`);
-          return;
+          const recCat = record.category || (isPdf ? 'pdf' : 'edit');
+          const isPdfFile = isPdf || recCat === 'pdf' || (record.fileType && record.fileType.includes('pdf'));
+          const file = new File([blob], name, { type: record.fileType || (isPdfFile ? 'application/pdf' : 'image/png') });
+
+          if (isPdfFile) {
+            let targetTool = record.originTool || 'doc-pdf-to-images';
+            if (targetTool === 'convert-pdf') targetTool = 'doc-pdf-to-images';
+            window.openToolWorkspace(targetTool);
+            setTimeout(() => {
+              if (targetTool === 'doc-merge-pdf' && window.handlePdfMergeFiles) {
+                window.handlePdfMergeFiles([file]);
+              } else if (targetTool === 'doc-split-pdf' && window.handlePdfSplitFile) {
+                window.handlePdfSplitFile(file);
+              } else if (targetTool === 'doc-compress-pdf' && window.handlePdfCompressFile) {
+                window.handlePdfCompressFile(file);
+              } else if (targetTool === 'doc-rotate-pdf' && window.handlePdfRotateFile) {
+                window.handlePdfRotateFile(file);
+              } else if (targetTool === 'doc-delete-pdf' && window.handlePdfDeleteFile) {
+                window.handlePdfDeleteFile(file);
+              } else if (window.handlePdfFileUpload) {
+                window.handlePdfFileUpload(file);
+              }
+            }, 120);
+            showToast(`Loaded ${name} into PDF tools`);
+            return;
+          } else {
+            await handleImageFile(file);
+            if (!activeTool) window.showView('edit');
+            showToast(`Loaded ${name} into editor`);
+            return;
+          }
         }
       }
     } catch (_) {}
@@ -1634,16 +1685,26 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const session = await PixKitStorage.loadSession();
       if (session && session.filename === name && session.activeBlob) {
-        const file = new File([session.activeBlob], name, { type: session.fileType || 'image/png' });
-        await handleImageFile(file);
-        if (!activeTool) window.showView('edit');
-        showToast(`Loaded ${name} from storage`);
-        return;
+        const isPdfFile = isPdf || (session.fileType && session.fileType.includes('pdf'));
+        const file = new File([session.activeBlob], name, { type: session.fileType || (isPdfFile ? 'application/pdf' : 'image/png') });
+        if (isPdfFile) {
+          window.openToolWorkspace('doc-pdf-to-images');
+          setTimeout(() => {
+            if (window.handlePdfFileUpload) window.handlePdfFileUpload(file);
+          }, 120);
+          showToast(`Loaded ${name} into PDF tools`);
+          return;
+        } else {
+          await handleImageFile(file);
+          if (!activeTool) window.showView('edit');
+          showToast(`Loaded ${name} from storage`);
+          return;
+        }
       }
     } catch (_) {}
 
     // 3. Prompt user if memory purged
-    showToast(`Select "${name}" to load high-resolution original`);
+    showToast(`Select "${name}" to load original file`);
     window.triggerGlobalUpload();
   };
 
@@ -1723,6 +1784,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const ext = (f.name || '').toLowerCase().split('.').pop();
         return ext === 'heic' || ext === 'heif' || (f.type || '').includes('heic') || (f.type || '').includes('heif');
       });
+    } else if (filterType === 'pdf') {
+      recents = recents.filter(f => (f.name || '').toLowerCase().endsWith('.pdf') || (f.type || '').includes('pdf') || f.category === 'pdf');
     }
 
     if (recents.length === 0) {
@@ -1741,21 +1804,27 @@ document.addEventListener('DOMContentLoaded', () => {
       let html = '<div class="recent-picker-grid">';
       recents.forEach(file => {
         const isCur = (engine && engine.filename === file.name && hasUserAddedImage && !engine.isSampleArtwork);
-        const ext = (file.name.split('.').pop() || 'IMG').toUpperCase();
-        const dims = (file.width && file.height) ? `${file.width} × ${file.height} px` : (file.size ? formatFileSize(file.size) : '');
+        const isPdfDoc = (file.category === 'pdf') || (file.name && file.name.toLowerCase().endsWith('.pdf'));
+        const ext = isPdfDoc ? 'PDF' : (file.name.split('.').pop() || 'IMG').toUpperCase();
+        const dims = isPdfDoc ? 'PDF Document' : ((file.width && file.height) ? `${file.width} × ${file.height} px` : (file.size ? formatFileSize(file.size) : ''));
         const timeStr = formatDockTimeAgo(file.timestamp || Date.now());
 
         html += `
           <div class="recent-picker-card ${isCur ? 'is-current' : ''}" onclick="selectRecentForTool('${escapeDockHtml(file.name)}')">
             ${file.previewUrl ? `
               <img class="recent-picker-thumb" src="${file.previewUrl}" alt="${escapeDockHtml(file.name)}">
+            ` : (isPdfDoc ? `
+              <div class="recent-picker-pdf-tile">
+                <i class="fa-solid fa-file-pdf"></i>
+                <span>PDF</span>
+              </div>
             ` : `
               <div class="recent-picker-thumb-placeholder"><i class="fa-regular fa-image"></i></div>
-            `}
+            `)}
             <div class="recent-picker-info">
               <div class="recent-picker-name" title="${escapeDockHtml(file.name)}">${escapeDockHtml(file.name)}</div>
               <div class="recent-picker-meta">
-                <span class="recent-picker-badge">${ext}</span>
+                <span class="recent-picker-badge ${isPdfDoc ? 'recent-fmt-badge-pdf' : ''}">${ext}</span>
                 ${isCur ? '<span class="recent-picker-current-tag">Active</span>' : ''}
                 <span>${dims}</span>
                 <span>· ${timeStr}</span>
@@ -1773,7 +1842,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.selectRecentForTool = async function(name) {
     window.closeRecentPickerModal();
-    if (engine && engine.filename === name && hasUserAddedImage && !engine.isSampleArtwork) {
+    const isPdf = name.toLowerCase().endsWith('.pdf');
+    if (!isPdf && engine && engine.filename === name && hasUserAddedImage && !engine.isSampleArtwork) {
       showToast(`"${name}" is already loaded in the workspace`);
       return;
     }
@@ -1786,10 +1856,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const record = await PixKitStorage.getRecentFile(name);
         const blob = record ? (record.activeBlob || record.blob) : null;
         if (blob) {
-          const file = new File([blob], name, { type: record.fileType || blob.type || 'image/png' });
-          await handleImageFile(file);
-          showToast(`Loaded "${name}" into workspace`);
-          return;
+          const isPdfFile = isPdf || (record.category === 'pdf') || (record.fileType && record.fileType.includes('pdf'));
+          const file = new File([blob], name, { type: record.fileType || blob.type || (isPdfFile ? 'application/pdf' : 'image/png') });
+
+          if (isPdfFile) {
+            if (window.handlePdfMergeFiles && activeTool === 'doc-merge-pdf') {
+              await window.handlePdfMergeFiles([file]);
+            } else if (window.handlePdfSplitFile && activeTool === 'doc-split-pdf') {
+              await window.handlePdfSplitFile(file);
+            } else if (window.handlePdfCompressFile && activeTool === 'doc-compress-pdf') {
+              await window.handlePdfCompressFile(file);
+            } else if (window.handlePdfRotateFile && activeTool === 'doc-rotate-pdf') {
+              await window.handlePdfRotateFile(file);
+            } else if (window.handlePdfDeleteFile && activeTool === 'doc-delete-pdf') {
+              await window.handlePdfDeleteFile(file);
+            } else if (window.handlePdfFileUpload) {
+              await window.handlePdfFileUpload(file);
+            }
+            showToast(`Loaded "${name}" into workspace`);
+            return;
+          } else if (activeTool === 'convert-svg' || file.type === 'image/svg+xml' || name.toLowerCase().endsWith('.svg')) {
+            if (typeof window.handleSvgFileSelect === 'function') {
+              window.handleSvgFileSelect({ target: { files: [file] } });
+            }
+            showToast(`Loaded "${name}" into workspace`);
+            return;
+          } else {
+            await handleImageFile(file);
+            showToast(`Loaded "${name}" into workspace`);
+            return;
+          }
         }
       }
     } catch (err) {
@@ -2539,7 +2635,7 @@ document.addEventListener('DOMContentLoaded', () => {
       html += `
         <div class="recent-active-session-banner">
           <div class="recent-active-left">
-            ${activeThumbUrl ? `<img class="recent-active-thumb" src="${activeThumbUrl}" alt="Active image preview">` : `<div class="recent-active-icon-fallback">🖼️</div>`}
+            ${activeThumbUrl ? `<img class="recent-active-thumb" src="${activeThumbUrl}" alt="Active image preview">` : `<div class="recent-active-icon-fallback"><i class="fa-regular fa-image"></i></div>`}
             <div class="recent-active-details">
               <span class="recent-active-pill">
                 <span class="recent-active-pulse"></span>
@@ -2570,26 +2666,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const fmtLabel = getFormatBadgeLabel(file.name, file.type);
         const timeStr = formatDockTimeAgo(file.timestamp || Date.now());
         const sizeStr = formatFileSize(file.size);
-        const resStr = file.width && file.height ? `${file.width} × ${file.height} px` : sizeStr;
-        const catBadge = file.category === 'pdf' ? 'PDF' : (file.category === 'convert' ? 'Convert' : 'Edit');
+        const isPdfDoc = file.category === 'pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf'));
+        const resStr = isPdfDoc ? 'PDF Document' : (file.width && file.height ? `${file.width} × ${file.height} px` : '');
+        const metaStr = resStr ? `${resStr} · ${sizeStr}` : sizeStr;
+        const catBadge = isPdfDoc ? 'PDF' : (file.category === 'convert' ? 'Convert' : 'Edit');
         const canResume = top10GlobalNames.has(file.name);
 
         html += `
           <div class="recent-file-card ${canResume ? '' : 'no-resume'}" style="--card-index: ${index};" onclick="${canResume ? `openRecentFromPage('${escapeDockHtml(file.name)}', false, event)` : `downloadRecentFileItem('${escapeDockHtml(file.name)}', event)`}">
             <div class="recent-card-top">
               <div class="recent-card-badges">
-                <span class="recent-fmt-badge">${fmtLabel}</span>
-                <span class="recent-cat-badge">${catBadge}</span>
+                <span class="recent-fmt-badge ${isPdfDoc ? 'recent-fmt-badge-pdf' : ''}">${fmtLabel}</span>
+                <span class="recent-cat-badge ${isPdfDoc ? 'recent-cat-badge-pdf' : ''}">${catBadge}</span>
                 <span class="recent-time-ago">${timeStr}</span>
                 ${!canResume ? '<span class="recent-cat-badge" style="background:var(--soft); color:var(--muted); font-size:9.5px; border:1px solid var(--line);" title="Older file archived to optimize browser memory">Download Only</span>' : ''}
               </div>
               <button class="recent-card-delete-btn" onclick="deleteRecentFileItem('${escapeDockHtml(file.name)}', event)" title="Remove from recents" aria-label="Remove ${escapeDockHtml(file.name)} from history">✕</button>
             </div>
             <div class="recent-card-main">
-              ${file.previewUrl ? `<img class="recent-card-thumb" src="${file.previewUrl}" alt="${escapeDockHtml(file.name)} thumbnail">` : `<div class="recent-card-icon-tile">🖼️</div>`}
+              ${file.previewUrl ? `
+                <img class="recent-card-thumb" src="${file.previewUrl}" alt="${escapeDockHtml(file.name)} thumbnail">
+              ` : (isPdfDoc ? `
+                <div class="recent-card-pdf-tile">
+                  <i class="fa-solid fa-file-pdf"></i>
+                  <span>PDF</span>
+                </div>
+              ` : `
+                <div class="recent-card-icon-tile"><i class="fa-regular fa-image"></i></div>
+              `)}
               <div class="recent-card-texts">
                 <div class="recent-card-title">${escapeDockHtml(file.name)}</div>
-                <div class="recent-card-meta">${resStr} · ${sizeStr}</div>
+                <div class="recent-card-meta">${metaStr}</div>
               </div>
             </div>
             <div class="recent-card-actions">
@@ -6634,6 +6741,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const baseName = (engine.filename || 'document').replace(/\.[^/.]+$/, "");
+    const pdfFilename = `${baseName}.pdf`;
+
+    let pdfThumb = null;
+    if (engine && engine.activeCanvas && engine.activeCanvas.width > 0) {
+      try {
+        pdfThumb = engine.activeCanvas.toDataURL('image/jpeg', 0.85);
+      } catch (_) {}
+    }
+    if (window.recordRecentFile) {
+      window.recordRecentFile(pdfFilename, res.byteSize, 'application/pdf', engine?.activeCanvas?.width || 0, engine?.activeCanvas?.height || 0, 'pdf', res.blob, pdfThumb, 'convert-pdf');
+    }
+
     const url = URL.createObjectURL(res.blob);
 
     if (download) {
@@ -6767,8 +6886,13 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    pdfExtractState.file = file;
     pdfExtractState.fileName = file.name;
     pdfExtractState.fileSize = file.size;
+
+    if (window.recordRecentFile) {
+      window.recordRecentFile(file.name, file.size, 'application/pdf', 0, 0, 'pdf', file, null, 'doc-pdf-to-images');
+    }
 
     const nameEl = document.getElementById('pdf-extract-file-name');
     const subEl = document.getElementById('pdf-extract-file-sub');
@@ -6945,6 +7069,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     buildPdfPagesGridUI();
     updatePdfExtractUI();
+
+    const firstThumb = pdfExtractState.pages[0]?.canvas?.toDataURL('image/jpeg', 0.8) || null;
+    const firstW = pdfExtractState.pages[0]?.width || 0;
+    const firstH = pdfExtractState.pages[0]?.height || 0;
+    if (window.recordRecentFile && pdfExtractState.file) {
+      window.recordRecentFile(pdfExtractState.fileName, pdfExtractState.fileSize, 'application/pdf', firstW, firstH, 'pdf', pdfExtractState.file, firstThumb, 'doc-pdf-to-images');
+    }
+
     showToast(`Successfully rendered all ${numPages} PDF pages!`);
   }
 
@@ -7493,6 +7625,11 @@ document.addEventListener('DOMContentLoaded', () => {
           file: file,
           thumbUrl: thumbUrl
         });
+
+        const fileBlob = file instanceof Blob ? file : new Blob([storedBytes], { type: 'application/pdf' });
+        if (window.recordRecentFile) {
+          window.recordRecentFile(name, size, 'application/pdf', 0, 0, 'pdf', fileBlob, thumbUrl || null, 'doc-merge-pdf');
+        }
       }
 
       showToast(`Added ${files.length} PDF document(s) to merge list.`);
@@ -7683,6 +7820,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let outName = (document.getElementById('pdf-merge-output-name')?.value || 'merged_document.pdf').trim();
       if (!outName.toLowerCase().endsWith('.pdf')) outName += '.pdf';
+
+      const mergeThumb = pdfMergeState.files[0]?.thumbUrl || null;
+      if (window.recordRecentFile) {
+        window.recordRecentFile(outName, blob.size, 'application/pdf', 0, 0, 'pdf', blob, mergeThumb, 'doc-merge-pdf');
+      }
 
       if (download) {
         triggerBlobDownload(blob, outName);
@@ -7895,6 +8037,16 @@ document.addEventListener('DOMContentLoaded', () => {
           selected: true,
           canvas: canvas
         });
+      }
+
+      let splitThumb = null;
+      if (pdfSplitState.pages[0]?.canvas) {
+        try {
+          splitThumb = pdfSplitState.pages[0].canvas.toDataURL('image/jpeg', 0.8);
+        } catch (_) {}
+      }
+      if (window.recordRecentFile) {
+        window.recordRecentFile(file.name, file.size, 'application/pdf', 0, 0, 'pdf', file, splitThumb, 'doc-split-pdf');
       }
 
       // Default suggested range
@@ -8274,6 +8426,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const bytes = await newPdf.save();
         const blob = new Blob([bytes], { type: 'application/pdf' });
         generatedFiles.push({ name: item.name, blob: blob });
+        if (window.recordRecentFile) {
+          window.recordRecentFile(item.name, blob.size, 'application/pdf', 0, 0, 'pdf', blob, null, 'doc-split-pdf');
+        }
       }
 
       // If user clicked preview, open the first generated PDF
@@ -8600,6 +8755,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const base = fileName.replace(/\.pdf$/i, '');
       const outInput = document.getElementById('pdf-compress-output-name');
       if (outInput) outInput.value = `${base}_compressed.pdf`;
+
+      const compInputBlob = file instanceof Blob ? file : new Blob([uint8], { type: 'application/pdf' });
+      const compThumb = pdfCompressState.pages[0]?.thumbUrl || null;
+      if (window.recordRecentFile) {
+        window.recordRecentFile(fileName, fileSize, 'application/pdf', 0, 0, 'pdf', compInputBlob, compThumb, 'doc-compress-pdf');
+      }
 
       showToast(`Loaded "${fileName}" (${pdfCompressState.numPages} pages, ${formatPdfBytes(fileSize)})`);
       renderPdfCompressUI();
@@ -8976,6 +9137,11 @@ document.addEventListener('DOMContentLoaded', () => {
       let outName = (document.getElementById('pdf-compress-output-name')?.value || 'compressed_document.pdf').trim();
       if (!outName.toLowerCase().endsWith('.pdf')) outName += '.pdf';
 
+      const compThumb = pdfCompressState.pages[0]?.thumbUrl || null;
+      if (window.recordRecentFile) {
+        window.recordRecentFile(outName, compBlob.size, 'application/pdf', 0, 0, 'pdf', compBlob, compThumb, 'doc-compress-pdf');
+      }
+
       if (!download) {
         openPdfPreviewTab(previewTab, compBlob, outName);
         showToast(`Compressed from ${formatPdfBytes(origSize)} to ${formatPdfBytes(compSize)} (${savingsPct > 0 ? `↓ ${savingsPct}%` : 'optimized'})`);
@@ -9239,6 +9405,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
+      const rotThumb = pdfRotateState.pages[0]?.thumbUrl || null;
+      const rotInputBlob = file instanceof Blob ? file : new Blob([storedBytes], { type: 'application/pdf' });
+      if (window.recordRecentFile) {
+        window.recordRecentFile(pdfRotateState.fileName, pdfRotateState.fileSize, 'application/pdf', 0, 0, 'pdf', rotInputBlob, rotThumb, 'doc-rotate-pdf');
+      }
+
       showToast(`Loaded ${pdfRotateState.fileName} (${pdfRotateState.numPages} pages). Ready to rotate!`);
     } catch (err) {
       console.error('Error loading PDF for rotate:', err);
@@ -9472,6 +9644,11 @@ document.addEventListener('DOMContentLoaded', () => {
       let outName = (document.getElementById('pdf-rotate-output-name')?.value || 'rotated_document.pdf').trim();
       if (!outName.toLowerCase().endsWith('.pdf')) outName += '.pdf';
 
+      const rotThumb = pdfRotateState.pages[0]?.thumbUrl || null;
+      if (window.recordRecentFile) {
+        window.recordRecentFile(outName, blob.size, 'application/pdf', 0, 0, 'pdf', blob, rotThumb, 'doc-rotate-pdf');
+      }
+
       if (download) {
         triggerBlobDownload(blob, outName);
         showToast(`Successfully rotated ${modifiedCount} page(s) and downloaded "${outName}"!`);
@@ -9693,6 +9870,12 @@ document.addEventListener('DOMContentLoaded', () => {
           deleted: false,
           thumbUrl: thumbUrl
         });
+      }
+
+      const delThumb = pdfDeleteState.pages[0]?.thumbUrl || null;
+      const delInputBlob = file instanceof Blob ? file : new Blob([storedBytes], { type: 'application/pdf' });
+      if (window.recordRecentFile) {
+        window.recordRecentFile(pdfDeleteState.fileName, pdfDeleteState.fileSize, 'application/pdf', 0, 0, 'pdf', delInputBlob, delThumb, 'doc-delete-pdf');
       }
 
       showToast(`Loaded ${pdfDeleteState.fileName} (${pdfDeleteState.numPages} pages). Click pages to mark for deletion.`);
@@ -9978,6 +10161,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let outName = (document.getElementById('pdf-delete-output-name')?.value || 'edited_document.pdf').trim();
       if (!outName.toLowerCase().endsWith('.pdf')) outName += '.pdf';
+
+      const delThumb = pdfDeleteState.pages.find(p => !p.deleted)?.thumbUrl || null;
+      if (window.recordRecentFile) {
+        window.recordRecentFile(outName, blob.size, 'application/pdf', 0, 0, 'pdf', blob, delThumb, 'doc-delete-pdf');
+      }
 
       const deletedCount = pdfDeleteState.pages.length - keptIndices.length;
 

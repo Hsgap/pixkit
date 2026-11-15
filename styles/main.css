@@ -2804,6 +2804,39 @@ kbd {
   flex-shrink: 0;
 }
 
+.recent-picker-pdf-tile {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #dc2626;
+  flex-shrink: 0;
+  gap: 2px;
+}
+
+.recent-picker-pdf-tile i {
+  font-size: 17px;
+  line-height: 1;
+}
+
+.recent-picker-pdf-tile span {
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+[data-theme="dark"] .recent-picker-pdf-tile {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.32);
+  color: #f87171;
+}
+
 .recent-picker-info {
   display: flex;
   flex-direction: column;
@@ -4239,6 +4272,18 @@ body.dock-is-dragging * {
   border: 1px solid var(--line);
 }
 
+.recent-cat-badge.recent-cat-badge-pdf {
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.22);
+}
+
+[data-theme="dark"] .recent-cat-badge.recent-cat-badge-pdf {
+  background: rgba(239, 68, 68, 0.14);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.32);
+}
+
 /* No Search Results Empty State */
 .recent-empty-search-state {
   background: var(--white);
@@ -4447,6 +4492,18 @@ body.dock-is-dragging * {
   border-color: var(--accent-lime-border);
 }
 
+.recent-fmt-badge.recent-fmt-badge-pdf {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.22);
+}
+
+[data-theme="dark"] .recent-fmt-badge.recent-fmt-badge-pdf {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.32);
+}
+
 .recent-time-ago {
   font-size: 11px;
   color: var(--muted);
@@ -4497,6 +4554,53 @@ body.dock-is-dragging * {
   font-size: 20px;
   color: var(--ink);
   flex-shrink: 0;
+}
+
+.recent-card-pdf-tile {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #dc2626;
+  flex-shrink: 0;
+  gap: 2px;
+  transition: all var(--transition-fast);
+}
+
+.recent-card-pdf-tile i {
+  font-size: 19px;
+  line-height: 1;
+}
+
+.recent-card-pdf-tile span {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+[data-theme="dark"] .recent-card-pdf-tile {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.32);
+  color: #f87171;
+}
+
+.recent-active-pdf-tile {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-color: rgba(239, 68, 68, 0.22) !important;
+  color: #dc2626 !important;
+  font-size: 26px !important;
+}
+
+[data-theme="dark"] .recent-active-pdf-tile {
+  background: rgba(239, 68, 68, 0.14) !important;
+  border-color: rgba(239, 68, 68, 0.32) !important;
+  color: #f87171 !important;
 }
 
 .recent-card-texts {
