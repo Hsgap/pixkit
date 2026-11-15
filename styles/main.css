@@ -2891,6 +2891,53 @@ kbd {
   line-height: 1.45;
 }
 
+.recent-memory-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.recent-memory-notice i {
+  color: var(--ink);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.recent-memory-notice strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.recent-picker-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: var(--soft);
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.recent-picker-notice i {
+  color: var(--ink);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.recent-picker-notice strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
 /* Floating Sequence HUD Pill */
 .shortcut-sequence-hud {
   position: fixed;

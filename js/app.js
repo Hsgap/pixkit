@@ -2510,6 +2510,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let html = '';
 
+    // Notice explaining memory optimization and 10-file resume limit
+    html += `
+      <div class="recent-memory-notice">
+        <i class="fa-solid fa-circle-info"></i>
+        <span>To optimize performance and save browser memory, only your <strong>10 most recent files</strong> can be resumed back in the editor. Older files remain available for direct download of the last edit.</span>
+      </div>
+    `;
+
     // If an active session matches the filter, render the Active Session Banner
     const activeFileMatch = filteredList.find(f => f.isCurrent);
     if (activeFileMatch) {
@@ -2562,6 +2570,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="recent-fmt-badge">${fmtLabel}</span>
                 <span class="recent-cat-badge">${catBadge}</span>
                 <span class="recent-time-ago">${timeStr}</span>
+                ${!canResume ? '<span class="recent-cat-badge" style="background:var(--soft); color:var(--muted); font-size:9.5px; border:1px solid var(--line);" title="Older file archived to optimize browser memory">Download Only</span>' : ''}
               </div>
               <button class="recent-card-delete-btn" onclick="deleteRecentFileItem('${escapeDockHtml(file.name)}', event)" title="Remove from recents" aria-label="Remove ${escapeDockHtml(file.name)} from history">✕</button>
             </div>
@@ -2578,7 +2587,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   <i class="fa-solid fa-pen-to-square"></i> <span>Open in Edit</span>
                 </button>
               ` : ''}
-              <button type="button" class="recent-action-btn btn-download" onclick="downloadRecentFileItem('${escapeDockHtml(file.name)}', event)" title="Download the latest edited file directly">
+              <button type="button" class="recent-action-btn btn-download" style="${!canResume ? 'grid-column: 1 / -1; width: 100%; justify-content: center;' : ''}" onclick="downloadRecentFileItem('${escapeDockHtml(file.name)}', event)" title="Download the latest edited file directly">
                 <i class="fa-solid fa-download"></i> <span>Download Last Edit</span>
               </button>
             </div>
