@@ -1791,6 +1791,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     window.closeAllReplaceDropdowns();
 
+    // Default to 'pdf' if activeTool is a doc tool and filterType is not specified
+    if (!filterType && activeTool && activeTool.startsWith('doc-')) {
+      filterType = 'pdf';
+    }
+
     const modal = document.getElementById('recent-picker-modal');
     const container = document.getElementById('recent-picker-list');
     if (!modal || !container) return;
@@ -1831,34 +1836,86 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     } else {
       let html = '<div class="recent-picker-grid">';
-      recents.forEach(file => {
+      recents.forEach((file, idx) => {
         const isCur = (engine && engine.filename === file.name && hasUserAddedImage && !engine.isSampleArtwork);
         const isPdfDoc = (file.category === 'pdf') || (file.name && file.name.toLowerCase().endsWith('.pdf'));
         const ext = isPdfDoc ? 'PDF' : (file.name.split('.').pop() || 'IMG').toUpperCase();
         const dims = isPdfDoc ? 'PDF Document' : ((file.width && file.height) ? `${file.width} × ${file.height} px` : (file.size ? formatFileSize(file.size) : ''));
         const timeStr = formatDockTimeAgo(file.timestamp || Date.now());
+        const hasSources = Array.isArray(file.sourceFiles) && file.sourceFiles.length > 0;
+        const safeId = 'pkr-' + (file.name || 'f').replace(/[^a-zA-Z0-9_-]/g, '_') + '-' + idx;
+
+        let sourcesHtml = '';
+        if (hasSources) {
+          sourcesHtml = file.sourceFiles.map((src, sIdx) => {
+            const isSrcPdf = (src.type && src.type.includes('pdf')) || (src.name && src.name.toLowerCase().endsWith('.pdf'));
+            const srcSize = formatFileSize(src.size || 0);
+            return `
+              <div class="picker-source-row" onclick="selectPickerSourceFile('${escapeDockHtml(file.name)}', ${sIdx}, event)">
+                <div class="picker-source-left">
+                  <span class="picker-source-num">#${sIdx + 1}</span>
+                  ${src.thumbUrl ? `
+                    <img class="picker-source-thumb" src="${src.thumbUrl}" alt="${escapeDockHtml(src.name)}">
+                  ` : (isSrcPdf ? `
+                    <i class="fa-solid fa-file-pdf"></i>
+                  ` : `
+                    <i class="fa-solid fa-image"></i>
+                  `)}
+                  <div class="picker-source-text">
+                    <strong title="${escapeDockHtml(src.name)}">${escapeDockHtml(src.name)}</strong>
+                    <small>${srcSize}${src.pageCount ? ` · ${src.pageCount} pgs` : ''}</small>
+                  </div>
+                </div>
+                <button type="button" class="picker-source-use-btn" onclick="selectPickerSourceFile('${escapeDockHtml(file.name)}', ${sIdx}, event)" title="Load this source file">
+                  <i class="fa-solid fa-check"></i>
+                  <span>Use</span>
+                </button>
+              </div>
+            `;
+          }).join('');
+        }
 
         html += `
-          <div class="recent-picker-card ${isCur ? 'is-current' : ''}" onclick="selectRecentForTool('${escapeDockHtml(file.name)}')">
-            ${file.previewUrl ? `
-              <img class="recent-picker-thumb" src="${file.previewUrl}" alt="${escapeDockHtml(file.name)}">
-            ` : (isPdfDoc ? `
-              <div class="recent-picker-pdf-tile">
-                <i class="fa-solid fa-file-pdf"></i>
-                <span>PDF</span>
+          <div class="recent-picker-card-wrap" id="picker-wrap-${safeId}">
+            <div class="recent-picker-card ${isCur ? 'is-current' : ''}" onclick="selectRecentForTool('${escapeDockHtml(file.name)}')">
+              ${file.previewUrl ? `
+                <img class="recent-picker-thumb" src="${file.previewUrl}" alt="${escapeDockHtml(file.name)}">
+              ` : (isPdfDoc ? `
+                <div class="recent-picker-pdf-tile">
+                  <i class="fa-solid fa-file-pdf"></i>
+                  <span>PDF</span>
+                </div>
+              ` : `
+                <div class="recent-picker-thumb-placeholder"><i class="fa-regular fa-image"></i></div>
+              `)}
+              <div class="recent-picker-info">
+                <div class="recent-picker-name" title="${escapeDockHtml(file.name)}">${escapeDockHtml(file.name)}</div>
+                <div class="recent-picker-meta">
+                  <span class="recent-picker-badge ${isPdfDoc ? 'recent-fmt-badge-pdf' : ''}">${ext}</span>
+                  ${isCur ? '<span class="recent-picker-current-tag">Active</span>' : ''}
+                  <span>${dims}</span>
+                  <span>· ${timeStr}</span>
+                </div>
               </div>
-            ` : `
-              <div class="recent-picker-thumb-placeholder"><i class="fa-regular fa-image"></i></div>
-            `)}
-            <div class="recent-picker-info">
-              <div class="recent-picker-name" title="${escapeDockHtml(file.name)}">${escapeDockHtml(file.name)}</div>
-              <div class="recent-picker-meta">
-                <span class="recent-picker-badge ${isPdfDoc ? 'recent-fmt-badge-pdf' : ''}">${ext}</span>
-                ${isCur ? '<span class="recent-picker-current-tag">Active</span>' : ''}
-                <span>${dims}</span>
-                <span>· ${timeStr}</span>
-              </div>
+              ${hasSources ? `
+                <button type="button" class="recent-picker-expand-toggle" onclick="togglePickerCardSources('${safeId}', event)" title="View original source files">
+                  <i class="fa-solid fa-layer-group"></i>
+                  <span>${file.sourceFiles.length} Sources</span>
+                  <i class="fa-solid fa-chevron-down chevron-icon"></i>
+                </button>
+              ` : ''}
             </div>
+            ${hasSources ? `
+              <div class="recent-picker-sources-dropdown" id="picker-sources-${safeId}" style="display:none;">
+                <div class="picker-sources-header">
+                  <span>Original Source Files (${file.sourceFiles.length})</span>
+                  <span style="font-size:9.5px; font-weight:500; color:var(--muted);">Click "Use" to load into workspace</span>
+                </div>
+                <div class="picker-sources-items">
+                  ${sourcesHtml}
+                </div>
+              </div>
+            ` : ''}
           </div>
         `;
       });
@@ -1867,6 +1924,85 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     modal.classList.add('active');
+  };
+
+  window.togglePickerCardSources = function(safeId, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    const wrap = document.getElementById(`picker-wrap-${safeId}`);
+    const dropdown = document.getElementById(`picker-sources-${safeId}`);
+    if (!wrap || !dropdown) return;
+
+    const isExpanded = wrap.classList.contains('expanded');
+    // Collapse any other open cards in the picker
+    document.querySelectorAll('.recent-picker-card-wrap.expanded').forEach(el => {
+      if (el !== wrap) {
+        el.classList.remove('expanded');
+        const otherDd = el.querySelector('.recent-picker-sources-dropdown');
+        if (otherDd) otherDd.style.display = 'none';
+      }
+    });
+
+    if (isExpanded) {
+      wrap.classList.remove('expanded');
+      dropdown.style.display = 'none';
+    } else {
+      wrap.classList.add('expanded');
+      dropdown.style.display = 'block';
+    }
+  };
+
+  window.selectPickerSourceFile = async function(parentName, index, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    window.closeRecentPickerModal();
+
+    showImageUploadProgress('source_doc', 35, 'Loading source document...');
+    try {
+      if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.getRecentFile === 'function') {
+        const record = await PixKitStorage.getRecentFile(parentName);
+        if (record && record.sourceFiles && record.sourceFiles[index]) {
+          const src = record.sourceFiles[index];
+          let blob = src.blob;
+          if (!blob && src.bytes) {
+            blob = new Blob([src.bytes], { type: src.type || 'application/pdf' });
+          }
+          if (blob) {
+            const isPdf = (src.type && src.type.includes('pdf')) || (src.name && src.name.toLowerCase().endsWith('.pdf'));
+            const file = new File([blob], src.name, { type: src.type || (isPdf ? 'application/pdf' : 'image/png') });
+
+            if (isPdf) {
+              if (window.handlePdfMergeFiles && activeTool === 'doc-merge-pdf') {
+                await window.handlePdfMergeFiles([file]);
+              } else if (window.handlePdfSplitFile && activeTool === 'doc-split-pdf') {
+                await window.handlePdfSplitFile(file);
+              } else if (window.handlePdfCompressFile && activeTool === 'doc-compress-pdf') {
+                await window.handlePdfCompressFile(file);
+              } else if (window.handlePdfRotateFile && activeTool === 'doc-rotate-pdf') {
+                await window.handlePdfRotateFile(file);
+              } else if (window.handlePdfDeleteFile && activeTool === 'doc-delete-pdf') {
+                await window.handlePdfDeleteFile(file);
+              } else if (window.handlePdfFileUpload) {
+                await window.handlePdfFileUpload(file);
+              }
+              showToast(`Loaded source "${src.name}" into workspace`);
+              return;
+            } else {
+              await handleImageFile(file);
+              showToast(`Loaded source "${src.name}" into workspace`);
+              return;
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Error selecting source file from picker:', err);
+    }
+    showToast('Source file buffer not available in local cache');
   };
 
   window.selectRecentForTool = async function(name) {

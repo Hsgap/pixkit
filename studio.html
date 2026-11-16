@@ -104,7 +104,7 @@
     } catch (_) {}
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles/main.css?v=8.16">
+  <link rel="stylesheet" href="styles/main.css?v=8.17">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FBFBF8">
 </head>
@@ -3385,6 +3385,10 @@
                     <span>Browse PDF File</span>
                     <input type="file" accept="application/pdf" id="pdf-file-picker" onchange="handlePdfFileUpload(this.files[0])" hidden>
                   </label>
+                  <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px; display:inline-flex; align-items:center; gap:6px;" onclick="openRecentFilesPicker(event, 'pdf')">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Choose from Recent</span>
+                  </button>
                   <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px;" onclick="loadSamplePdfForExtract()">
                     Load Sample 3-Page PDF
                   </button>
@@ -3413,10 +3417,29 @@
                   <small id="pdf-extract-file-sub" class="img-meta-dims">Select a PDF file to begin extraction</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;" title="Choose another PDF">
-                Replace PDF
-                <input type="file" accept="application/pdf" onchange="handlePdfFileUpload(this.files[0])" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Replace PDF</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event, 'pdf')">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously used PDFs</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select a PDF from device</small>
+                    </div>
+                    <input type="file" accept="application/pdf" onchange="handlePdfFileUpload(this.files[0])" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -3547,6 +3570,10 @@
                     <span>Browse PDF Files</span>
                     <input type="file" accept="application/pdf" multiple id="pdf-merge-file-picker" onchange="handlePdfMergeFiles(this.files)" hidden>
                   </label>
+                  <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px; display:inline-flex; align-items:center; gap:6px;" onclick="openRecentFilesPicker(event, 'pdf')">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Choose from Recent</span>
+                  </button>
                   <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px;" onclick="loadSamplePdfsForMerge()">
                     Load 2 Sample PDFs
                   </button>
@@ -3575,10 +3602,29 @@
                   <small id="pdf-merge-footer-sub" class="img-meta-dims">Add at least 2 PDF files to merge</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;" title="Add more PDF files">
-                + Add More PDFs
-                <input type="file" accept="application/pdf" multiple onchange="handlePdfMergeFiles(this.files)" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>+ Add More PDFs</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event, 'pdf')">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously used PDFs</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select PDF files from device</small>
+                    </div>
+                    <input type="file" accept="application/pdf" multiple onchange="handlePdfMergeFiles(this.files)" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -3673,6 +3719,10 @@
                     <span>Browse PDF File</span>
                     <input type="file" accept="application/pdf" id="pdf-split-file-picker" onchange="handlePdfSplitFile(this.files[0])" hidden>
                   </label>
+                  <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px; display:inline-flex; align-items:center; gap:6px;" onclick="openRecentFilesPicker(event, 'pdf')">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Choose from Recent</span>
+                  </button>
                   <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px;" onclick="loadSamplePdfForSplit()">
                     Load Sample 6-Page PDF
                   </button>
@@ -3701,10 +3751,29 @@
                   <small id="pdf-split-footer-sub" class="img-meta-dims">Load a PDF document to begin splitting</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;" title="Load different PDF">
-                Change PDF
-                <input type="file" accept="application/pdf" onchange="handlePdfSplitFile(this.files[0])" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Change PDF</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event, 'pdf')">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously used PDFs</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select a PDF from device</small>
+                    </div>
+                    <input type="file" accept="application/pdf" onchange="handlePdfSplitFile(this.files[0])" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -3822,6 +3891,10 @@
                   <label for="pdf-compress-file-picker" class="btn-primary" style="font-size:13px; padding:8px 18px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center;" onclick="event.stopPropagation();">
                     <span>Browse PDF File</span>
                   </label>
+                  <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px; display:inline-flex; align-items:center; gap:6px; cursor:pointer;" onclick="event.stopPropagation(); openRecentFilesPicker(event, 'pdf')">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Choose from Recent</span>
+                  </button>
                   <button type="button" id="pdf-compress-sample-btn" class="btn-secondary" style="font-size:13px; padding:8px 18px; cursor:pointer;" onclick="event.stopPropagation(); loadSamplePdfForCompress()">
                     Load Sample Graphic PDF (4 Pages)
                   </button>
@@ -3850,9 +3923,29 @@
                   <small id="pdf-compress-footer-sub" class="img-meta-dims">Load a PDF document to begin compression</small>
                 </div>
               </div>
-              <label for="pdf-compress-file-picker" class="action-btn-sm" style="cursor:pointer; display:inline-flex; align-items:center;" title="Load different PDF">
-                Change PDF
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Change PDF</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event, 'pdf')">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously used PDFs</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select a PDF from device</small>
+                    </div>
+                    <input type="file" accept=".pdf,application/pdf" onchange="if(this.files&&this.files.length){handlePdfCompressFile(this.files[0]);}" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -4071,6 +4164,10 @@
                     <span>Browse PDF File</span>
                     <input type="file" accept="application/pdf" id="pdf-rotate-file-picker" onchange="handlePdfRotateFile(this.files[0])" hidden>
                   </label>
+                  <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px; display:inline-flex; align-items:center; gap:6px;" onclick="openRecentFilesPicker(event, 'pdf')">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Choose from Recent</span>
+                  </button>
                   <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px;" onclick="loadSamplePdfForRotate()">
                     Load Sample 6-Page PDF
                   </button>
@@ -4099,10 +4196,29 @@
                   <small id="pdf-rotate-footer-sub" class="img-meta-dims">Load a PDF document to begin rotating pages</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;" title="Load different PDF">
-                Change PDF
-                <input type="file" accept="application/pdf" onchange="handlePdfRotateFile(this.files[0])" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Change PDF</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event, 'pdf')">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously used PDFs</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select a PDF from device</small>
+                    </div>
+                    <input type="file" accept="application/pdf" onchange="handlePdfRotateFile(this.files[0])" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -4233,6 +4349,10 @@
                     <span>Browse PDF File</span>
                     <input type="file" accept="application/pdf" id="pdf-delete-file-picker" onchange="handlePdfDeleteFile(this.files[0])" hidden>
                   </label>
+                  <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px; display:inline-flex; align-items:center; gap:6px;" onclick="openRecentFilesPicker(event, 'pdf')">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Choose from Recent</span>
+                  </button>
                   <button type="button" class="btn-secondary" style="font-size:13px; padding:8px 18px;" onclick="loadSamplePdfForDelete()">
                     Load Sample 6-Page PDF
                   </button>
@@ -4261,10 +4381,29 @@
                   <small id="pdf-delete-footer-sub" class="img-meta-dims">Load a PDF document to begin removing pages</small>
                 </div>
               </div>
-              <label class="action-btn-sm" style="cursor:pointer;" title="Load different PDF">
-                Change PDF
-                <input type="file" accept="application/pdf" onchange="handlePdfDeleteFile(this.files[0])" hidden>
-              </label>
+              <div class="replace-dropdown-wrap">
+                <button type="button" class="action-btn-sm replace-dropdown-btn" onclick="toggleReplaceDropdown(this, event)">
+                  <span>Change PDF</span>
+                  <svg class="dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="replace-dropdown-menu">
+                  <button type="button" class="replace-menu-item" onclick="openRecentFilesPicker(event, 'pdf')">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <div class="replace-item-texts">
+                      <strong>Choose from Recent Files</strong>
+                      <small>Pick from previously used PDFs</small>
+                    </div>
+                  </button>
+                  <label class="replace-menu-item" onclick="closeAllReplaceDropdowns()" style="cursor:pointer;">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                    <div class="replace-item-texts">
+                      <strong>Upload from Local</strong>
+                      <small>Select a PDF from device</small>
+                    </div>
+                    <input type="file" accept="application/pdf" onchange="handlePdfDeleteFile(this.files[0])" hidden>
+                  </label>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -4847,7 +4986,7 @@
   <!-- PixKit Remote Connector to admin.pixkit.site -->
   <script src="js/pixkit-remote.js"></script>
   <script src="js/engine.js?v=2.5"></script>
-  <script src="js/app.js?v=8.16"></script>
+  <script src="js/app.js?v=8.17"></script>
   <script src="js/support.js"></script>
   <script src="js/leaderboard.js"></script>
 </body>
