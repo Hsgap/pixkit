@@ -4284,6 +4284,30 @@ body.dock-is-dragging * {
   border-color: rgba(239, 68, 68, 0.32);
 }
 
+.recent-cat-badge.recent-cat-badge-convert {
+  background: rgba(59, 130, 246, 0.08);
+  color: #2563eb;
+  border-color: rgba(59, 130, 246, 0.22);
+}
+
+[data-theme="dark"] .recent-cat-badge.recent-cat-badge-convert {
+  background: rgba(59, 130, 246, 0.16);
+  color: #60a5fa;
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+.recent-fmt-badge.recent-fmt-badge-convert {
+  background: rgba(59, 130, 246, 0.05);
+  color: #1d4ed8;
+  border-color: rgba(59, 130, 246, 0.18);
+}
+
+[data-theme="dark"] .recent-fmt-badge.recent-fmt-badge-convert {
+  background: rgba(59, 130, 246, 0.12);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.28);
+}
+
 /* No Search Results Empty State */
 .recent-empty-search-state {
   background: var(--white);
@@ -4829,6 +4853,28 @@ body.dock-is-dragging * {
 [data-theme="dark"] .recent-sources-chip:hover {
   background: rgba(239, 68, 68, 0.22);
   border-color: rgba(239, 68, 68, 0.45);
+}
+
+.recent-sources-chip.recent-sources-chip-convert {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.22);
+  color: #2563eb;
+}
+
+.recent-sources-chip.recent-sources-chip-convert:hover {
+  background: rgba(59, 130, 246, 0.16);
+  border-color: rgba(59, 130, 246, 0.35);
+}
+
+[data-theme="dark"] .recent-sources-chip.recent-sources-chip-convert {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: #60a5fa;
+}
+
+[data-theme="dark"] .recent-sources-chip.recent-sources-chip-convert:hover {
+  background: rgba(59, 130, 246, 0.24);
+  border-color: rgba(59, 130, 246, 0.48);
 }
 
 /* PDF Source Files Modal Dialog */

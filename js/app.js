@@ -1563,11 +1563,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function getFileCategory(file) {
-    if (file && file.category) return file.category;
+    if (!file) return 'edit';
+    if (file.category) return file.category;
+    if (file.originTool && file.originTool.startsWith('convert-')) return 'convert';
     const name = ((file && file.name) || '').toLowerCase();
     const type = ((file && file.type) || '').toLowerCase();
     if (name.endsWith('.pdf') || type.includes('pdf')) return 'pdf';
-    if (name.endsWith('.svg') || name.endsWith('.ico') || name.endsWith('.heic') || name.endsWith('.avif') || name.endsWith('.base64') || name.includes('-converted')) return 'convert';
+    if (name.endsWith('.svg') || name.endsWith('.ico') || name.endsWith('.heic') || name.endsWith('.avif') || name.endsWith('.base64') || name.includes('-converted') || name.includes('_converted')) return 'convert';
     return 'edit';
   }
 
@@ -2814,12 +2816,30 @@ document.addEventListener('DOMContentLoaded', () => {
     // Exactly the top 10 most recent files across the entire library can resume in editor
     const top10GlobalNames = new Set(allFilesList.slice(0, 10).map(f => f.name));
 
+    // Category match helper
+    const isFileInCat = (file, cat) => {
+      if (cat === 'all') return true;
+      const fileCat = file.category || getFileCategory(file);
+      if (cat === 'convert') {
+        return fileCat === 'convert' || (file.originTool && file.originTool.startsWith('convert-')) || (file.name && (file.name.includes('_converted') || file.name.includes('-converted') || file.name.endsWith('.ico') || file.name.endsWith('.svg') || file.name.endsWith('.heic')));
+      }
+      if (cat === 'pdf') {
+        return fileCat === 'pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf')) || (file.type && file.type.includes('pdf'));
+      }
+      if (cat === 'edit') {
+        const isC = fileCat === 'convert' || (file.originTool && file.originTool.startsWith('convert-')) || (file.name && (file.name.includes('_converted') || file.name.includes('-converted') || file.name.endsWith('.ico') || file.name.endsWith('.svg') || file.name.endsWith('.heic')));
+        const isP = fileCat === 'pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf')) || (file.type && file.type.includes('pdf'));
+        return !isC && !isP;
+      }
+      return fileCat === cat;
+    };
+
     // Compute category counts
     const counts = {
       all: allFilesList.length,
-      edit: allFilesList.filter(f => f.category === 'edit').length,
-      convert: allFilesList.filter(f => f.category === 'convert').length,
-      pdf: allFilesList.filter(f => f.category === 'pdf').length
+      edit: allFilesList.filter(f => isFileInCat(f, 'edit')).length,
+      convert: allFilesList.filter(f => isFileInCat(f, 'convert')).length,
+      pdf: allFilesList.filter(f => isFileInCat(f, 'pdf')).length
     };
 
     // Update pill count badges in DOM
@@ -2869,7 +2889,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Apply Category & Search Filter
     const searchQuery = recentPageState.searchQuery || '';
     const filteredList = allFilesList.filter(file => {
-      if (curCat !== 'all' && file.category !== curCat) return false;
+      if (curCat !== 'all' && !isFileInCat(file, curCat)) return false;
       if (searchQuery) {
         const name = (file.name || '').toLowerCase();
         const ext = name.split('.').pop() || '';
@@ -2948,16 +2968,21 @@ document.addEventListener('DOMContentLoaded', () => {
         const timeStr = formatDockTimeAgo(file.timestamp || Date.now());
         const sizeStr = formatFileSize(file.size);
         const isPdfDoc = file.category === 'pdf' || (file.name && file.name.toLowerCase().endsWith('.pdf'));
+        const isConvertDoc = isFileInCat(file, 'convert');
         const opLabels = {
           'merge': 'Merged',
           'split': 'Split',
           'compress': 'Compressed',
           'rotate': 'Rotated',
           'delete': 'Pages Removed',
-          'convert': 'From Image',
+          'convert': 'Converted',
+          'heic': 'HEIC to JPG',
+          'rasterize': 'Vector PNG',
+          'favicon': 'Favicon',
+          'base64': 'Base64',
           'extract': 'Extracted'
         };
-        const opBadge = file.operation ? (opLabels[file.operation] || file.operation.toUpperCase()) : 'Document';
+        const opBadge = file.operation ? (opLabels[file.operation] || file.operation.toUpperCase()) : (isPdfDoc ? 'Document' : (isConvertDoc ? 'Converted' : 'Edit'));
         const resStr = isPdfDoc ? 'PDF Document' : (file.width && file.height ? `${file.width} × ${file.height} px` : '');
         const metaStr = resStr ? `${resStr} · ${sizeStr}` : sizeStr;
         const canResume = top10GlobalNames.has(file.name);
@@ -2968,11 +2993,11 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="recent-file-card ${canResume ? '' : 'no-resume'}" style="--card-index: ${index};" onclick="${canResume ? `openRecentFromPage('${escapeDockHtml(file.name)}', false, event)` : `downloadRecentFileItem('${escapeDockHtml(file.name)}', event)`}">
             <div class="recent-card-top">
               <div class="recent-card-badges">
-                <span class="recent-fmt-badge ${isPdfDoc ? 'recent-fmt-badge-pdf' : ''}">${fmtLabel}</span>
-                <span class="recent-cat-badge ${isPdfDoc ? 'recent-cat-badge-pdf' : ''}">${isPdfDoc ? opBadge : (file.category === 'convert' ? 'Convert' : 'Edit')}</span>
+                <span class="recent-fmt-badge ${isPdfDoc ? 'recent-fmt-badge-pdf' : (isConvertDoc ? 'recent-fmt-badge-convert' : '')}">${fmtLabel}</span>
+                <span class="recent-cat-badge ${isPdfDoc ? 'recent-cat-badge-pdf' : (isConvertDoc ? 'recent-cat-badge-convert' : '')}">${isPdfDoc ? opBadge : (isConvertDoc ? opBadge : 'Edit')}</span>
                 ${hasSources ? `
-                  <button type="button" class="recent-sources-chip" onclick="openPdfSourcesModal('${escapeDockHtml(file.name)}', event)" title="Click to view all ${file.sourceFiles.length} source file${file.sourceFiles.length > 1 ? 's' : ''} used">
-                    <i class="fa-solid fa-layer-group"></i> <span>${file.sourceFiles.length} Sources</span>
+                  <button type="button" class="recent-sources-chip ${isConvertDoc && !isPdfDoc ? 'recent-sources-chip-convert' : ''}" onclick="openPdfSourcesModal('${escapeDockHtml(file.name)}', event)" title="Click to view all ${file.sourceFiles.length} source file${file.sourceFiles.length > 1 ? 's' : ''} used">
+                    <i class="fa-solid fa-layer-group"></i> <span>${file.sourceFiles.length} Source${file.sourceFiles.length > 1 ? 's' : ''}</span>
                   </button>
                 ` : ''}
                 <span class="recent-time-ago">${timeStr}</span>
@@ -5860,12 +5885,59 @@ document.addEventListener('DOMContentLoaded', () => {
     const qFraction = convertState.quality / 100;
     const res = await engine.convertFormat(convertState.targetFormat, qFraction, convertState.bgColor);
 
+    let thumbUrl = null;
+    try {
+      if (engine.activeCanvas) {
+        const thumbCanvas = document.createElement('canvas');
+        const maxDim = 96;
+        let tw = engine.activeCanvas.width;
+        let th = engine.activeCanvas.height;
+        if (tw > th) {
+          th = Math.round((th * maxDim) / tw);
+          tw = maxDim;
+        } else {
+          tw = Math.round((tw * maxDim) / th);
+          th = maxDim;
+        }
+        thumbCanvas.width = Math.max(tw, 1);
+        thumbCanvas.height = Math.max(th, 1);
+        const tctx = thumbCanvas.getContext('2d');
+        tctx.drawImage(engine.activeCanvas, 0, 0, tw, th);
+        thumbUrl = thumbCanvas.toDataURL('image/jpeg', 0.7);
+      }
+    } catch (_) {}
+
+    const origSource = {
+      name: engine.filename || 'source_image.png',
+      size: engine.fileSize || 0,
+      type: engine.fileType || 'image/png',
+      thumbUrl: thumbUrl,
+      width: engine.activeCanvas?.width || 0,
+      height: engine.activeCanvas?.height || 0
+    };
+
     if (download) {
       const baseName = engine.filename ? engine.filename.replace(/\.[^/.]+$/, "") : 'image';
+      const outName = `${baseName}_converted.${res.extension}`;
+      if (window.recordRecentFile) {
+        window.recordRecentFile(
+          outName,
+          res.size,
+          res.mimeType,
+          res.width,
+          res.height,
+          'convert',
+          res.blob,
+          thumbUrl,
+          'convert-format',
+          [origSource],
+          'convert'
+        );
+      }
       const url = URL.createObjectURL(res.blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${baseName}_converted.${res.extension}`;
+      a.download = outName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -5873,6 +5945,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
       showToast(`Converted to ${res.extension.toUpperCase()} (${PixKitEngine.formatBytes(res.size)})`);
     } else {
+      const outName = `${(engine.filename || 'image').replace(/\.[^/.]+$/, "")}.${res.extension}`;
+      if (window.recordRecentFile) {
+        window.recordRecentFile(
+          outName,
+          res.size,
+          res.mimeType,
+          res.width,
+          res.height,
+          'convert',
+          res.blob,
+          thumbUrl,
+          'convert-format',
+          [origSource],
+          'convert'
+        );
+      }
       const img = new Image();
       const url = URL.createObjectURL(res.blob);
       img.onload = () => {
@@ -5882,7 +5970,7 @@ document.addEventListener('DOMContentLoaded', () => {
         engine.activeCtx.drawImage(img, 0, 0);
         engine.fileType = res.mimeType;
         engine.fileSize = res.size;
-        engine.filename = `${(engine.filename || 'image').replace(/\.[^/.]+$/, "")}.${res.extension}`;
+        engine.filename = outName;
         engine.pushHistory(`Convert to ${res.extension.toUpperCase()}`);
         syncMetadata();
         initConvertFormatStage();
@@ -6146,18 +6234,67 @@ document.addEventListener('DOMContentLoaded', () => {
     const qFraction = heicState.quality / 100;
     const res = await engine.convertFormat(heicState.targetFormat, qFraction, '#ffffff');
 
+    let thumbUrl = null;
+    try {
+      if (engine.activeCanvas) {
+        const thumbCanvas = document.createElement('canvas');
+        const maxDim = 96;
+        let tw = engine.activeCanvas.width;
+        let th = engine.activeCanvas.height;
+        if (tw > th) {
+          th = Math.round((th * maxDim) / tw);
+          tw = maxDim;
+        } else {
+          tw = Math.round((tw * maxDim) / th);
+          th = maxDim;
+        }
+        thumbCanvas.width = Math.max(tw, 1);
+        thumbCanvas.height = Math.max(th, 1);
+        const tctx = thumbCanvas.getContext('2d');
+        tctx.drawImage(engine.activeCanvas, 0, 0, tw, th);
+        thumbUrl = thumbCanvas.toDataURL('image/jpeg', 0.7);
+      }
+    } catch (_) {}
+
+    const baseName = (engine.filename || 'photo').replace(/\.[^/.]+$/, "");
+    const outName = `${baseName}.${res.extension}`;
+    const origSource = {
+      name: heicState.rawHeicName || engine.filename || 'photo.heic',
+      size: heicState.rawHeicSize || engine.fileSize || 0,
+      type: 'image/heic',
+      thumbUrl: thumbUrl,
+      width: res.width,
+      height: res.height,
+      blob: heicState.rawHeicBlob || null
+    };
+
+    if (window.recordRecentFile) {
+      window.recordRecentFile(
+        outName,
+        res.size,
+        res.mimeType,
+        res.width,
+        res.height,
+        'convert',
+        res.blob,
+        thumbUrl,
+        'convert-heic',
+        [origSource],
+        'heic'
+      );
+    }
+
     if (download) {
-      const baseName = (engine.filename || 'photo').replace(/\.[^/.]+$/, "");
       const url = URL.createObjectURL(res.blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${baseName}.${res.extension}`;
+      a.download = outName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-      showToast(`Downloaded ${baseName}.${res.extension} (${PixKitEngine.formatBytes(res.size)})`);
+      showToast(`Downloaded ${outName} (${PixKitEngine.formatBytes(res.size)})`);
     } else {
       showToast('Opened in PixKit Studio');
       window.showView('edit');
@@ -6500,25 +6637,74 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    let thumbUrl = null;
+    try {
+      if (res.canvas) {
+        const thumbCanvas = document.createElement('canvas');
+        const maxDim = 96;
+        let tw = res.canvas.width;
+        let th = res.canvas.height;
+        if (tw > th) {
+          th = Math.round((th * maxDim) / tw);
+          tw = maxDim;
+        } else {
+          tw = Math.round((tw * maxDim) / th);
+          th = maxDim;
+        }
+        thumbCanvas.width = Math.max(tw, 1);
+        thumbCanvas.height = Math.max(th, 1);
+        const tctx = thumbCanvas.getContext('2d');
+        tctx.drawImage(res.canvas, 0, 0, tw, th);
+        thumbUrl = thumbCanvas.toDataURL('image/png');
+      }
+    } catch (_) {}
+
+    const baseName = (svgState.svgName || 'vector').replace(/\.[^/.]+$/, "");
+    const scaleTag = svgState.scale > 1 ? `@${svgState.scale}x` : '';
+    const outName = `${baseName}${scaleTag}.${res.extension}`;
+    const origSource = {
+      name: svgState.svgName || 'vector.svg',
+      size: svgState.svgSize || (new Blob([svgState.svgText]).size),
+      type: 'image/svg+xml',
+      thumbUrl: thumbUrl,
+      width: svgState.intrinsicWidth || 800,
+      height: svgState.intrinsicHeight || 800,
+      blob: new Blob([svgState.svgText], { type: 'image/svg+xml' })
+    };
+
+    if (window.recordRecentFile) {
+      window.recordRecentFile(
+        outName,
+        res.size,
+        res.mimeType,
+        res.width,
+        res.height,
+        'convert',
+        res.blob,
+        thumbUrl,
+        'convert-svg',
+        [origSource],
+        'rasterize'
+      );
+    }
+
     if (download) {
-      const baseName = (svgState.svgName || 'vector').replace(/\.[^/.]+$/, "");
-      const scaleTag = svgState.scale > 1 ? `@${svgState.scale}x` : '';
       const url = URL.createObjectURL(res.blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${baseName}${scaleTag}.${res.extension}`;
+      a.download = outName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-      showToast(`Downloaded ${baseName}${scaleTag}.${res.extension} (${PixKitEngine.formatBytes(res.size)})`);
+      showToast(`Downloaded ${outName} (${PixKitEngine.formatBytes(res.size)})`);
     } else {
       // Open in PixKit Studio: set engine active image from rasterized canvas
       const img = new Image();
       img.onload = () => {
         engine.setSourceImage(img);
-        engine.filename = `${(svgState.svgName || 'vector').replace(/\.[^/.]+$/, "")}.png`;
+        engine.filename = `${baseName}.png`;
         engine.fileSize = res.size;
         engine.fileType = res.mimeType;
         hasUserAddedImage = true;
@@ -6685,18 +6871,66 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    let thumbUrl = null;
+    try {
+      if (engine.activeCanvas) {
+        const thumbCanvas = document.createElement('canvas');
+        const maxDim = 96;
+        let tw = engine.activeCanvas.width;
+        let th = engine.activeCanvas.height;
+        if (tw > th) {
+          th = Math.round((th * maxDim) / tw);
+          tw = maxDim;
+        } else {
+          tw = Math.round((tw * maxDim) / th);
+          th = maxDim;
+        }
+        thumbCanvas.width = Math.max(tw, 1);
+        thumbCanvas.height = Math.max(th, 1);
+        const tctx = thumbCanvas.getContext('2d');
+        tctx.drawImage(engine.activeCanvas, 0, 0, tw, th);
+        thumbUrl = thumbCanvas.toDataURL('image/png');
+      }
+    } catch (_) {}
+
+    const baseName = (engine.filename || 'favicon').replace(/\.[^/.]+$/, "");
+    const outName = `${baseName}.ico`;
+    const origSource = {
+      name: engine.filename || 'source_image.png',
+      size: engine.fileSize || 0,
+      type: engine.fileType || 'image/png',
+      thumbUrl: thumbUrl,
+      width: engine.activeCanvas?.width || 0,
+      height: engine.activeCanvas?.height || 0
+    };
+
+    if (window.recordRecentFile) {
+      window.recordRecentFile(
+        outName,
+        res.blob.size,
+        'image/x-icon',
+        icoState.selectedSizes[icoState.selectedSizes.length - 1] || 48,
+        icoState.selectedSizes[icoState.selectedSizes.length - 1] || 48,
+        'convert',
+        res.blob,
+        thumbUrl,
+        'convert-ico',
+        [origSource],
+        'favicon'
+      );
+    }
+
     if (download) {
-      const baseName = (engine.filename || 'favicon').replace(/\.[^/.]+$/, "");
       const url = URL.createObjectURL(res.blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${baseName}.ico`;
+      a.download = outName;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-      showToast(`Downloaded ${baseName}.ico (${PixKitEngine.formatBytes(res.blob.size)})`);
+      showToast(`Downloaded ${outName} (${PixKitEngine.formatBytes(res.blob.size)})`);
     } else {
       showToast('Opened in PixKit Studio');
       window.showView('edit');
@@ -6880,6 +7114,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const blob = new Blob([snippet], { type: 'text/plain;charset=utf-8' });
     const ext = base64State.snippetType === 'html-img' ? 'html' : (base64State.snippetType === 'css-bg' ? 'css' : (base64State.snippetType === 'json' ? 'json' : 'txt'));
     const filename = `${engine.filename ? engine.filename.replace(/\.[^/.]+$/, '') : 'image'}-base64.${ext}`;
+
+    let thumbUrl = null;
+    try {
+      if (engine.activeCanvas) {
+        thumbUrl = engine.activeCanvas.toDataURL('image/jpeg', 0.6);
+      }
+    } catch (_) {}
+
+    const origSource = {
+      name: engine.filename || 'source_image.png',
+      size: engine.fileSize || 0,
+      type: engine.fileType || 'image/png',
+      thumbUrl: thumbUrl,
+      width: engine.activeCanvas?.width || 0,
+      height: engine.activeCanvas?.height || 0
+    };
+
+    if (window.recordRecentFile) {
+      window.recordRecentFile(
+        filename,
+        blob.size,
+        'text/plain',
+        engine.activeCanvas?.width || 0,
+        engine.activeCanvas?.height || 0,
+        'convert',
+        blob,
+        thumbUrl,
+        'convert-base64',
+        [origSource],
+        'base64'
+      );
+    }
+
     PixKitEngine.downloadBlob(blob, filename);
     showToast(`Downloaded ${filename}`);
   };
@@ -7066,7 +7333,7 @@ document.addEventListener('DOMContentLoaded', () => {
       height: engine.activeCanvas?.height || 0
     };
     if (window.recordRecentFile) {
-      window.recordRecentFile(pdfFilename, res.byteSize, 'application/pdf', engine?.activeCanvas?.width || 0, engine?.activeCanvas?.height || 0, 'pdf', res.blob, pdfThumb, 'convert-pdf', [imageSource], 'convert');
+      window.recordRecentFile(pdfFilename, res.byteSize, 'application/pdf', engine?.activeCanvas?.width || 0, engine?.activeCanvas?.height || 0, 'convert', res.blob, pdfThumb, 'convert-pdf', [imageSource], 'convert');
     }
 
     const url = URL.createObjectURL(res.blob);
