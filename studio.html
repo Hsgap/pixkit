@@ -295,6 +295,10 @@
             </div>
 
             <div class="app-banner-actions">
+              <a href="/mobile-preview" target="_blank" class="app-banner-btn" style="background: rgba(215,243,106,0.15); color: var(--lime); border: 1px solid rgba(215,243,106,0.3); text-decoration: none;" title="Test live mobile app in browser before installing">
+                <i class="fa-solid fa-mobile-screen-button"></i>
+                <span>Try Web Preview</span>
+              </a>
               <a href="https://groups.google.com/g/pixkit-studio-testers" target="_blank" rel="noopener" class="app-banner-btn btn-group" title="Step 1: Join Google Group to authorize testing access">
                 <span>1. Join Group</span>
                 <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 11px;"></i>
@@ -1277,6 +1281,13 @@
                   <div class="crop-handle bc" data-handle="bc" title="Resize Bottom"></div>
                   <div class="crop-handle br" data-handle="br" title="Resize Bottom-Right"></div>
                 </div>
+
+                <!-- Live Precision Magnifying Loupe (Studio) -->
+                <div class="crop-magnifier" id="studioCropMagnifier" style="display:none;">
+                  <canvas id="studioCropMagnifierCanvas" width="120" height="120"></canvas>
+                  <div class="magnifier-crosshair"></div>
+                  <div class="magnifier-coords" id="studioMagnifierCoords">X: 0, Y: 0 px</div>
+                </div>
               </div>
             </div>
             <div class="stage-footer">
@@ -1347,6 +1358,53 @@
                 <strong>Story (9:16)</strong>
                 <small>Reel / Mobile</small>
               </button>
+            </div>
+
+            <div class="crop-precision-card" id="studioCropPrecisionCard">
+              <div class="precision-head" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-size:10px; font-weight:800; color:var(--accent, #d7f36a); letter-spacing:0.5px;">🎯 PIXEL-PERFECT NUDGE</span>
+                <span id="studioNudgeTargetTag" style="font-size:9.5px; color:var(--text-muted, #888); font-weight:600;">Target: Entire Box</span>
+              </div>
+              <div class="nudge-target-row" style="display:flex; gap:4px; margin-bottom:10px; flex-wrap:wrap;">
+                <button type="button" class="target-pill active" onclick="setStudioNudgeTarget('box', this)">Box</button>
+                <button type="button" class="target-pill" onclick="setStudioNudgeTarget('tl', this)">Top-Left</button>
+                <button type="button" class="target-pill" onclick="setStudioNudgeTarget('tr', this)">Top-Right</button>
+                <button type="button" class="target-pill" onclick="setStudioNudgeTarget('bl', this)">Bottom-Left</button>
+                <button type="button" class="target-pill" onclick="setStudioNudgeTarget('br', this)">Bottom-Right</button>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 88px 1fr; gap:12px; align-items:center; margin-bottom:4px;">
+                <!-- D-Pad -->
+                <div class="dpad-container" style="display:flex; flex-direction:column; align-items:center; gap:3px;">
+                  <button type="button" class="dpad-key" onclick="nudgeStudioCrop(0, -1)" title="Nudge Up 1px">▲</button>
+                  <div style="display:flex; align-items:center; gap:3px;">
+                    <button type="button" class="dpad-key" onclick="nudgeStudioCrop(-1, 0)" title="Nudge Left 1px">◀</button>
+                    <span style="font-size:9px; font-weight:800; color:var(--text-muted, #888); width:24px; text-align:center;">1px</span>
+                    <button type="button" class="dpad-key" onclick="nudgeStudioCrop(1, 0)" title="Nudge Right 1px">▶</button>
+                  </div>
+                  <button type="button" class="dpad-key" onclick="nudgeStudioCrop(0, 1)" title="Nudge Down 1px">▼</button>
+                </div>
+
+                <!-- Numerical Coordinates -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                  <div class="form-group" style="margin:0;">
+                    <label style="font-size:9px; text-transform:uppercase; margin-bottom:2px; font-weight:700;">X (px)</label>
+                    <input type="number" id="studioCropX" class="form-input" style="padding:4px 6px; font-size:11px; height:28px;" onchange="onStudioManualCropChange()">
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <label style="font-size:9px; text-transform:uppercase; margin-bottom:2px; font-weight:700;">Y (px)</label>
+                    <input type="number" id="studioCropY" class="form-input" style="padding:4px 6px; font-size:11px; height:28px;" onchange="onStudioManualCropChange()">
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <label style="font-size:9px; text-transform:uppercase; margin-bottom:2px; font-weight:700;">Width</label>
+                    <input type="number" id="studioCropW" class="form-input" style="padding:4px 6px; font-size:11px; height:28px;" onchange="onStudioManualCropChange()">
+                  </div>
+                  <div class="form-group" style="margin:0;">
+                    <label style="font-size:9px; text-transform:uppercase; margin-bottom:2px; font-weight:700;">Height</label>
+                    <input type="number" id="studioCropH" class="form-input" style="padding:4px 6px; font-size:11px; height:28px;" onchange="onStudioManualCropChange()">
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="divider"></div>

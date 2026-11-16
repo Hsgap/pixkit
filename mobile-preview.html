@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PixKit — Live Mobile App Simulator & Web Preview</title>
+  <meta name="description" content="Test PixKit Mobile directly in your browser before installing the native Android APK. Real-time simulator with zoom system, crop loupe, and all 22+ tools.">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg: #090a0c;
+      --panel: #121316;
+      --panel-elevated: #1a1b20;
+      --border: #23252a;
+      --border-focus: #3a3d46;
+      --text: #f3f4f6;
+      --text-muted: #9496a1;
+      --text-subtle: #626571;
+      --lime: #d7f36a;
+      --lime-ink: #101204;
+      --lime-glow: rgba(215, 243, 106, 0.18);
+      --accent-green: #2ecc71;
+      --accent-blue: #38bdf8;
+      --phone-bezel: #1b1c21;
+      --phone-rim: #2d2f36;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(215, 243, 106, 0.08), transparent 70%),
+        radial-gradient(circle at 10% 90%, rgba(56, 189, 248, 0.04), transparent 40%);
+    }
+
+    /* Top Toolbar */
+    .sim-header {
+      height: 64px;
+      background: rgba(18, 19, 22, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .sim-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      background: var(--lime);
+      color: var(--lime-ink);
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      font-weight: 800;
+      box-shadow: 0 4px 14px var(--lime-glow);
+    }
+
+    .brand-title {
+      font-family: 'Manrope', sans-serif;
+      font-weight: 800;
+      font-size: 17px;
+      letter-spacing: -0.4px;
+    }
+
+    .live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(46, 204, 113, 0.12);
+      border: 1px solid rgba(46, 204, 113, 0.3);
+      color: var(--accent-green);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 99px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent-green);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.1); }
+      100% { opacity: 0.4; transform: scale(0.9); }
+    }
+
+    .sim-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--panel-elevated);
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+
+    .control-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-right: 4px;
+    }
+
+    select.sim-select {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      padding: 4px 6px;
+    }
+
+    select.sim-select option {
+      background: var(--panel-elevated);
+      color: var(--text);
+    }
+
+    .sim-btn {
+      background: var(--panel-elevated);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      text-decoration: none;
+    }
+
+    .sim-btn:hover {
+      background: #25272e;
+      border-color: var(--border-focus);
+      color: #fff;
+    }
+
+    .sim-btn.primary {
+      background: var(--lime);
+      color: var(--lime-ink);
+      border-color: var(--lime);
+      font-weight: 700;
+      box-shadow: 0 2px 10px var(--lime-glow);
+    }
+
+    .sim-btn.primary:hover {
+      background: #e2fa7b;
+      transform: translateY(-1px);
+    }
+
+    /* Main Workspace Layout */
+    .sim-workspace {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr auto 360px;
+      gap: 32px;
+      padding: 24px 32px 40px;
+      max-width: 1600px;
+      margin: 0 auto;
+      width: 100%;
+      align-items: start;
+    }
+
+    /* Left Drawer: Quick Tools & Feature Highlight */
+    .left-tools-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card-title {
+      font-family: 'Manrope', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .tool-list-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .tool-nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--panel-elevated);
+      border: 1px solid var(--border);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tool-nav-item:hover, .tool-nav-item.active {
+      border-color: var(--lime);
+      background: rgba(215, 243, 106, 0.08);
+      color: var(--lime);
+    }
+
+    .tool-nav-item .tag {
+      font-size: 9px;
+      background: rgba(215, 243, 106, 0.15);
+      color: var(--lime);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+    }
+
+    /* Center: Mobile Device Frame */
+    .device-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .phone-mockup {
+      position: relative;
+      background: #000;
+      border: 12px solid var(--phone-bezel);
+      outline: 1.5px solid var(--phone-rim);
+      border-radius: 54px;
+      box-shadow: 
+        0 25px 80px rgba(0, 0, 0, 0.75),
+        0 0 0 1px rgba(255, 255, 255, 0.08),
+        inset 0 0 2px 1px rgba(255, 255, 255, 0.12);
+      overflow: hidden;
+      transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), height 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Dynamic Island / Camera cutout */
+    .phone-notch {
+      position: absolute;
+      top: 11px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 28px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      pointer-events: none;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    }
+
+    .notch-camera {
+      width: 10px;
+      height: 10px;
+      background: #0f141c;
+      border-radius: 50%;
+      border: 1px solid #1a2230;
+    }
+
+    .notch-sensor {
+      width: 7px;
+      height: 7px;
+      background: #080a0f;
+      border-radius: 50%;
+    }
+
+    /* Embedded Mobile App Frame */
+    .mobile-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #000;
+      flex: 1;
+    }
+
+    .device-meta-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 11px;
+      color: var(--text-subtle);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Right Drawer: Testing Info, QR Code & Download */
+    .right-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .info-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .tester-spotlight {
+      background: linear-gradient(145deg, rgba(215, 243, 106, 0.08), rgba(215, 243, 106, 0.02));
+      border: 1px solid rgba(215, 243, 106, 0.25);
+    }
+
+    .tester-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--lime);
+      letter-spacing: 0.5px;
+    }
+
+    .quote-box {
+      background: rgba(0, 0, 0, 0.35);
+      border-left: 3px solid var(--lime);
+      padding: 10px 12px;
+      border-radius: 0 8px 8px 0;
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: #e5e7eb;
+      font-style: italic;
+    }
+
+    .quote-author {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-style: normal;
+      display: block;
+    }
+
+    .qr-container {
+      background: #fff;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      display: grid;
+      place-items: center;
+      margin: 8px 0 4px;
+    }
+
+    .lan-url-box {
+      background: var(--panel-elevated);
+      border: 1px solid var(--border);
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .lan-url {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--lime);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .copy-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.15s;
+    }
+
+    .copy-btn:hover {
+      color: #fff;
+    }
+
+    .feature-checklist {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .feature-checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      line-height: 1.4;
+    }
+
+    .feature-checklist li::before {
+      content: '✓';
+      color: var(--lime);
+      font-weight: 800;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+      .sim-workspace {
+        grid-template-columns: 1fr auto;
+      }
+      .right-sidebar {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .sim-workspace {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 16px;
+      }
+      .phone-mockup {
+        width: 100% !important;
+        max-width: 412px;
+        height: 780px !important;
+        border-width: 6px;
+        border-radius: 36px;
+      }
+      .left-tools-card, .right-sidebar {
+        width: 100%;
+        max-width: 412px;
+      }
+      .right-sidebar {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="sim-header">
+    <a href="/" class="sim-brand">
+      <div class="brand-mark">✳</div>
+      <div>
+        <div class="brand-title">PixKit Mobile Simulator</div>
+      </div>
+      <span class="live-pill"><span class="live-dot"></span> In-Browser Live View</span>
+    </a>
+
+    <div class="sim-controls">
+      <!-- Device Selector -->
+      <div class="control-group">
+        <span class="control-label">Device:</span>
+        <select class="sim-select" id="deviceSelect" onchange="changeDevice(this.value)">
+          <option value="iphone16pro" selected>iPhone 16 Pro (402 × 874)</option>
+          <option value="pixel8">Google Pixel 8 (412 × 915)</option>
+          <option value="samsung24">Galaxy S24 (390 × 844)</option>
+          <option value="compact">Compact Android (360 × 760)</option>
+        </select>
+      </div>
+
+      <!-- Quick Screen Selector -->
+      <div class="control-group">
+        <span class="control-label">Screen:</span>
+        <select class="sim-select" id="screenSelect" onchange="loadScreen(this.value)">
+          <option value="crop.html" selected>🌟 Crop (Zoom &amp; Loupe)</option>
+          <option value="home.html">🏠 Home</option>
+          <option value="tools.html">▦ Tool Picker (22+)</option>
+          <option value="resize.html">📐 Resize</option>
+          <option value="compress.html">🗜️ Compress</option>
+          <option value="filters.html">🎨 Filters</option>
+          <option value="adjust.html">☀️ Adjust</option>
+          <option value="rotate-flip.html">🔄 Rotate &amp; Flip</option>
+          <option value="add-text.html">✏️ Add Text</option>
+          <option value="draw-shapes.html">🖊️ Draw &amp; Shapes</option>
+          <option value="blur-focus.html">🌫️ Blur &amp; Focus</option>
+          <option value="convert.html">⇄ Format Converter</option>
+          <option value="documents.html">📄 PDF &amp; Documents</option>
+          <option value="settings.html">⚙️ Settings</option>
+        </select>
+      </div>
+
+      <!-- Rotate Orientation -->
+      <button class="sim-btn" onclick="toggleOrientation()" title="Rotate portrait/landscape">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+        <span>Rotate</span>
+      </button>
+
+      <!-- Reload Screen -->
+      <button class="sim-btn" onclick="reloadIframe()" title="Refresh frame">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+      </button>
+
+      <!-- Standalone Tab -->
+      <button class="sim-btn" onclick="openStandalone()" title="Open full screen in new tab">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        <span>Pop Out</span>
+      </button>
+
+      <!-- Download APK Button -->
+      <a href="/pixkit-release.apk" class="sim-btn primary" download="pixkit-v1.0.4.apk" title="Download native signed Android APK">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <span>Download APK (v1.0.4)</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Simulator Stage -->
+  <main class="sim-workspace">
+    
+    <!-- Left Drawer: Tool Directory -->
+    <aside class="left-tools-card">
+      <div class="card-title">
+        <span>Mobile Tool Suites</span>
+        <span style="font-size:11px;color:var(--lime);font-weight:700;">22+ Tools</span>
+      </div>
+      <div class="tool-list-nav">
+        <button class="tool-nav-item active" onclick="loadScreen('crop.html', this)">
+          <span>🌟 Crop (Zoom &amp; Loupe)</span>
+          <span class="tag">NEW</span>
+        </button>
+        <button class="tool-nav-item" onclick="loadScreen('home.html', this)">
+          <span>🏠 App Home Hub</span>
+        </button>
+        <button class="tool-nav-item" onclick="loadScreen('resize.html', this)">
+          <span>📐 Image Resize</span>
+        </button>
+        <button class="tool-nav-item" onclick="loadScreen('compress.html', this)">
+          <span>🗜️ Image Compress</span>
+          <span class="tag">0% Loss</span>
+        </button>
+        <button class="tool-nav-item" onclick="loadScreen('filters.html', this)">
+          <span>🎨 Artistic Filters</span>
+        </button>
+        <button class="tool-nav-item" onclick="loadScreen('adjust.html', this)">
+          <span>☀️ Exposure &amp; Tones</span>
+        </button>
+        <button class="tool-nav-item" onclick="loadScreen('rotate-flip.html', this)">
+          <span>🔄 Rotate &amp; Flip</span>
+        </button>
+        <button class="tool-nav-item" onclick="loadScreen('add-text.html', this)">
+          <span>✏️ Typography &amp; Text</span>
+        </button>
+        <button class="tool-nav-item" onclick="loadScreen('draw-shapes.html', this)">
+          <span>🖊️ Freehand Drawing</span>
+        </button>
+        <button class="tool-nav-item" onclick="loadScreen('blur-focus.html', this)">
+          <span>🌫️ Blur &amp; Tilt-Shift</span>
+        </button>
+        <button class="tool-nav-item" onclick="loadScreen('format-converter.html', this)">
+          <span>⇄ WebP / PNG / JPG / HEIC</span>
+        </button>
+        <button class="tool-nav-item" onclick="loadScreen('documents.html', this)">
+          <span>📄 PDF Merge &amp; Split</span>
+        </button>
+      </div>
+
+      <div style="margin-top:auto;padding-top:14px;border-top:1px solid var(--border);font-size:11px;color:var(--text-subtle);line-height:1.5;">
+        💡 <b>Tip:</b> All edits run 100% locally in this web view with zero server uploads, identical to the native APK.
+      </div>
+    </aside>
+
+    <!-- Center: Interactive Mobile Phone Mockup -->
+    <section class="device-stage">
+      <div class="phone-mockup" id="phoneMockup" style="width: 402px; height: 874px;">
+        <!-- Notch / Dynamic Island -->
+        <div class="phone-notch">
+          <div class="notch-camera"></div>
+          <div class="notch-sensor"></div>
+        </div>
+
+        <!-- Embedded Webview -->
+        <iframe src="/mobile/crop.html" class="mobile-iframe" id="mobileIframe" title="PixKit Mobile In-Browser View"></iframe>
+      </div>
+
+      <div class="device-meta-bar">
+        <span id="resolutionBadge">402 × 874 px</span>
+        <span>•</span>
+        <span id="viewportScaleBadge">100% Native CSS Scale</span>
+        <span>•</span>
+        <span id="activeScreenBadge">crop.html</span>
+      </div>
+    </section>
+
+    <!-- Right Drawer: Closed Tester Verification & Wi-Fi Testing -->
+    <aside class="right-sidebar">
+      
+      <!-- Tester Spotlight Card -->
+      <div class="info-card tester-spotlight">
+        <div class="tester-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Google Play Closed Tester Feedback
+        </div>
+        <div class="quote-box">
+          “I’m really interested by the crop option. If you could add a ‘zoom system’, to be more ‘pixelperfect’, I’ll be a happy man ^”
+          <span class="quote-author">— Djidanebe on r/AndroidAppTesters</span>
+        </div>
+        <ul class="feature-checklist">
+          <li><b>3.5× Floating Loupe:</b> Drag crop handles to see raw magnified pixel grid.</li>
+          <li><b>Zoom Strip:</b> 1×, 1.5×, 2×, 3× presets or pinch-to-zoom on image.</li>
+          <li><b>1px Nudge D-Pad:</b> Precision arrows for single-pixel alignments.</li>
+          <li><b>Exact Dimensions:</b> Live bidirectional width, height &amp; offset inputs.</li>
+        </ul>
+      </div>
+
+      <!-- Test on Real Phone via Wi-Fi -->
+      <div class="info-card">
+        <div class="card-title">
+          <span>Test on Your Real Phone</span>
+          <span style="font-size:10px;background:rgba(56,189,248,0.12);color:var(--accent-blue);padding:2px 6px;border-radius:4px;font-weight:700;">Wi-Fi LAN</span>
+        </div>
+        <p style="font-size:11.5px;color:var(--text-muted);line-height:1.45;">
+          Connect your phone to the same Wi-Fi network and open this live URL in Chrome or Safari:
+        </p>
+
+        <div class="lan-url-box">
+          <span class="lan-url" id="lanUrlText">http://192.168.1.3:3000/mobile/</span>
+          <button class="copy-btn" onclick="copyLanUrl()" id="copyLanBtn" title="Copy URL">Copy</button>
+        </div>
+
+        <!-- Render Dynamic SVG QR Code -->
+        <div class="qr-container" id="qrContainer" title="Scan with mobile camera">
+          <!-- Dynamically generated QR SVG -->
+        </div>
+
+        <p style="font-size:10.5px;color:var(--text-subtle);text-align:center;">
+          Scan QR with your phone camera to test touch gestures directly.
+        </p>
+      </div>
+
+      <!-- Native Android Package Card -->
+      <div class="info-card">
+        <div class="card-title">
+          <span>Native Build Packages</span>
+          <span style="font-size:10.5px;color:var(--text-muted);">v1.0.4 (Code 5)</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <a href="/pixkit-release.apk" class="sim-btn" download="pixkit-v1.0.4.apk" style="justify-content:space-between;">
+            <span>📱 Signed Release APK</span>
+            <span style="color:var(--lime);font-size:11px;">4.4 MB</span>
+          </a>
+          <a href="/pixkit-release.aab" class="sim-btn" download="pixkit-v1.0.4.aab" style="justify-content:space-between;">
+            <span>📦 Play Store Bundle (AAB)</span>
+            <span style="color:var(--accent-blue);font-size:11px;">4.2 MB</span>
+          </a>
+          <a href="/pixkit-debug.apk" class="sim-btn" download="pixkit-debug.apk" style="justify-content:space-between;">
+            <span>🛠️ USB Debug APK</span>
+            <span style="color:var(--text-muted);font-size:11px;">5.6 MB</span>
+          </a>
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- Script for Simulator controls & QR code generation -->
+  <script>
+    const devices = {
+      iphone16pro: { w: 402, h: 874, label: '402 × 874 px (iPhone 16 Pro)' },
+      pixel8: { w: 412, h: 915, label: '412 × 915 px (Pixel 8)' },
+      samsung24: { w: 390, h: 844, label: '390 × 844 px (Galaxy S24)' },
+      compact: { w: 360, h: 760, label: '360 × 760 px (Compact Android)' }
+    };
+
+    let currentDevice = 'iphone16pro';
+    let isLandscape = false;
+    let currentScreen = 'crop.html';
+
+    const mockup = document.getElementById('phoneMockup');
+    const iframe = document.getElementById('mobileIframe');
+    const resBadge = document.getElementById('resolutionBadge');
+    const screenBadge = document.getElementById('activeScreenBadge');
+    const screenSelect = document.getElementById('screenSelect');
+
+    function applyDimensions() {
+      const dev = devices[currentDevice];
+      let width = isLandscape ? dev.h : dev.w;
+      let height = isLandscape ? dev.w : dev.h;
+      mockup.style.width = width + 'px';
+      mockup.style.height = height + 'px';
+      resBadge.textContent = `${width} × ${height} px ${isLandscape ? '(Landscape)' : ''}`;
+    }
+
+    function changeDevice(key) {
+      if (devices[key]) {
+        currentDevice = key;
+        applyDimensions();
+      }
+    }
+
+    function toggleOrientation() {
+      isLandscape = !isLandscape;
+      applyDimensions();
+    }
+
+    function loadScreen(screenFile, btnEl) {
+      currentScreen = screenFile;
+      iframe.src = '/mobile/' + screenFile;
+      screenBadge.textContent = screenFile;
+      if (screenSelect) screenSelect.value = screenFile;
+
+      if (btnEl) {
+        document.querySelectorAll('.tool-nav-item').forEach(el => el.classList.remove('active'));
+        btnEl.classList.add('active');
+      } else {
+        document.querySelectorAll('.tool-nav-item').forEach(el => {
+          if (el.getAttribute('onclick') && el.getAttribute('onclick').includes(screenFile)) {
+            el.classList.add('active');
+          } else {
+            el.classList.remove('active');
+          }
+        });
+      }
+    }
+
+    function reloadIframe() {
+      iframe.src = iframe.src;
+    }
+
+    function openStandalone() {
+      window.open(iframe.src, '_blank');
+    }
+
+    // Dynamic QR Code generation for LAN address using Google Charts API or inline SVG
+    function setupLanTesting() {
+      const lanUrl = 'http://' + window.location.hostname + (window.location.port ? ':' + window.location.port : '') + '/mobile/';
+      document.getElementById('lanUrlText').textContent = lanUrl;
+
+      // Generate visual QR code via high-reliability SVG or image
+      const qrImg = document.createElement('img');
+      qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=' + encodeURIComponent(lanUrl) + '&bgcolor=ffffff&color=121316&margin=0';
+      qrImg.alt = 'Scan QR Code to Open on Phone';
+      qrImg.style.width = '140px';
+      qrImg.style.height = '140px';
+      qrImg.style.display = 'block';
+      qrImg.onerror = function() {
+        document.getElementById('qrContainer').innerHTML = '<div style="font-size:11px;color:#111;text-align:center;padding:12px;">Scan failed to load. Use direct URL above.</div>';
+      };
+      
+      const container = document.getElementById('qrContainer');
+      container.innerHTML = '';
+      container.appendChild(qrImg);
+    }
+
+    function copyLanUrl() {
+      const text = document.getElementById('lanUrlText').textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copyLanBtn');
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.style.color = 'var(--lime)';
+        setTimeout(() => {
+          btn.textContent = orig;
+          btn.style.color = '';
+        }, 2000);
+      });
+    }
+
+    // Listen for iframe navigation updates
+    iframe.addEventListener('load', () => {
+      try {
+        const iframeLoc = iframe.contentWindow.location.pathname;
+        const pageName = iframeLoc.split('/').pop() || 'home.html';
+        screenBadge.textContent = pageName;
+        if (screenSelect && screenSelect.querySelector(`option[value="${pageName}"]`)) {
+          screenSelect.value = pageName;
+        }
+      } catch (e) {
+        // Cross-origin fallback
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setupLanTesting();
+    });
+  </script>
+</body>
+</html>
