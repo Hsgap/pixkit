@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Minimal Bottom-Right Image Upload Progress Loader
   let uploadLoaderTimer = null;
+  let uploadLoaderSafetyTimer = null;
   function showImageUploadProgress(filename, progressPercent, statusText) {
     let loader = document.getElementById('pixkit-upload-progress');
     if (!loader) {
@@ -66,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.appendChild(loader);
     }
     clearTimeout(uploadLoaderTimer);
+    clearTimeout(uploadLoaderSafetyTimer);
     loader.classList.remove('fade-down');
     void loader.offsetWidth;
     loader.classList.add('visible');
@@ -99,9 +101,32 @@ document.addEventListener('DOMContentLoaded', () => {
           loader.classList.remove('visible', 'fade-down');
         }, 360);
       }, 1200);
+    } else {
+      // Safety auto-dismiss after 6 seconds so it can never get stuck indefinitely
+      uploadLoaderSafetyTimer = setTimeout(() => {
+        if (loader && loader.classList.contains('visible')) {
+          loader.classList.add('fade-down');
+          setTimeout(() => {
+            loader.classList.remove('visible', 'fade-down');
+          }, 360);
+        }
+      }, 6000);
     }
   }
   window.showImageUploadProgress = showImageUploadProgress;
+
+  function hideImageUploadProgress() {
+    clearTimeout(uploadLoaderTimer);
+    clearTimeout(uploadLoaderSafetyTimer);
+    const loader = document.getElementById('pixkit-upload-progress');
+    if (loader) {
+      loader.classList.add('fade-down');
+      setTimeout(() => {
+        loader.classList.remove('visible', 'fade-down');
+      }, 360);
+    }
+  }
+  window.hideImageUploadProgress = hideImageUploadProgress;
 
   // Initialize Magic UI Kinetic Text & Aceternity 3D Card & Floating Dock
   initKineticText();
@@ -1954,6 +1979,214 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  function decodeHtmlEntities(str) {
+    if (!str) return '';
+    const txt = document.createElement('textarea');
+    txt.innerHTML = str;
+    return txt.value;
+  }
+
+  async function generateSampleDocABlob() {
+    if (!window.PDFLib) return null;
+    try {
+      const rgb = window.PDFLib.rgb;
+      const StandardFonts = window.PDFLib.StandardFonts;
+      const docA = await window.PDFLib.PDFDocument.create();
+      const fontA = await docA.embedFont(StandardFonts.Helvetica);
+      const fontABold = await docA.embedFont(StandardFonts.HelveticaBold);
+
+      const pA1 = docA.addPage([595, 842]);
+      pA1.drawRectangle({ x: 0, y: 0, width: 595, height: 842, color: rgb(0.96, 0.97, 0.99) });
+      pA1.drawRectangle({ x: 40, y: 740, width: 515, height: 60, color: rgb(0.08, 0.55, 0.45) });
+      pA1.drawText('PixKit Report A - Annual Summary', { x: 60, y: 762, size: 20, font: fontABold, color: rgb(1, 1, 1) });
+      pA1.drawText('Page 1: Executive Overview and Metrics', { x: 60, y: 690, size: 14, font: fontABold, color: rgb(0.1, 0.1, 0.1) });
+      pA1.drawRectangle({ x: 60, y: 450, width: 475, height: 200, color: rgb(1, 1, 1), borderColor: rgb(0.8, 0.85, 0.9), borderWidth: 1 });
+      pA1.drawText('Key Performance Indicators (KPIs)', { x: 80, y: 620, size: 13, font: fontABold, color: rgb(0.2, 0.3, 0.4) });
+      pA1.drawText('- Total Projects Processed: 4,820', { x: 80, y: 580, size: 12, font: fontA, color: rgb(0.3, 0.3, 0.3) });
+      pA1.drawText('- Conversion Accuracy: 99.98%', { x: 80, y: 550, size: 12, font: fontA, color: rgb(0.3, 0.3, 0.3) });
+      pA1.drawText('- Average Client Render Time: 42ms', { x: 80, y: 520, size: 12, font: fontA, color: rgb(0.3, 0.3, 0.3) });
+
+      const pA2 = docA.addPage([595, 842]);
+      pA2.drawRectangle({ x: 0, y: 0, width: 595, height: 842, color: rgb(1, 1, 1) });
+      pA2.drawText('PixKit Report A - Section 2: Regional Performance', { x: 60, y: 760, size: 16, font: fontABold, color: rgb(0.08, 0.55, 0.45) });
+      pA2.drawText('Page 2: Regional breakdowns across North America, Europe and APAC', { x: 60, y: 720, size: 12, font: fontA, color: rgb(0.4, 0.4, 0.4) });
+
+      const pA3 = docA.addPage([595, 842]);
+      pA3.drawRectangle({ x: 0, y: 0, width: 595, height: 842, color: rgb(0.98, 0.98, 0.98) });
+      pA3.drawText('PixKit Report A - Section 3: Conclusions', { x: 60, y: 760, size: 16, font: fontABold, color: rgb(0.08, 0.55, 0.45) });
+      pA3.drawText('Page 3: Strategic roadmap and upcoming milestones', { x: 60, y: 720, size: 12, font: fontA, color: rgb(0.4, 0.4, 0.4) });
+
+      const bytesA = await docA.save();
+      return new Blob([bytesA], { type: 'application/pdf' });
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function generateSampleDocBBlob() {
+    if (!window.PDFLib) return null;
+    try {
+      const rgb = window.PDFLib.rgb;
+      const StandardFonts = window.PDFLib.StandardFonts;
+      const docB = await window.PDFLib.PDFDocument.create();
+      const fontB = await docB.embedFont(StandardFonts.Helvetica);
+      const fontBBold = await docB.embedFont(StandardFonts.HelveticaBold);
+
+      const pB1 = docB.addPage([595, 842]);
+      pB1.drawRectangle({ x: 0, y: 0, width: 595, height: 842, color: rgb(0.99, 0.97, 0.95) });
+      pB1.drawRectangle({ x: 40, y: 740, width: 515, height: 60, color: rgb(0.9, 0.4, 0.15) });
+      pB1.drawText('PixKit Appendix B - Technical Specs', { x: 60, y: 762, size: 20, font: fontBBold, color: rgb(1, 1, 1) });
+      pB1.drawText('Page 1: Architecture, WebAssembly and Canvas Pipelines', { x: 60, y: 690, size: 14, font: fontBBold, color: rgb(0.1, 0.1, 0.1) });
+
+      const pB2 = docB.addPage([595, 842]);
+      pB2.drawRectangle({ x: 0, y: 0, width: 595, height: 842, color: rgb(1, 1, 1) });
+      pB2.drawText('PixKit Appendix B - Sign-off and Approvals', { x: 60, y: 760, size: 16, font: fontBBold, color: rgb(0.9, 0.4, 0.15) });
+      pB2.drawText('Page 2: Final Verification Checklist', { x: 60, y: 720, size: 12, font: fontB, color: rgb(0.4, 0.4, 0.4) });
+
+      const bytesB = await docB.save();
+      return new Blob([bytesB], { type: 'application/pdf' });
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function generateSample6PageBlob() {
+    if (!window.PDFLib) return null;
+    try {
+      const doc = await window.PDFLib.PDFDocument.create();
+      const rgb = window.PDFLib.rgb;
+      const StandardFonts = window.PDFLib.StandardFonts;
+      const fontRegular = await doc.embedFont(StandardFonts.Helvetica);
+      const fontBold = await doc.embedFont(StandardFonts.HelveticaBold);
+
+      const pageThemes = [
+        { title: 'Page 1: Executive Overview', color: rgb(0.1, 0.5, 0.4), bg: rgb(0.96, 0.98, 0.97), desc: 'High-level business performance summary and annual growth trajectory.' },
+        { title: 'Page 2: Product Architecture', color: rgb(0.2, 0.35, 0.8), bg: rgb(0.96, 0.97, 1.0), desc: 'WebAssembly, Canvas 2D engine, and client-side binary pipeline design.' },
+        { title: 'Page 3: User Analytics and Traffic', color: rgb(0.8, 0.4, 0.1), bg: rgb(1.0, 0.98, 0.95), desc: 'Global regional user activity, retention rates, and daily active sessions.' },
+        { title: 'Page 4: Security and Privacy Compliance', color: rgb(0.5, 0.2, 0.7), bg: rgb(0.98, 0.96, 1.0), desc: 'Zero-cloud data retention, 100% in-browser sandboxed processing guarantee.' },
+        { title: 'Page 5: Financial Forecasts', color: rgb(0.15, 0.6, 0.3), bg: rgb(0.95, 0.99, 0.96), desc: 'Quarterly projections, cost reduction benchmarks, and gross margins.' },
+        { title: 'Page 6: Strategic Roadmap', color: rgb(0.85, 0.25, 0.25), bg: rgb(1.0, 0.96, 0.96), desc: 'Next quarter milestones, upcoming document tools, and API additions.' }
+      ];
+
+      for (let i = 0; i < pageThemes.length; i++) {
+        const theme = pageThemes[i];
+        const page = doc.addPage([595, 842]);
+        page.drawRectangle({ x: 0, y: 0, width: 595, height: 842, color: theme.bg });
+        page.drawRectangle({ x: 40, y: 740, width: 515, height: 60, color: theme.color });
+        page.drawText('PixKit Comprehensive Report 2026', { x: 60, y: 764, size: 18, font: fontBold, color: rgb(1, 1, 1) });
+        page.drawText(theme.title, { x: 60, y: 690, size: 15, font: fontBold, color: rgb(0.1, 0.1, 0.1) });
+        page.drawText(theme.desc, { x: 60, y: 660, size: 11.5, font: fontRegular, color: rgb(0.4, 0.4, 0.4) });
+        page.drawRectangle({ x: 60, y: 320, width: 475, height: 300, color: rgb(1, 1, 1), borderColor: rgb(0.85, 0.88, 0.92), borderWidth: 1 });
+        page.drawText(`Section ${i + 1} Detailed Breakdown:`, { x: 80, y: 580, size: 13, font: fontBold, color: theme.color });
+        page.drawText(`- Status: Verified and Approved`, { x: 80, y: 540, size: 12, font: fontRegular, color: rgb(0.2, 0.2, 0.2) });
+        page.drawText(`PixKit Studio - Document Test Sample - Page ${i + 1} of 6`, { x: 170, y: 40, size: 10, font: fontRegular, color: rgb(0.6, 0.6, 0.6) });
+      }
+
+      const bytes = await doc.save();
+      return new Blob([bytes], { type: 'application/pdf' });
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function getSourceFileBlob(parentName, index) {
+    const cleanParentName = decodeHtmlEntities(parentName);
+    let blob = null;
+    let fileName = '';
+
+    // 1. Try reading the parent record from PixKitStorage
+    let record = null;
+    try {
+      if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.getRecentFile === 'function') {
+        record = await PixKitStorage.getRecentFile(cleanParentName);
+        if (!record && cleanParentName !== parentName) {
+          record = await PixKitStorage.getRecentFile(parentName);
+        }
+      }
+    } catch (_) {}
+
+    // Find metadata from localStorage if needed
+    let recents = [];
+    try {
+      recents = JSON.parse(localStorage.getItem('pixkit_recent_files') || '[]');
+    } catch (_) {}
+    const parentMeta = recents.find(f => f.name === cleanParentName || f.name === parentName);
+    const sourceList = (record && Array.isArray(record.sourceFiles) && record.sourceFiles.length)
+      ? record.sourceFiles
+      : (parentMeta?.sourceFiles || []);
+    const src = sourceList[index] || null;
+    fileName = src?.name || `source_document_${index + 1}.pdf`;
+
+    // A. Check if the record already has the Blob or bytes attached to src
+    if (src) {
+      if (src.blob instanceof Blob && src.blob.size > 0) {
+        blob = src.blob;
+      } else if (src.bytes && (src.bytes.byteLength || src.bytes.length)) {
+        blob = new Blob([src.bytes], { type: src.type || 'application/pdf' });
+      }
+    }
+
+    // B. Check if src.name exists independently in PixKitStorage
+    if (!blob && fileName) {
+      try {
+        const directRecord = await PixKitStorage.getRecentFile(fileName);
+        if (directRecord) {
+          const directBlob = directRecord.activeBlob || directRecord.blob;
+          if (directBlob instanceof Blob && directBlob.size > 0) {
+            blob = directBlob;
+          }
+        }
+      } catch (_) {}
+    }
+
+    // C. Check if it's one of the built-in sample PDFs
+    if (!blob && fileName) {
+      const lower = fileName.toLowerCase();
+      if (lower.includes('report_a')) {
+        blob = await generateSampleDocABlob();
+      } else if (lower.includes('appendix_b')) {
+        blob = await generateSampleDocBBlob();
+      } else if (lower.includes('corporate_report') || lower.includes('6page')) {
+        blob = await generateSample6PageBlob();
+      }
+    }
+
+    // D. Extract pages directly from the parent document's cached Blob using PDFLib!
+    if (!blob && record && window.PDFLib) {
+      const parentBlob = record.activeBlob || record.blob;
+      if (parentBlob instanceof Blob && parentBlob.size > 0) {
+        try {
+          let startPage = 0;
+          for (let i = 0; i < index; i++) {
+            startPage += (sourceList[i]?.pageCount || 1);
+          }
+          const pageCount = src?.pageCount || 1;
+
+          const parentBytes = await parentBlob.arrayBuffer();
+          const parentDoc = await window.PDFLib.PDFDocument.load(parentBytes, { ignoreEncryption: true });
+          const totalPages = parentDoc.getPageCount();
+
+          const pageIndices = [];
+          for (let p = startPage; p < Math.min(startPage + pageCount, totalPages); p++) {
+            pageIndices.push(p);
+          }
+
+          if (pageIndices.length > 0) {
+            const extractedDoc = await window.PDFLib.PDFDocument.create();
+            const copiedPages = await extractedDoc.copyPages(parentDoc, pageIndices);
+            copiedPages.forEach(p => extractedDoc.addPage(p));
+            const extractedBytes = await extractedDoc.save();
+            blob = new Blob([extractedBytes], { type: 'application/pdf' });
+          }
+        } catch (extractErr) {
+          console.warn('Could not slice source pages from merged PDF:', extractErr);
+        }
+      }
+    }
+
+    return { blob, fileName, src };
+  }
+
   window.selectPickerSourceFile = async function(parentName, index, event) {
     if (event) {
       event.preventDefault();
@@ -1963,45 +2196,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     showImageUploadProgress('source_doc', 35, 'Loading source document...');
     try {
-      if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.getRecentFile === 'function') {
-        const record = await PixKitStorage.getRecentFile(parentName);
-        if (record && record.sourceFiles && record.sourceFiles[index]) {
-          const src = record.sourceFiles[index];
-          let blob = src.blob;
-          if (!blob && src.bytes) {
-            blob = new Blob([src.bytes], { type: src.type || 'application/pdf' });
-          }
-          if (blob) {
-            const isPdf = (src.type && src.type.includes('pdf')) || (src.name && src.name.toLowerCase().endsWith('.pdf'));
-            const file = new File([blob], src.name, { type: src.type || (isPdf ? 'application/pdf' : 'image/png') });
+      const { blob, fileName } = await getSourceFileBlob(parentName, index);
 
-            if (isPdf) {
-              if (window.handlePdfMergeFiles && activeTool === 'doc-merge-pdf') {
-                await window.handlePdfMergeFiles([file]);
-              } else if (window.handlePdfSplitFile && activeTool === 'doc-split-pdf') {
-                await window.handlePdfSplitFile(file);
-              } else if (window.handlePdfCompressFile && activeTool === 'doc-compress-pdf') {
-                await window.handlePdfCompressFile(file);
-              } else if (window.handlePdfRotateFile && activeTool === 'doc-rotate-pdf') {
-                await window.handlePdfRotateFile(file);
-              } else if (window.handlePdfDeleteFile && activeTool === 'doc-delete-pdf') {
-                await window.handlePdfDeleteFile(file);
-              } else if (window.handlePdfFileUpload) {
-                await window.handlePdfFileUpload(file);
-              }
-              showToast(`Loaded source "${src.name}" into workspace`);
-              return;
-            } else {
-              await handleImageFile(file);
-              showToast(`Loaded source "${src.name}" into workspace`);
-              return;
-            }
+      if (blob) {
+        const isPdf = (fileName.toLowerCase().endsWith('.pdf')) || (blob.type && blob.type.includes('pdf'));
+        const file = new File([blob], fileName, { type: blob.type || (isPdf ? 'application/pdf' : 'image/png') });
+
+        if (isPdf) {
+          if (window.handlePdfMergeFiles && activeTool === 'doc-merge-pdf') {
+            await window.handlePdfMergeFiles([file]);
+          } else if (window.handlePdfSplitFile && activeTool === 'doc-split-pdf') {
+            await window.handlePdfSplitFile(file);
+          } else if (window.handlePdfCompressFile && activeTool === 'doc-compress-pdf') {
+            await window.handlePdfCompressFile(file);
+          } else if (window.handlePdfRotateFile && activeTool === 'doc-rotate-pdf') {
+            await window.handlePdfRotateFile(file);
+          } else if (window.handlePdfDeleteFile && activeTool === 'doc-delete-pdf') {
+            await window.handlePdfDeleteFile(file);
+          } else if (window.handlePdfFileUpload) {
+            await window.handlePdfFileUpload(file);
           }
+          showImageUploadProgress(fileName, 100, `${formatFileSize(blob.size)} · Ready`);
+          showToast(`Loaded source "${fileName}" into workspace`);
+          return;
+        } else {
+          await handleImageFile(file);
+          showImageUploadProgress(fileName, 100, `${formatFileSize(blob.size)} · Ready`);
+          showToast(`Loaded source "${fileName}" into workspace`);
+          return;
         }
       }
     } catch (err) {
       console.warn('Error selecting source file from picker:', err);
     }
+    showImageUploadProgress('source_doc', 100, 'Source file unavailable');
     showToast('Source file buffer not available in local cache');
   };
 
@@ -2038,16 +2266,19 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (window.handlePdfFileUpload) {
               await window.handlePdfFileUpload(file);
             }
+            showImageUploadProgress(name, 100, `${formatFileSize(blob.size)} · Ready`);
             showToast(`Loaded "${name}" into workspace`);
             return;
           } else if (activeTool === 'convert-svg' || file.type === 'image/svg+xml' || name.toLowerCase().endsWith('.svg')) {
             if (typeof window.handleSvgFileSelect === 'function') {
               window.handleSvgFileSelect({ target: { files: [file] } });
             }
+            showImageUploadProgress(name, 100, `${formatFileSize(blob.size)} · Ready`);
             showToast(`Loaded "${name}" into workspace`);
             return;
           } else {
             await handleImageFile(file);
+            showImageUploadProgress(name, 100, `${formatFileSize(blob.size)} · Ready`);
             showToast(`Loaded "${name}" into workspace`);
             return;
           }
@@ -2057,20 +2288,51 @@ document.addEventListener('DOMContentLoaded', () => {
       console.warn('Recent picker load error:', err);
     }
 
-    // 2. Try session fallback
+    // 2. Check if it's one of the built-in sample PDFs
+    if (isPdf) {
+      let sampleBlob = null;
+      const lower = name.toLowerCase();
+      if (lower.includes('report_a')) sampleBlob = await generateSampleDocABlob();
+      else if (lower.includes('appendix_b')) sampleBlob = await generateSampleDocBBlob();
+      else if (lower.includes('corporate_report') || lower.includes('6page')) sampleBlob = await generateSample6PageBlob();
+
+      if (sampleBlob) {
+        const file = new File([sampleBlob], name, { type: 'application/pdf' });
+        if (window.handlePdfMergeFiles && activeTool === 'doc-merge-pdf') {
+          await window.handlePdfMergeFiles([file]);
+        } else if (window.handlePdfSplitFile && activeTool === 'doc-split-pdf') {
+          await window.handlePdfSplitFile(file);
+        } else if (window.handlePdfCompressFile && activeTool === 'doc-compress-pdf') {
+          await window.handlePdfCompressFile(file);
+        } else if (window.handlePdfRotateFile && activeTool === 'doc-rotate-pdf') {
+          await window.handlePdfRotateFile(file);
+        } else if (window.handlePdfDeleteFile && activeTool === 'doc-delete-pdf') {
+          await window.handlePdfDeleteFile(file);
+        } else if (window.handlePdfFileUpload) {
+          await window.handlePdfFileUpload(file);
+        }
+        showImageUploadProgress(name, 100, `${formatFileSize(sampleBlob.size)} · Ready`);
+        showToast(`Loaded "${name}" into workspace`);
+        return;
+      }
+    }
+
+    // 3. Try session fallback
     try {
       if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.loadSession === 'function') {
         const session = await PixKitStorage.loadSession();
         if (session && session.filename === name && session.activeBlob) {
           const file = new File([session.activeBlob], name, { type: session.fileType || 'image/png' });
           await handleImageFile(file);
+          showImageUploadProgress(name, 100, `${formatFileSize(session.activeBlob.size)} · Ready`);
           showToast(`Loaded "${name}" from storage`);
           return;
         }
       }
     } catch (_) {}
 
-    // 3. Prompt user if memory was purged
+    // 4. Prompt user if memory was purged
+    showImageUploadProgress(name, 100, 'Cache purged');
     showToast(`High-resolution cache purged for "${name}". Please choose the file from disk.`);
     window.triggerActiveToolUpload();
   };
@@ -2204,20 +2466,11 @@ document.addEventListener('DOMContentLoaded', () => {
       event.stopPropagation();
     }
     try {
-      if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.getRecentFile === 'function') {
-        const record = await PixKitStorage.getRecentFile(parentName);
-        if (record && record.sourceFiles && record.sourceFiles[index]) {
-          const src = record.sourceFiles[index];
-          let blob = src.blob;
-          if (!blob && src.bytes) {
-            blob = new Blob([src.bytes], { type: src.type || 'application/pdf' });
-          }
-          if (blob) {
-            triggerBlobDownload(blob, src.name);
-            showToast(`Downloaded original source: ${src.name}`);
-            return;
-          }
-        }
+      const { blob, fileName } = await getSourceFileBlob(parentName, index);
+      if (blob) {
+        triggerBlobDownload(blob, fileName);
+        showToast(`Downloaded original source: ${fileName}`);
+        return;
       }
     } catch (e) {
       console.warn('Error downloading source file:', e);
@@ -2231,30 +2484,22 @@ document.addEventListener('DOMContentLoaded', () => {
       event.stopPropagation();
     }
     try {
-      if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.getRecentFile === 'function') {
-        const record = await PixKitStorage.getRecentFile(parentName);
-        if (record && record.sourceFiles && record.sourceFiles[index]) {
-          const src = record.sourceFiles[index];
-          let blob = src.blob;
-          if (!blob && src.bytes) {
-            blob = new Blob([src.bytes], { type: src.type || 'application/pdf' });
-          }
-          if (blob) {
-            window.closePdfSourcesModal();
-            const file = new File([blob], src.name, { type: src.type || 'application/pdf' });
-            if (src.type === 'application/pdf' || src.name.toLowerCase().endsWith('.pdf')) {
-              window.openToolWorkspace('doc-pdf-to-images');
-              setTimeout(() => {
-                if (window.handlePdfFileUpload) window.handlePdfFileUpload(file);
-              }, 120);
-            } else {
-              await handleImageFile(file);
-              if (!activeTool) window.showView('edit');
-            }
-            showToast(`Loaded "${src.name}" into workspace`);
-            return;
-          }
+      const { blob, fileName } = await getSourceFileBlob(parentName, index);
+      if (blob) {
+        window.closePdfSourcesModal();
+        const isPdf = (fileName.toLowerCase().endsWith('.pdf')) || (blob.type && blob.type.includes('pdf'));
+        const file = new File([blob], fileName, { type: blob.type || (isPdf ? 'application/pdf' : 'image/png') });
+        if (isPdf) {
+          window.openToolWorkspace('doc-pdf-to-images');
+          setTimeout(() => {
+            if (window.handlePdfFileUpload) window.handlePdfFileUpload(file);
+          }, 120);
+        } else {
+          await handleImageFile(file);
+          if (!activeTool) window.showView('edit');
         }
+        showToast(`Loaded "${fileName}" into workspace`);
+        return;
       }
     } catch (e) {
       console.warn('Error opening source file:', e);
@@ -8642,8 +8887,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const bytesB = await docB.save();
 
       const sampleFiles = [
-        { name: 'PixKit_Report_A.pdf', bytes: bytesA, size: bytesA.byteLength, pageCount: 3 },
-        { name: 'PixKit_Appendix_B.pdf', bytes: bytesB, size: bytesB.byteLength, pageCount: 2 }
+        { name: 'PixKit_Report_A.pdf', file: new File([bytesA], 'PixKit_Report_A.pdf', { type: 'application/pdf' }), bytes: bytesA, size: bytesA.byteLength, pageCount: 3 },
+        { name: 'PixKit_Appendix_B.pdf', file: new File([bytesB], 'PixKit_Appendix_B.pdf', { type: 'application/pdf' }), bytes: bytesB, size: bytesB.byteLength, pageCount: 2 }
       ];
 
       await handlePdfMergeFiles(sampleFiles);
