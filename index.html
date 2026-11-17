@@ -430,18 +430,72 @@
       pointer-events: none;
     }
 
-    .center-brand-logo:hover .brand-mark-green {
+    .center-brand-logo:hover .brand-mark-green,
+    .center-brand-logo:active .brand-mark-green,
+    .center-brand-logo.touch-active .brand-mark-green {
       opacity: 1;
       transform: translateY(0) scale(1);
     }
 
-    .center-brand-logo:hover .brand-mark-base {
+    .center-brand-logo:hover .brand-mark-base,
+    .center-brand-logo:active .brand-mark-base,
+    .center-brand-logo.touch-active .brand-mark-base {
       opacity: 0;
       transform: translateY(-10px) scale(0.96);
     }
 
-    .center-brand-logo:hover .center-brand-mark {
-      box-shadow: 0 16px 40px rgba(215, 243, 106, 0.35);
+    .center-brand-logo:hover .center-brand-mark,
+    .center-brand-logo:active .center-brand-mark,
+    .center-brand-logo.touch-active .center-brand-mark {
+      box-shadow: 0 16px 40px rgba(215, 243, 106, 0.42);
+    }
+
+    .center-brand-logo:active .center-brand-mark,
+    .center-brand-logo.touch-active .center-brand-mark {
+      transform: scale(0.94);
+    }
+
+    /* Ambient Touch & Mobile Breathing Animation for Logo Mark */
+    @media (hover: none) and (pointer: coarse) {
+      .center-brand-mark {
+        animation: mobileLogoAmbient 6.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+      }
+      .center-brand-mark .brand-mark-green {
+        animation: mobileGreenAmbient 6.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+      }
+      .center-brand-mark .brand-mark-base {
+        animation: mobileBaseAmbient 6.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+      }
+      @keyframes mobileLogoAmbient {
+        0%, 75%, 100% {
+          box-shadow: 0 10px 28px rgba(34, 36, 31, 0.15);
+          transform: translateY(0);
+        }
+        84% {
+          box-shadow: 0 16px 40px rgba(215, 243, 106, 0.45);
+          transform: translateY(-2px);
+        }
+      }
+      @keyframes mobileGreenAmbient {
+        0%, 75%, 100% {
+          opacity: 0;
+          transform: translateY(12px) scale(0.94);
+        }
+        84%, 92% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+      @keyframes mobileBaseAmbient {
+        0%, 75%, 100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        84%, 92% {
+          opacity: 0;
+          transform: translateY(-8px) scale(0.96);
+        }
+      }
     }
 
     .center-brand-name {
@@ -812,7 +866,7 @@
     .seo-pill-tag {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
       padding: 6px 14px;
       border-radius: 9999px;
       background: var(--lime);
@@ -823,6 +877,27 @@
       letter-spacing: 0.08em;
       margin-bottom: 16px;
       font-family: 'JetBrains Mono', monospace;
+      box-shadow: 0 2px 10px rgba(215, 243, 106, 0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .seo-pill-tag:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(215, 243, 106, 0.5);
+    }
+
+    .seo-pill-dot {
+      width: 6.5px;
+      height: 6.5px;
+      border-radius: 50%;
+      background: #121310;
+      display: inline-block;
+      animation: pillDotBreathe 2s ease-in-out infinite;
+    }
+
+    @keyframes pillDotBreathe {
+      0%, 100% { transform: scale(1); opacity: 0.95; }
+      50% { transform: scale(1.4); opacity: 0.4; }
     }
 
     .seo-heading {
@@ -859,6 +934,14 @@
       border: 1px solid var(--line);
       border-radius: 9999px;
       color: var(--muted);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    [data-theme="dark"] .seo-category-title .cat-badge {
+      background: rgba(215, 243, 106, 0.08);
+      border-color: rgba(215, 243, 106, 0.22);
+      color: var(--ink);
     }
 
     .seo-grid {
@@ -1539,6 +1622,345 @@
       filter: blur(3.5px);
       opacity: 0;
     }
+
+    /* ==========================================================================
+       Complete Mobile View & Responsive UI Optimization (Phone & Small Tablet)
+       ========================================================================== */
+    @media (max-width: 768px) {
+      /* 1. Header & Navigation */
+      .top-bar {
+        top: max(14px, env(safe-area-inset-top, 14px));
+        right: max(16px, env(safe-area-inset-right, 16px));
+      }
+      .btn-ghost-nav {
+        display: none !important;
+      }
+      .btn-pill {
+        padding: 8px 16px;
+        font-size: 12px;
+      }
+
+      /* 2. Hero Stage & Brand Display */
+      .hero-stage {
+        padding: 56px 16px 36px;
+        min-height: 100dvh;
+        min-height: -webkit-fill-available;
+      }
+      .center-brand-wrap {
+        width: 100%;
+        max-width: 100%;
+      }
+      .center-brand-logo {
+        gap: 14px;
+        padding: 6px 12px;
+        margin-bottom: 8px;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .center-brand-mark {
+        width: clamp(52px, 14vw, 64px);
+        height: clamp(52px, 14vw, 64px);
+        border-radius: clamp(15px, 4vw, 18px);
+      }
+      .brand-mark-base,
+      .brand-mark-green {
+        font-size: clamp(28px, 7.5vw, 34px);
+      }
+      .center-brand-name {
+        font-size: clamp(44px, 13vw, 68px);
+        letter-spacing: -0.04em;
+      }
+
+      /* 3. Encrypted Text Scrambler */
+      .encrypted-text-container {
+        max-width: 330px;
+        margin-top: 2px;
+        margin-bottom: 18px;
+        padding: 4px 6px;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .encrypted-text {
+        font-size: 12px;
+        line-height: 1.45;
+        white-space: normal;
+        word-break: break-word;
+      }
+
+      /* 4. Hero Action Buttons */
+      .hero-actions-group {
+        width: 100%;
+        max-width: 330px;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 4px;
+        margin-bottom: 18px;
+      }
+      .enter-studio-link,
+      .hero-explore-pill {
+        width: 100%;
+        justify-content: center;
+        padding: 13px 20px;
+        font-size: 13.5px;
+        min-height: 48px;
+        box-sizing: border-box;
+      }
+
+      /* 5. Quick Tools Chips (Clean 2x2 Grid) */
+      .hero-quick-tools {
+        border-radius: 20px;
+        padding: 10px 12px;
+        gap: 6px;
+        width: 100%;
+        max-width: 340px;
+        margin-bottom: 18px;
+        box-sizing: border-box;
+      }
+      .quick-tools-label {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 4px;
+        font-size: 10.5px;
+      }
+      .hero-tool-chip {
+        flex: 1 1 calc(50% - 6px);
+        justify-content: center;
+        padding: 8px 10px;
+        font-size: 12px;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .hero-tool-chip:active {
+        transform: scale(0.96);
+      }
+
+      /* 6. Privacy Strip Micro Badges */
+      .hero-privacy-strip {
+        gap: 6px;
+        font-size: 11px;
+        max-width: 340px;
+        justify-content: center;
+      }
+      .privacy-dot {
+        display: none !important;
+      }
+      .privacy-item {
+        background: var(--soft);
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        font-size: 11px;
+        white-space: nowrap;
+      }
+
+      /* 7. Complete Tools & SEO Showcase */
+      .seo-wrapper {
+        padding: 56px 16px 48px;
+      }
+      .seo-section-header {
+        margin-bottom: 36px;
+      }
+      .seo-heading {
+        font-size: clamp(26px, 7vw, 34px);
+        margin-bottom: 12px;
+        line-height: 1.2;
+      }
+      .seo-lead {
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      .seo-category-title {
+        font-size: 18px;
+        margin: 40px 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .seo-category-title .cat-badge {
+        font-size: 10.5px;
+        padding: 3px 9px;
+      }
+      .seo-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin-bottom: 44px;
+      }
+      .seo-tool-card {
+        padding: 18px 16px;
+        border-radius: 16px;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .seo-tool-card:active {
+        transform: scale(0.985);
+        background: var(--soft);
+      }
+      .seo-tool-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+        border-radius: 11px;
+        margin-bottom: 12px;
+      }
+      .seo-tool-name {
+        font-size: 16.5px;
+        margin-bottom: 6px;
+      }
+      .seo-tool-desc {
+        font-size: 13px;
+        line-height: 1.5;
+        margin-bottom: 14px;
+      }
+      .seo-tool-action {
+        font-size: 11.5px;
+      }
+
+      /* 8. Privacy Manifesto Card */
+      .seo-privacy-banner {
+        padding: 32px 18px;
+        border-radius: 20px;
+        margin-bottom: 52px;
+      }
+      .seo-privacy-banner h3 {
+        font-size: 21px;
+        margin-bottom: 10px;
+        line-height: 1.3;
+      }
+      .seo-privacy-banner p {
+        font-size: 13.5px;
+        margin-bottom: 20px;
+        line-height: 1.55;
+      }
+      .seo-privacy-points {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        max-width: 290px;
+        margin: 0 auto;
+      }
+      .seo-point {
+        font-size: 13px;
+      }
+
+      /* 9. App Testing Banner */
+      .pixkit-app-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 16px;
+        gap: 14px;
+      }
+      .app-banner-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .app-banner-btn {
+        justify-content: center;
+        padding: 9px 12px;
+        font-size: 12px;
+      }
+
+      /* 10. FAQ Accordion */
+      .seo-faq-wrap {
+        margin-bottom: 60px;
+      }
+      .seo-faq-item summary {
+        padding: 16px 18px;
+        font-size: 14.5px;
+        gap: 12px;
+      }
+      .seo-faq-content {
+        padding: 0 18px 16px;
+        font-size: 13.5px;
+        line-height: 1.6;
+      }
+
+      /* 11. Footer & Watermark Canvas */
+      .aceternity-footer {
+        padding: 44px 0 20px;
+        margin-top: 40px;
+      }
+      .aceternity-footer-top {
+        gap: 32px;
+        margin-bottom: 32px;
+      }
+      .aceternity-footer-brand {
+        text-align: center;
+        align-items: center;
+      }
+      .aceternity-brand-lockup {
+        justify-content: center;
+      }
+      .aceternity-footer-grids {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px 16px;
+      }
+      .aceternity-grid-col {
+        gap: 8px;
+      }
+      .aceternity-grid-links a {
+        font-size: 13px;
+        padding: 4px 0;
+      }
+      .aceternity-footer-bottom {
+        flex-direction: column-reverse;
+        gap: 14px;
+        text-align: center;
+        padding-top: 20px;
+      }
+      .aceternity-watermark-canvas {
+        height: clamp(65px, 16vw, 110px);
+      }
+    }
+
+    /* Small Mobile Displays (<= 480px, e.g. iPhone SE, iPhone Mini, Galaxy S series) */
+    @media (max-width: 480px) {
+      .hero-stage {
+        padding: 48px 12px 28px;
+      }
+      .center-brand-logo {
+        gap: 10px;
+        padding: 2px 4px;
+      }
+      .center-brand-mark {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+      }
+      .brand-mark-base,
+      .brand-mark-green {
+        font-size: 25px;
+      }
+      .center-brand-name {
+        font-size: clamp(38px, 11vw, 46px);
+      }
+      .encrypted-text-container {
+        max-width: 290px;
+      }
+      .encrypted-text {
+        font-size: 11.5px;
+      }
+      .hero-quick-tools {
+        max-width: 310px;
+      }
+      .hero-tool-chip {
+        font-size: 11.5px;
+        padding: 7px 8px;
+      }
+      .seo-wrapper {
+        padding: 44px 12px 40px;
+      }
+      .seo-tool-card {
+        padding: 15px 14px;
+      }
+      .seo-privacy-banner {
+        padding: 24px 14px;
+      }
+      .aceternity-footer-grids {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1628,7 +2050,7 @@
       
       <!-- Section Header -->
       <header class="seo-section-header">
-        <span class="seo-pill-tag">✳ 100% Free &amp; Private</span>
+        <span class="seo-pill-tag"><span class="seo-pill-dot"></span> 100% Free &amp; Private</span>
         <h1 class="seo-heading">Free Online Image &amp; PDF Tools</h1>
         <p class="seo-lead">
           Fast, client-side utility suite designed for speed and total privacy. 
@@ -1876,7 +2298,7 @@
 
       <!-- FAQ Section -->
       <div class="seo-section-header" style="margin-bottom: 36px;">
-        <span class="seo-pill-tag">❓ Knowledge Base</span>
+        <span class="seo-pill-tag"><span class="seo-pill-dot"></span> Knowledge Base</span>
         <h2 class="seo-heading" style="font-size: clamp(24px, 3.5vw, 36px);">Frequently Asked Questions</h2>
         <p class="seo-lead">Everything you need to know about using PixKit for free image and PDF processing.</p>
       </div>
@@ -2347,13 +2769,7 @@
       localStorage.setItem('pixkit_target_route', cleanRoute);
       localStorage.setItem('pixkit_entered', 'true');
 
-      // Strict Gate: Mobile phone view cannot enter until user switches to Desktop Mode
-      if (isMobilePhoneMode()) {
-        pendingStudioRoute = cleanRoute;
-        showDesktopModeModal();
-        return;
-      }
-
+      // Direct entry to Studio (now fully responsive on mobile devices)
       window.location.href = 'studio';
     }
 
@@ -2429,6 +2845,23 @@
           brandName.style.transform = 'translate3d(0, 0, 0)';
         }
       });
+
+      // Mobile Touch Interaction: Reveals glowing lime star & adds tactile scale feedback
+      logoWrap.addEventListener('touchstart', () => {
+        logoWrap.classList.add('touch-active');
+        markBox.style.transform = 'scale(0.92)';
+      }, { passive: true });
+
+      const clearLogoTouch = () => {
+        logoWrap.classList.remove('touch-active');
+        markBox.style.transform = 'translate3d(0, 0, 0) rotate(0deg) scale(1)';
+        if (brandName) {
+          brandName.style.transform = 'translate3d(0, 0, 0)';
+        }
+      };
+
+      logoWrap.addEventListener('touchend', clearLogoTouch, { passive: true });
+      logoWrap.addEventListener('touchcancel', clearLogoTouch, { passive: true });
     })();
 
     /**
@@ -2489,6 +2922,7 @@
       if (container) {
         container.addEventListener('mouseenter', scrambleAndDecrypt);
         container.addEventListener('click', scrambleAndDecrypt);
+        container.addEventListener('touchstart', scrambleAndDecrypt, { passive: true });
       }
     })();
 
@@ -2573,11 +3007,12 @@
       let dpr = 1;
 
       // Cube Configuration - ZERO GAP for seamless flat surface
-      const CUBE_SIZE = 30;
+      let CUBE_SIZE = 30;
       const GAP = 0;
       let cols = 0;
       let rows = 0;
       let grid = [];
+      let isCanvasVisible = true;
 
       // Mouse & Ripple State
       const mouse = {
@@ -2617,7 +3052,9 @@
       let time = 0;
 
       function resize() {
-        dpr = window.devicePixelRatio || 1;
+        const isMobile = window.innerWidth < 768;
+        CUBE_SIZE = isMobile ? 38 : 30;
+        dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.75 : 2);
         width = window.innerWidth;
         height = window.innerHeight;
 
@@ -2650,8 +3087,9 @@
       window.addEventListener('resize', resize);
       resize();
 
-      // Mouse events
+      // Mouse & Pointer events
       window.addEventListener('pointermove', (e) => {
+        if (e.pointerType === 'touch') return;
         mouse.targetX = e.clientX;
         mouse.targetY = e.clientY;
       });
@@ -2662,8 +3100,45 @@
       });
 
       window.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch') return;
         addShockwave(e.clientX, e.clientY, 42);
       });
+
+      // Mobile Touch wave & shockwave interactions
+      window.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches.length > 0) {
+          const t = e.touches[0];
+          mouse.targetX = t.clientX;
+          mouse.targetY = t.clientY;
+          mouse.x = t.clientX;
+          mouse.y = t.clientY;
+          addShockwave(t.clientX, t.clientY, 32);
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches && e.touches.length > 0) {
+          const t = e.touches[0];
+          mouse.targetX = t.clientX;
+          mouse.targetY = t.clientY;
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchend', () => {
+        mouse.targetX = -1000;
+        mouse.targetY = -1000;
+      }, { passive: true });
+
+      // Pause render loop when scrolled off-screen to preserve battery and GPU on mobile
+      if ('IntersectionObserver' in window) {
+        const heroStage = document.getElementById('heroStage') || canvas;
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            isCanvasVisible = entry.isIntersecting;
+          });
+        }, { threshold: 0.05 });
+        observer.observe(heroStage);
+      }
 
       if (centerBrand) {
         centerBrand.addEventListener('pointerenter', () => {
@@ -2921,9 +3396,15 @@
 
       // Animation Loop
       function render() {
+        if (!isCanvasVisible) {
+          requestAnimationFrame(render);
+          return;
+        }
+
         const speed = speedSlider ? (parseFloat(speedSlider.value) || 1.0) : 1.0;
         const maxDepth = depthSlider ? (parseFloat(depthSlider.value) || 32) : 32;
         const colors = getActiveThemeColors();
+        const activeSize = window.innerWidth < 768 ? 38 : CUBE_SIZE;
 
         time += 0.014 * speed;
 
@@ -2960,7 +3441,7 @@
         // Render elevated cubes only
         for (let i = 0; i < grid.length; i++) {
           const cell = grid[i];
-          drawSeamlessVoxelCube(cell.x, cell.y, CUBE_SIZE, cell.currentZ, cell.intensity, colors);
+          drawSeamlessVoxelCube(cell.x, cell.y, activeSize, cell.currentZ, cell.intensity, colors);
         }
 
         requestAnimationFrame(render);
@@ -3193,6 +3674,12 @@
       });
 
       // Touch events (mobile / tablets)
+      canvas.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches[0]) {
+          handlePaintMove(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: true });
+
       canvas.addEventListener('touchmove', (e) => {
         if (e.touches && e.touches[0]) {
           handlePaintMove(e.touches[0].clientX, e.touches[0].clientY);
