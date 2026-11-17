@@ -1478,8 +1478,9 @@ class PixKitEngine {
   }
 
   // Auto-calibrate quality & dimensions to guarantee output file size is strictly under targetBytes
-  async autoCalibrateCompression(targetBytes, mimeType = 'image/jpeg') {
-    const srcCanvas = this.activeCanvas;
+  async autoCalibrateCompression(targetBytes, mimeType = 'image/jpeg', overrideCanvas = null) {
+    const srcCanvas = overrideCanvas || this.activeCanvas;
+    if (!srcCanvas) return null;
     const origW = srcCanvas.width;
     const origH = srcCanvas.height;
 
@@ -1773,6 +1774,9 @@ class PixKitEngine {
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
+    if (typeof window.triggerDownloadSupportPrompt === 'function') {
+      window.triggerDownloadSupportPrompt();
+    }
     return blob;
   }
 

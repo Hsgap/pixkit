@@ -137,6 +137,9 @@
     }
     document.body.classList.remove('has-support-toast');
     document.documentElement.style.removeProperty('--support-toast-height');
+    try {
+      sessionStorage.setItem('pixkit_support_toast_dismissed', '1');
+    } catch (_) {}
   };
 
   window.handleToastSupportClick = function () {
@@ -144,28 +147,23 @@
     window.location.href = 'support';
   };
 
-  // Start 5-Minute Recurring Cycle in Studio
-  function initSupportToastCycle() {
-    // Only activate inside studio workspace
-    const isStudio = document.querySelector('.shell') || window.location.pathname.includes('studio');
-    if (!isStudio) return;
+  // Trigger non-intrusive support prompt ONLY after a user successfully downloads an asset
+  window.triggerDownloadSupportPrompt = function () {
+    try {
+      if (sessionStorage.getItem('pixkit_support_toast_dismissed')) return;
+      if (sessionStorage.getItem('pixkit_support_toast_shown')) return;
+      sessionStorage.setItem('pixkit_support_toast_shown', '1');
+    } catch (_) {}
 
-    // First appearance after 10s on page load for easy review
+    if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
+      if (!window.PixKitRemote.isFeatureEnabled('community', 'supportModal')) return;
+    }
+
+    // Wait 2.5s so it never collides with the user's active workflow
     setTimeout(() => {
-      if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
-        if (!window.PixKitRemote.isFeatureEnabled('community', 'supportModal')) return;
-      }
       window.showSupportToast();
-    }, 10000);
-
-    // Then recurring every 5 minutes (300,000 ms)
-    setInterval(() => {
-      if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
-        if (!window.PixKitRemote.isFeatureEnabled('community', 'supportModal')) return;
-      }
-      window.showSupportToast();
-    }, 5 * 60 * 1000);
-  }
+    }, 2500);
+  };
 
   // Global Escape key handler
   document.addEventListener('keydown', function (e) {
@@ -173,11 +171,5 @@
       window.dismissSupportToast();
     }
   });
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initSupportToastCycle);
-  } else {
-    initSupportToastCycle();
-  }
 
 })(window);

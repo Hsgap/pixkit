@@ -72,14 +72,46 @@
         }
       } catch (_) {}
 
+      // 1b. Real-Time BroadcastChannel for instant same-browser cross-tab sync
+      if (typeof window !== 'undefined' && typeof window.BroadcastChannel !== 'undefined') {
+        try {
+          const fleetChan = new BroadcastChannel('pixkit_fleet_channel');
+          fleetChan.onmessage = (event) => {
+            if (event.data && (event.data.type === 'ECOSYSTEM_UPDATE' || event.data.type === 'PIXKIT_ECOSYSTEM_UPDATE')) {
+              const fresh = event.data.state || event.data.payload;
+              if (fresh && typeof fresh === 'object') {
+                this.state = fresh;
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); } catch (_) {}
+                this.evaluateState();
+                this.notifyListeners();
+              }
+            }
+          };
+        } catch (_) {}
+      }
+
+      // 1c. Cross-tab storage event sync
+      if (typeof window !== 'undefined') {
+        window.addEventListener('storage', (e) => {
+          if (e.key === STORAGE_KEY && e.newValue) {
+            try {
+              this.state = JSON.parse(e.newValue);
+              this.evaluateState();
+              this.notifyListeners();
+            } catch (_) {}
+          }
+        });
+      }
+
       // 2. Connect to Realtime Stream (EventSource SSE or Firebase RTDB)
       this.connectRealtimeStream();
 
       // 3. Initial sync from Cloud
       await this.sync();
 
-      // 4. Poll every 15s and immediately on app resume or tab focus
-      setInterval(() => this.sync(), 15000);
+      // 4. Poll every 2s on localhost (15s in production) and immediately on app resume or tab focus
+      const isLocalEnv = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+      setInterval(() => this.sync(), isLocalEnv ? 2000 : 15000);
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) this.sync();
       });
@@ -192,6 +224,31 @@
     sync: async function () {
       let loaded = false;
 
+      // 0. Localhost Admin & Studio Server Direct Sync
+      if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+        try {
+          let localRes = await fetch('/api/status?t=' + Date.now(), { cache: 'no-store' });
+          if (!localRes.ok || localRes.status === 404) {
+            localRes = await fetch('http://localhost:3001/api/status?t=' + Date.now(), { cache: 'no-store' });
+          }
+          if (localRes.ok) {
+            const localState = await localRes.json();
+            if (localState && typeof localState === 'object' && !localState.error) {
+              const stateChanged = JSON.stringify(this.state) !== JSON.stringify(localState);
+              this.state = localState;
+              try { localStorage.setItem(STORAGE_KEY, JSON.stringify(localState)); } catch (_) {}
+              if (stateChanged) {
+                this.evaluateState();
+                this.notifyListeners();
+              }
+              loaded = true;
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (loaded) return;
+
       // 1. Try Firebase RTDB SDK
       try {
         const db = getRTDB();
@@ -293,17 +350,17 @@
       return true;
     },
 
-    // Map studio toolId to ecosystem category and tool key
+    // Map studio toolId to ecosystem category and tool key (All 25 Studio Tools)
     getToolInfo: function (toolId) {
       if (!toolId) return null;
       const id = String(toolId).toLowerCase().trim();
 
       const toolMap = {
-        // Edit Tools
-        'resize': { cat: 'editTools', key: 'resize', name: 'Resize' },
-        'resize-image': { cat: 'editTools', key: 'resize', name: 'Resize' },
-        'crop': { cat: 'editTools', key: 'crop', name: 'Crop' },
-        'crop-image': { cat: 'editTools', key: 'crop', name: 'Crop' },
+        // --- 1. IMAGE EDIT SUITE (10 TOOLS) ---
+        'crop': { cat: 'editTools', key: 'crop', name: 'Crop & Aspect Ratio' },
+        'crop-image': { cat: 'editTools', key: 'crop', name: 'Crop & Aspect Ratio' },
+        'resize': { cat: 'editTools', key: 'resize', name: 'Resize & Dimensions' },
+        'resize-image': { cat: 'editTools', key: 'resize', name: 'Resize & Dimensions' },
         'rotate': { cat: 'editTools', key: 'rotateFlip', name: 'Rotate & Flip' },
         'rotate-image': { cat: 'editTools', key: 'rotateFlip', name: 'Rotate & Flip' },
         'rotateflip': { cat: 'editTools', key: 'rotateFlip', name: 'Rotate & Flip' },
@@ -314,69 +371,83 @@
         'adjust-image': { cat: 'editTools', key: 'adjust', name: 'Adjust Tones' },
         'filters': { cat: 'editTools', key: 'filters', name: 'Preset Filters' },
         'filter': { cat: 'editTools', key: 'filters', name: 'Preset Filters' },
+        'blur': { cat: 'editTools', key: 'blur', name: 'Focus & Depth (Blur)' },
+        'blur-image': { cat: 'editTools', key: 'blur', name: 'Focus & Depth (Blur)' },
+        'blur-focus': { cat: 'editTools', key: 'blur', name: 'Focus & Depth (Blur)' },
+        'canvas': { cat: 'editTools', key: 'canvas', name: 'Canvas & Framing' },
+        'canvas-expand': { cat: 'editTools', key: 'canvas', name: 'Canvas & Framing' },
+        'watermark': { cat: 'editTools', key: 'watermark', name: 'Watermark Overlay' },
+        'watermark-overlay': { cat: 'editTools', key: 'watermark', name: 'Watermark Overlay' },
+        'batch': { cat: 'editTools', key: 'batchEdit', name: 'Batch Image Processor' },
+        'batch-edit': { cat: 'editTools', key: 'batchEdit', name: 'Batch Image Processor' },
+        'batchedit': { cat: 'editTools', key: 'batchEdit', name: 'Batch Image Processor' },
         'draw': { cat: 'editTools', key: 'drawShapes', name: 'Draw & Shapes' },
         'drawshapes': { cat: 'editTools', key: 'drawShapes', name: 'Draw & Shapes' },
         'draw-shapes': { cat: 'editTools', key: 'drawShapes', name: 'Draw & Shapes' },
         'text': { cat: 'editTools', key: 'addText', name: 'Add Text' },
         'addtext': { cat: 'editTools', key: 'addText', name: 'Add Text' },
         'add-text': { cat: 'editTools', key: 'addText', name: 'Add Text' },
-        'blur': { cat: 'editTools', key: 'adjust', name: 'Blur Tool' },
-        'blur-image': { cat: 'editTools', key: 'adjust', name: 'Blur Tool' },
-        'blur-focus': { cat: 'editTools', key: 'adjust', name: 'Blur & Focus' },
 
-        // Convert Tools
-        'convert-format': { cat: 'convertTools', key: 'formatConverter', name: 'Format Converter' },
-        'convert': { cat: 'convertTools', key: 'formatConverter', name: 'Format Converter' },
-        'convert-image': { cat: 'convertTools', key: 'formatConverter', name: 'Format Converter' },
-        'formatconverter': { cat: 'convertTools', key: 'formatConverter', name: 'Format Converter' },
-        'format-converter': { cat: 'convertTools', key: 'formatConverter', name: 'Format Converter' },
-        'format': { cat: 'convertTools', key: 'formatConverter', name: 'Format Converter' },
-        'convert-svg': { cat: 'convertTools', key: 'svgToPng', name: 'SVG to PNG Converter' },
-        'svg-to-png': { cat: 'convertTools', key: 'svgToPng', name: 'SVG to PNG Converter' },
-        'svgtopng': { cat: 'convertTools', key: 'svgToPng', name: 'SVG to PNG Converter' },
-        'convert-heic': { cat: 'convertTools', key: 'heicToJpg', name: 'HEIC to JPG Converter' },
-        'heic-to-jpg': { cat: 'convertTools', key: 'heicToJpg', name: 'HEIC to JPG Converter' },
-        'heic': { cat: 'convertTools', key: 'heicToJpg', name: 'HEIC to JPG Converter' },
-        'heictojpg': { cat: 'convertTools', key: 'heicToJpg', name: 'HEIC to JPG Converter' },
-        'convert-pdf': { cat: 'convertTools', key: 'imageToPdf', name: 'Image to PDF' },
-        'imagetopdf': { cat: 'convertTools', key: 'imageToPdf', name: 'Image to PDF' },
-        'image-to-pdf': { cat: 'convertTools', key: 'imageToPdf', name: 'Image to PDF' },
-        'image-to-pdf-convert': { cat: 'convertTools', key: 'imageToPdf', name: 'Image to PDF' },
-        'convert-ico': { cat: 'convertTools', key: 'imageToIco', name: 'Image to ICO' },
-        'png-to-ico': { cat: 'convertTools', key: 'imageToIco', name: 'Image to ICO' },
-        'image-to-ico': { cat: 'convertTools', key: 'imageToIco', name: 'Image to ICO' },
-        'favicon-generator': { cat: 'convertTools', key: 'imageToIco', name: 'Favicon Generator' },
-        'convert-base64': { cat: 'convertTools', key: 'imageToBase64', name: 'Image to Base64' },
-        'image-to-base64': { cat: 'convertTools', key: 'imageToBase64', name: 'Image to Base64' },
-        'imagetobase64': { cat: 'convertTools', key: 'imageToBase64', name: 'Image to Base64' },
+        // --- 2. FORMAT CONVERSION SUITE (7 TOOLS) ---
+        'convert-format': { cat: 'convertTools', key: 'formatConverter', name: 'Target Format & Quality' },
+        'convert': { cat: 'convertTools', key: 'formatConverter', name: 'Target Format & Quality' },
+        'convert-image': { cat: 'convertTools', key: 'formatConverter', name: 'Target Format & Quality' },
+        'formatconverter': { cat: 'convertTools', key: 'formatConverter', name: 'Target Format & Quality' },
+        'format-converter': { cat: 'convertTools', key: 'formatConverter', name: 'Target Format & Quality' },
+        'format': { cat: 'convertTools', key: 'formatConverter', name: 'Target Format & Quality' },
+        'png-to-jpg': { cat: 'convertTools', key: 'formatConverter', name: 'PNG to JPG' },
+        'jpg-to-png': { cat: 'convertTools', key: 'formatConverter', name: 'JPG to PNG' },
+        'webp-to-jpg': { cat: 'convertTools', key: 'formatConverter', name: 'WebP to JPG' },
+        'jpg-to-webp': { cat: 'convertTools', key: 'formatConverter', name: 'JPG to WebP' },
+        'convert-heic': { cat: 'convertTools', key: 'heicToJpg', name: 'Apple HEIC Decoder' },
+        'heic-to-jpg': { cat: 'convertTools', key: 'heicToJpg', name: 'Apple HEIC Decoder' },
+        'heic': { cat: 'convertTools', key: 'heicToJpg', name: 'Apple HEIC Decoder' },
+        'heictojpg': { cat: 'convertTools', key: 'heicToJpg', name: 'Apple HEIC Decoder' },
+        'convert-svg': { cat: 'convertTools', key: 'svgToPng', name: 'SVG Vector Rasterizer' },
+        'svg-to-png': { cat: 'convertTools', key: 'svgToPng', name: 'SVG Vector Rasterizer' },
+        'svgtopng': { cat: 'convertTools', key: 'svgToPng', name: 'SVG Vector Rasterizer' },
+        'svg': { cat: 'convertTools', key: 'svgToPng', name: 'SVG Vector Rasterizer' },
+        'convert-ico': { cat: 'convertTools', key: 'imageToIco', name: 'Favicon & ICO Package' },
+        'png-to-ico': { cat: 'convertTools', key: 'imageToIco', name: 'Favicon & ICO Package' },
+        'image-to-ico': { cat: 'convertTools', key: 'imageToIco', name: 'Favicon & ICO Package' },
+        'favicon-generator': { cat: 'convertTools', key: 'imageToIco', name: 'Favicon & ICO Package' },
+        'convert-base64': { cat: 'convertTools', key: 'imageToBase64', name: 'Base64 & Data URLs' },
+        'image-to-base64': { cat: 'convertTools', key: 'imageToBase64', name: 'Base64 & Data URLs' },
+        'imagetobase64': { cat: 'convertTools', key: 'imageToBase64', name: 'Base64 & Data URLs' },
+        'base64': { cat: 'convertTools', key: 'imageToBase64', name: 'Base64 & Data URLs' },
+        'convert-pdf': { cat: 'convertTools', key: 'imageToPdf', name: 'Images to PDF Document' },
+        'imagetopdf': { cat: 'convertTools', key: 'imageToPdf', name: 'Images to PDF Document' },
+        'image-to-pdf': { cat: 'convertTools', key: 'imageToPdf', name: 'Images to PDF Document' },
+        'image-to-pdf-convert': { cat: 'convertTools', key: 'imageToPdf', name: 'Images to PDF Document' },
+        'batch-convert': { cat: 'convertTools', key: 'batchConvert', name: 'Batch Convert Processor' },
+        'batchconvert': { cat: 'convertTools', key: 'batchConvert', name: 'Batch Convert Processor' },
 
-        // PDF Tools
-        'doc-merge-pdf': { cat: 'pdfTools', key: 'mergePdf', name: 'Merge PDF' },
-        'merge-pdf': { cat: 'pdfTools', key: 'mergePdf', name: 'Merge PDF' },
-        'mergepdf': { cat: 'pdfTools', key: 'mergePdf', name: 'Merge PDF' },
-        'doc-split-pdf': { cat: 'pdfTools', key: 'splitPdf', name: 'Split PDF' },
-        'split-pdf': { cat: 'pdfTools', key: 'splitPdf', name: 'Split PDF' },
-        'splitpdf': { cat: 'pdfTools', key: 'splitPdf', name: 'Split PDF' },
+        // --- 3. PDF DOCUMENT SUITE (8 TOOLS) ---
+        'doc-convert-pdf': { cat: 'pdfTools', key: 'convertPdf', name: 'Convert to PDF Document' },
+        'doc-pdf-to-images': { cat: 'pdfTools', key: 'pdfToImages', name: 'PDF to Images Rasterizer' },
+        'pdf-to-images': { cat: 'pdfTools', key: 'pdfToImages', name: 'PDF to Images Rasterizer' },
+        'pdf-to-jpg': { cat: 'pdfTools', key: 'pdfToImages', name: 'PDF to Images Rasterizer' },
+        'pdf-to-image': { cat: 'pdfTools', key: 'pdfToImages', name: 'PDF to Images Rasterizer' },
+        'pdftoimages': { cat: 'pdfTools', key: 'pdfToImages', name: 'PDF to Images Rasterizer' },
+        'doc-merge-pdf': { cat: 'pdfTools', key: 'mergePdf', name: 'Merge PDF Documents' },
+        'merge-pdf': { cat: 'pdfTools', key: 'mergePdf', name: 'Merge PDF Documents' },
+        'mergepdf': { cat: 'pdfTools', key: 'mergePdf', name: 'Merge PDF Documents' },
+        'doc-split-pdf': { cat: 'pdfTools', key: 'splitPdf', name: 'Split & Extract PDF Pages' },
+        'split-pdf': { cat: 'pdfTools', key: 'splitPdf', name: 'Split & Extract PDF Pages' },
+        'splitpdf': { cat: 'pdfTools', key: 'splitPdf', name: 'Split & Extract PDF Pages' },
         'doc-compress-pdf': { cat: 'pdfTools', key: 'compressPdf', name: 'Compress PDF' },
         'compress-pdf': { cat: 'pdfTools', key: 'compressPdf', name: 'Compress PDF' },
         'compresspdf': { cat: 'pdfTools', key: 'compressPdf', name: 'Compress PDF' },
-        'doc-pdf-to-images': { cat: 'pdfTools', key: 'pdfToImages', name: 'PDF to Images' },
-        'pdf-to-images': { cat: 'pdfTools', key: 'pdfToImages', name: 'PDF to Images' },
-        'pdf-to-jpg': { cat: 'pdfTools', key: 'pdfToImages', name: 'PDF to Images' },
-        'pdf-to-image': { cat: 'pdfTools', key: 'pdfToImages', name: 'PDF to Images' },
-        'pdftoimages': { cat: 'pdfTools', key: 'pdfToImages', name: 'PDF to Images' },
-        'doc-images-to-pdf': { cat: 'pdfTools', key: 'imagesToPdf', name: 'Images to PDF' },
-        'images-to-pdf': { cat: 'pdfTools', key: 'imagesToPdf', name: 'Images to PDF' },
-        'jpg-to-pdf': { cat: 'pdfTools', key: 'imagesToPdf', name: 'Images to PDF' },
-        'imagestopdf': { cat: 'pdfTools', key: 'imagesToPdf', name: 'Images to PDF' },
-        'doc-rotate-pdf': { cat: 'pdfTools', key: 'rotatePdf', name: 'Rotate PDF' },
-        'rotate-pdf': { cat: 'pdfTools', key: 'rotatePdf', name: 'Rotate PDF' },
-        'rotatepdf': { cat: 'pdfTools', key: 'rotatePdf', name: 'Rotate PDF' },
+        'doc-rotate-pdf': { cat: 'pdfTools', key: 'rotatePdf', name: 'Rotate PDF Pages' },
+        'rotate-pdf': { cat: 'pdfTools', key: 'rotatePdf', name: 'Rotate PDF Pages' },
+        'rotatepdf': { cat: 'pdfTools', key: 'rotatePdf', name: 'Rotate PDF Pages' },
         'doc-delete-pdf': { cat: 'pdfTools', key: 'deletePdfPages', name: 'Delete PDF Pages' },
         'delete-pdf-pages': { cat: 'pdfTools', key: 'deletePdfPages', name: 'Delete PDF Pages' },
         'deletepdfpages': { cat: 'pdfTools', key: 'deletePdfPages', name: 'Delete PDF Pages' },
+        'batch-pdf': { cat: 'pdfTools', key: 'batchPdf', name: 'Batch PDF Processor' },
+        'batchpdf': { cat: 'pdfTools', key: 'batchPdf', name: 'Batch PDF Processor' },
 
-        // Community Features
+        // --- 4. COMMUNITY FEATURES ---
         'leaderboard': { cat: 'community', key: 'leaderboard', name: 'Supporter Leaderboard' },
         'supportmodal': { cat: 'community', key: 'supportModal', name: 'Donate / Support' },
         'support': { cat: 'community', key: 'supportModal', name: 'Donate / Support' },
@@ -387,12 +458,6 @@
 
       return toolMap[id] || null;
     },
-        'deletepdfpages': { cat: 'pdfTools', key: 'deletePdfPages', name: 'Delete PDF Pages' }
-      };
-
-      return toolMap[id] || null;
-    },
-
     // Check if tool access is allowed before opening workspace
     checkToolAccess: function (toolId, suppressToast = false) {
       const mapped = this.getToolInfo(toolId);

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PixKit — Email to Thierry (Tester)</title>
+  <style>
+    body {
+      background: #090a07;
+      color: #e4e7d8;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 30px 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .toolbar {
+      max-width: 620px;
+      width: 100%;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #151612;
+      border: 1px solid #2a2c23;
+      padding: 12px 18px;
+      border-radius: 12px;
+      box-sizing: border-box;
+    }
+    .copy-btn {
+      background: #d7f36a;
+      color: #101204;
+      border: none;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+    .copy-btn:hover {
+      background: #e4f98d;
+      transform: translateY(-1px);
+    }
+    .copy-btn:active {
+      transform: scale(0.97);
+    }
+    .toast {
+      color: #d7f36a;
+      font-size: 12px;
+      font-weight: 600;
+      display: none;
+    }
+    #emailContainer {
+      max-width: 620px;
+      width: 100%;
+      background: #0f100c;
+      border: 1px solid #262820;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toolbar">
+    <div>
+      <span style="font-weight: 700; font-size: 13px; color: #ffffff;">Gmail Formatted Template</span>
+      <div style="font-size: 11px; color: #8e9182; margin-top: 2px;">One click copies rich formatting directly into Gmail's compose box</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span id="toast" class="toast">✓ Copied to clipboard!</span>
+      <button class="copy-btn" onclick="copyEmailToClipboard()">
+        <span>📋</span>
+        <span>Copy for Gmail</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- EMAIL CONTENT START (What gets pasted into Gmail) -->
+  <div id="emailContainer">
+    <div id="emailBody" style="background-color: #0f100c; color: #e4e7d8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6; padding: 28px 24px;">
+
+      <!-- Brand Header Bar -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px; border-bottom: 1px solid #23251c; padding-bottom: 18px;">
+        <tr>
+          <td align="left" vertical-align="middle">
+            <div style="display: inline-flex; align-items: center; gap: 9px;">
+              <span style="display: inline-block; width: 28px; height: 28px; background-color: #d7f36a; color: #101204; border-radius: 8px; text-align: center; line-height: 28px; font-weight: 800; font-size: 18px;">✳</span>
+              <span style="font-size: 20px; font-weight: 800; letter-spacing: -0.8px; color: #ffffff; vertical-align: middle;">pixkit</span>
+            </div>
+          </td>
+          <td align="right" vertical-align="middle">
+            <span style="display: inline-block; background-color: #1a1c15; border: 1px solid #33362a; color: #d7f36a; font-size: 10.5px; font-weight: 700; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.3px; text-transform: uppercase;">
+              Closed Test · Update v1.0.4
+            </span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Greeting & Core Reply -->
+      <p style="margin: 0 0 14px; font-size: 15px; color: #ffffff; font-weight: 600;">
+        Hi Thierry,
+      </p>
+
+      <p style="margin: 0 0 16px; color: #c8cbd0; font-size: 13.5px;">
+        Thank you so much for testing PixKit and for taking the time to write in! Your feedback regarding the <strong style="color: #ffffff;">crop precision and mobile handling</strong> was spot on.
+      </p>
+
+      <p style="margin: 0 0 20px; color: #c8cbd0; font-size: 13.5px;">
+        We just built and signed update <strong style="color: #d7f36a;">v1.0.4</strong>, which directly implements the exact features you suggested:
+      </p>
+
+      <!-- Feature 1 Card: Zoom & 1px Nudge -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #171813; border: 1px solid #282a20; border-radius: 12px; margin-bottom: 12px; overflow: hidden;">
+        <tr>
+          <td style="padding: 16px 18px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-size: 14px; font-weight: 700; color: #ffffff; padding-bottom: 4px;">
+                  🔍 1. Stage Zoom &amp; 1-Pixel Precision Nudge
+                </td>
+                <td align="right" style="font-size: 11px; font-weight: 700; color: #d7f36a;">
+                  <span style="background: rgba(215, 243, 106, 0.12); border: 1px solid rgba(215, 243, 106, 0.3); padding: 3px 8px; border-radius: 6px;">1× · 1.5× · 2× · 3×</span>
+                </td>
+              </tr>
+            </table>
+            <div style="font-size: 12.5px; color: #9da092; line-height: 1.5; margin-top: 6px;">
+              You can now zoom directly into your image (up to 300%) while framing. We also added a dedicated <strong style="color: #e4e7d8;">1px Nudge D-pad</strong> and coordinate drawer so you can micro-adjust edges for a truly pixel-perfect crop on any phone.
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Feature 2 Card: Instant Share Sheet -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #171813; border: 1px solid #282a20; border-radius: 12px; margin-bottom: 20px; overflow: hidden;">
+        <tr>
+          <td style="padding: 16px 18px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-size: 14px; font-weight: 700; color: #ffffff; padding-bottom: 4px;">
+                  📤 2. Native One-Tap Image Share Sheet
+                </td>
+                <td align="right" style="font-size: 11px; font-weight: 700; color: #d7f36a;">
+                  <span style="background: rgba(215, 243, 106, 0.12); border: 1px solid rgba(215, 243, 106, 0.3); padding: 3px 8px; border-radius: 6px;">Instant Share</span>
+                </td>
+              </tr>
+            </table>
+            <div style="font-size: 12.5px; color: #9da092; line-height: 1.5; margin-top: 6px;">
+              Right after cropping, there is now an <strong style="color: #e4e7d8;">"📤 Share file"</strong> button. You can send your cropped photo straight to WhatsApp, Gmail, Telegram, or Messages in a single tap without having to save or look for it in Android folders.
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Feature 3 Card / Callout: Compression Test Request -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #1c1d14; border: 1.5px solid #d7f36a; border-radius: 14px; margin-bottom: 24px; box-shadow: 0 4px 20px rgba(215, 243, 106, 0.08);">
+        <tr>
+          <td style="padding: 18px 20px;">
+            <div style="font-size: 10px; font-weight: 800; color: #d7f36a; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px;">
+              ⚡ A QUICK FAVOR: COULD YOU TEST COMPRESSION?
+            </div>
+            <div style="font-size: 13.5px; font-weight: 700; color: #ffffff; margin-bottom: 6px;">
+              Help us check the "Compress Image" tool on your device
+            </div>
+            <div style="font-size: 12.5px; color: #b7baa9; line-height: 1.55;">
+              We have integrated a real-time auto-calibration engine with a live progress indicator showing exact % and elapsed calculation time. Could you try compressing a photo on your phone and let us know if it feels snappy or if it lags/gets stuck on your device? Your feedback on this would be immensely helpful!
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Desktop Studio Callout -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #131410; border: 1px solid #23251c; border-radius: 12px; margin-bottom: 26px;">
+        <tr>
+          <td style="padding: 16px 18px;">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-size: 13px; font-weight: 700; color: #ffffff;">
+                  💻 Explore the Full PixKit Studio on Web
+                </td>
+                <td align="right">
+                  <a href="https://pixkit.site" style="background-color: #d7f36a; color: #101204; text-decoration: none; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 6px; display: inline-block;">Open Website →</a>
+                </td>
+              </tr>
+            </table>
+            <div style="font-size: 12px; color: #8e9182; line-height: 1.5; margin-top: 8px;">
+              You can explore all tools at <strong style="color: #d7f36a;">https://pixkit.site</strong>. 
+              <br><em style="color: #a8aba0;">(Note: Please open this on a PC / desktop browser for the best experience, as the web studio is currently built for desktop and not yet fully optimized for mobile screens).</em>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <p style="margin: 0 0 20px; color: #c8cbd0; font-size: 13.5px;">
+        The update (v1.0.4) is rolling out to the Google Play Closed Testing track now. We look forward to your thoughts!
+      </p>
+
+      <!-- Signature Divider -->
+      <div style="border-top: 1px solid #23251c; margin: 24px 0 20px;"></div>
+
+      <!-- Professional Graphic Signature Block -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td width="52" vertical-align="top" style="padding-right: 14px;">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background-color: #d7f36a; color: #101204; font-size: 24px; font-weight: 800; text-align: center; line-height: 44px; box-shadow: 0 4px 12px rgba(215, 243, 106, 0.25);">
+              ✳
+            </div>
+          </td>
+          <td vertical-align="top">
+            <div style="font-size: 15px; font-weight: 800; color: #ffffff; letter-spacing: -0.3px;">
+              PixKit Team
+            </div>
+            <div style="font-size: 12px; color: #8e9182; margin: 2px 0 8px;">
+              Client-Side Image &amp; Creative Studio Engineering
+            </div>
+            <div style="font-size: 11px; color: #b0b4a4; line-height: 1.7;">
+              ✉ <a href="mailto:support.pixkitstudio@gmail.com" style="color: #d7f36a; text-decoration: none;">support.pixkitstudio@gmail.com</a>
+              &nbsp;·&nbsp;
+              🌐 <a href="https://pixkit.site" style="color: #d7f36a; text-decoration: none;">pixkit.site</a>
+            </div>
+            <div style="margin-top: 8px;">
+              <span style="display: inline-block; font-size: 9.5px; color: #8e9182; background: #161712; border: 1px solid #292b21; padding: 3px 8px; border-radius: 4px;">
+                🛡️ 100% On-Device · Zero-Server Storage · Total Privacy
+              </span>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+    </div>
+  </div>
+  <!-- EMAIL CONTENT END -->
+
+  <script>
+    async function copyEmailToClipboard() {
+      const emailElem = document.getElementById('emailBody');
+      const toast = document.getElementById('toast');
+
+      try {
+        const html = emailElem.outerHTML;
+        const text = emailElem.innerText;
+
+        const blobHtml = new Blob([html], { type: 'text/html' });
+        const blobText = new Blob([text], { type: 'text/plain' });
+        const item = new ClipboardItem({
+          'text/html': blobHtml,
+          'text/plain': blobText
+        });
+
+        await navigator.clipboard.write([item]);
+
+        toast.style.display = 'inline-block';
+        toast.textContent = '✓ Copied formatted email! Ready to paste in Gmail';
+        setTimeout(() => { toast.style.display = 'none'; }, 3500);
+      } catch (err) {
+        // Fallback: select range and document.execCommand('copy')
+        const range = document.createRange();
+        range.selectNode(emailElem);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+
+        toast.style.display = 'inline-block';
+        toast.textContent = '✓ Copied! Paste into Gmail';
+        setTimeout(() => { toast.style.display = 'none'; }, 3500);
+      }
+    }
+  </script>
+</body>
+</html>

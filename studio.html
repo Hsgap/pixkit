@@ -83,7 +83,7 @@
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
 
-    gtag('config', 'G-BB278TWE52');
+    gtag('config', 'G-BB278TWE52', { 'client_storage': 'none', 'anonymize_ip': true });
   </script>
   <script>
     try {
@@ -117,30 +117,31 @@
         <a href="javascript:void(0)" onclick="showView('home')" class="brand" title="PixKit Studio Home" style="text-decoration:none;">
           <span class="mark">✳</span>pixkit
         </a>
-        <nav class="nav" aria-label="Main Navigation">
+        <nav class="nav" id="studioMainNav" aria-label="Main Navigation">
           <button id="nav-home" class="nav-link active" onclick="showView('home')">Home</button>
-          <button id="nav-edit" class="nav-link" onclick="showView('edit')">Edit Image</button>
+          <button id="nav-edit" class="nav-link" onclick="showView('edit')">Edit</button>
           <button id="nav-convert" class="nav-link" onclick="showView('convert')">Convert</button>
           <button id="nav-document" class="nav-link" onclick="showView('document')">Document</button>
         </nav>
       </div>
 
       <div class="topbar-right">
-        <!-- Keyboard Shortcuts Trigger Button -->
-        <button class="shortcuts-toggle-btn" onclick="toggleShortcutsModal(true)" title="Keyboard Shortcuts (Press ?)" aria-label="Keyboard Shortcuts">
+        <!-- Keyboard Shortcuts Trigger Button (desktop only) -->
+        <button class="shortcuts-toggle-btn desktop-only-btn" onclick="toggleShortcutsModal(true)" title="Keyboard Shortcuts (Press ?)" aria-label="Keyboard Shortcuts">
           <span class="shortcuts-btn-icon">⌨️</span>
           <span class="shortcuts-btn-text">Shortcuts</span>
           <kbd class="shortcuts-badge">?</kbd>
         </button>
 
-        <!-- 1-Click Share Studio Button -->
-        <button class="shortcuts-toggle-btn" onclick="sharePixKitStudio()" title="Share PixKit (Copy Link / Share to Apps)" aria-label="Share PixKit Studio">
+        <!-- 1-Click Share Studio Button (desktop only) -->
+        <button class="shortcuts-toggle-btn desktop-only-btn" onclick="sharePixKitStudio()" title="Share PixKit (Copy Link / Share to Apps)" aria-label="Share PixKit Studio">
           <i class="fa-solid fa-share-nodes" style="font-size: 13px; color: var(--muted);"></i>
           <span class="shortcuts-btn-text">Share</span>
         </button>
 
-        <label class="action-btn-sm" style="cursor:pointer;" title="Upload custom image">
-          <span>↑ Upload Image</span>
+        <label class="action-btn-sm topbar-upload-btn" style="cursor:pointer;" title="Upload custom image">
+          <span class="upload-btn-text">↑ Upload Image</span>
+          <span class="upload-btn-icon" aria-hidden="true">↑</span>
           <input type="file" accept="image/*" class="global-file-picker" hidden>
         </label>
         
@@ -164,7 +165,42 @@
           </svg>
         </button>
 
-        <div class="privacy-badge">
+        <!-- Mobile Studio More Menu Button (···) -->
+        <div class="mobile-menu-wrapper" style="position:relative;">
+          <button id="studio-mobile-menu-btn" class="theme-toggle-btn mobile-only-btn" onclick="toggleStudioMobileMenu(event)" aria-label="More Studio Options" title="More options">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="1.5"></circle>
+              <circle cx="19" cy="12" r="1.5"></circle>
+              <circle cx="5" cy="12" r="1.5"></circle>
+            </svg>
+          </button>
+          <div id="studio-mobile-menu-dropdown" class="studio-mobile-dropdown" style="display:none;">
+            <button class="mobile-dropdown-item" onclick="showView('home'); closeStudioMobileMenu();">
+              <i class="fa-solid fa-house"></i> Home
+            </button>
+            <button class="mobile-dropdown-item" onclick="showView('edit'); closeStudioMobileMenu();">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Edit Image (9 Tools)
+            </button>
+            <button class="mobile-dropdown-item" onclick="showView('convert'); closeStudioMobileMenu();">
+              <i class="fa-solid fa-arrow-right-arrow-left"></i> Convert Formats
+            </button>
+            <button class="mobile-dropdown-item" onclick="showView('document'); closeStudioMobileMenu();">
+              <i class="fa-solid fa-file-pdf"></i> PDF Document Suite
+            </button>
+            <div class="mobile-dropdown-divider"></div>
+            <button class="mobile-dropdown-item" onclick="sharePixKitStudio(); closeStudioMobileMenu();">
+              <i class="fa-solid fa-share-nodes"></i> Share Studio
+            </button>
+            <button class="mobile-dropdown-item" onclick="toggleShortcutsModal(true); closeStudioMobileMenu();">
+              <i class="fa-solid fa-keyboard"></i> Shortcuts
+            </button>
+            <button class="mobile-dropdown-item" onclick="window.location.href='/mobile'; closeStudioMobileMenu();">
+              <i class="fa-solid fa-mobile-screen"></i> Phone Optimized App UI
+            </button>
+          </div>
+        </div>
+
+        <div class="privacy-badge desktop-only-badge">
           <span>🔒 100% In-Browser Private</span>
         </div>
       </div>
@@ -1592,12 +1628,13 @@
             <div id="compress-mode-target-panel" class="compress-mode-panel">
               <label class="field-label">Target File Size (Strictly Under)</label>
               <div class="input-with-select">
-                <input id="compress-target-val" type="number" class="text-input" min="5" max="50000" value="200" oninput="onTargetSizeInput()" placeholder="e.g. 200" />
+                <input id="compress-target-val" type="number" class="text-input" min="1" max="50000" value="200" oninput="onTargetSizeInput()" placeholder="e.g. 200" />
                 <select id="compress-target-unit" class="select-dropdown unit-select" onchange="onTargetUnitChange()">
                   <option value="KB" selected>KB</option>
                   <option value="MB">MB</option>
                 </select>
               </div>
+              <div id="compress-target-error" style="color:var(--danger, #ef4444); font-size:11.5px; font-weight:600; margin-top:5px; display:none;"></div>
 
               <!-- Quick Target Size Presets -->
               <div class="quick-chips" style="margin-top: 10px;">

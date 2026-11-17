@@ -24,10 +24,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (window.location.pathname.endsWith('.html') || window.location.hash) {
       window.history.replaceState({ route: window.location.hash || '#/home' }, '', cleanBaseInit);
     }
-  } catch (_) {}
+  } catch (_) { }
 
   // Initialize theme from localStorage or system preference
-  const savedTheme = localStorage.getItem('pixkit-theme') || 
+  const savedTheme = localStorage.getItem('pixkit-theme') ||
     (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
   applyTheme(savedTheme);
 
@@ -120,9 +120,10 @@ document.addEventListener('DOMContentLoaded', () => {
     clearTimeout(uploadLoaderSafetyTimer);
     const loader = document.getElementById('pixkit-upload-progress');
     if (loader) {
+      loader.classList.remove('visible');
       loader.classList.add('fade-down');
       setTimeout(() => {
-        loader.classList.remove('visible', 'fade-down');
+        try { loader.remove(); } catch (_) { }
       }, 360);
     }
   }
@@ -147,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       localStorage.removeItem(DOCK_ENTRANCE_KEY);
-    } catch (_) {}
+    } catch (_) { }
 
     document.documentElement.classList.remove('dock-intro-seen');
     wrapper.classList.remove('droplet-escape');
@@ -162,12 +163,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   window.triggerDockDropletEntrance = triggerDockDropletEntrance;
 
-  window.resetDockEntrance = function() {
+  window.resetDockEntrance = function () {
     try {
       localStorage.removeItem(DOCK_ENTRANCE_KEY);
       sessionStorage.removeItem(DOCK_ENTRANCE_KEY);
       document.documentElement.classList.remove('dock-intro-seen');
-    } catch (_) {}
+    } catch (_) { }
     dockEntrancePlayed = false;
   };
 
@@ -185,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (window.performance && window.performance.navigation) {
         isReload = window.performance.navigation.type === 1;
       }
-    } catch (_) {}
+    } catch (_) { }
 
     if (isReload) {
       // User refreshed/reloaded the page: skip the entrance animation on reload!
@@ -320,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('pixkit-theme', theme);
   }
 
-  window.toggleThemeAnimated = function(event) {
+  window.toggleThemeAnimated = function (event) {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const nextTheme = isDark ? 'light' : 'dark';
 
@@ -442,6 +443,54 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     },
 
+    async setItem(key, data) {
+      try {
+        const db = await this.openDB();
+        if (!db) return false;
+        return new Promise((resolve) => {
+          const tx = db.transaction(this.storeName, 'readwrite');
+          const store = tx.objectStore(this.storeName);
+          store.put({ id: key, data, savedAt: Date.now() });
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        });
+      } catch (e) {
+        return false;
+      }
+    },
+
+    async getItem(key) {
+      try {
+        const db = await this.openDB();
+        if (!db) return null;
+        return new Promise((resolve) => {
+          const tx = db.transaction(this.storeName, 'readonly');
+          const store = tx.objectStore(this.storeName);
+          const req = store.get(key);
+          req.onsuccess = () => resolve(req.result ? req.result.data : null);
+          req.onerror = () => resolve(null);
+        });
+      } catch (e) {
+        return null;
+      }
+    },
+
+    async removeItem(key) {
+      try {
+        const db = await this.openDB();
+        if (!db) return false;
+        return new Promise((resolve) => {
+          const tx = db.transaction(this.storeName, 'readwrite');
+          const store = tx.objectStore(this.storeName);
+          store.delete(key);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        });
+      } catch (e) {
+        return false;
+      }
+    },
+
     async saveRecentFile(name, record) {
       if (!name || name === 'mountain-view.jpg') return false;
       try {
@@ -512,7 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           });
         };
-      } catch (_) {}
+      } catch (_) { }
     },
 
     async clearAllRecentFiles() {
@@ -530,7 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           });
         };
-      } catch (_) {}
+      } catch (_) { }
     }
   };
 
@@ -588,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const top10 = recents.slice(0, 10).map(f => f.name);
           if (!top10.includes(engine.filename)) top10.unshift(engine.filename);
           PixKitStorage.pruneRecentFiles(top10);
-        } catch (_) {}
+        } catch (_) { }
       } catch (e) {
         console.warn('Session auto-save error:', e);
       }
@@ -612,7 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           img.onload = () => {
             if (session.activeBlob) {
-              try { URL.revokeObjectURL(objectUrl); } catch (_) {}
+              try { URL.revokeObjectURL(objectUrl); } catch (_) { }
             }
 
             engine.filename = session.filename || 'saved-image.png';
@@ -630,7 +679,7 @@ document.addEventListener('DOMContentLoaded', () => {
               const srcImg = new Image();
               const srcUrl = URL.createObjectURL(session.sourceBlob);
               srcImg.onload = () => {
-                try { URL.revokeObjectURL(srcUrl); } catch (_) {}
+                try { URL.revokeObjectURL(srcUrl); } catch (_) { }
                 engine.sourceCanvas.width = srcImg.naturalWidth;
                 engine.sourceCanvas.height = srcImg.naturalHeight;
                 engine.sourceCtx.clearRect(0, 0, srcImg.naturalWidth, srcImg.naturalHeight);
@@ -680,7 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.location.pathname.endsWith('.html') || window.location.hash) {
         window.history.replaceState({ route: targetRoute || location.hash || localStorage.getItem('pixkit_last_route') || '#/home' }, '', cleanBase);
       }
-    } catch (_) {}
+    } catch (_) { }
   }
 
   function navigateTo(route, push = true) {
@@ -777,7 +826,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let lastCategoryOrigin = 'document';
 
-  window.navigatePdfBack = function() {
+  window.navigatePdfBack = function () {
     window.showView(lastCategoryOrigin === 'convert' ? 'convert' : 'document');
   };
 
@@ -793,6 +842,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toolId === 'crop-image') toolId = 'crop';
     if (toolId === 'blur-image') toolId = 'blur';
     if (toolId === 'adjust-image') toolId = 'adjust';
+    if (toolId === 'batch' || toolId === 'batch-process' || toolId === 'batch-image' || toolId === 'batch-image-processor') toolId = 'batch-edit';
+    if (toolId === 'batch-convert' || toolId === 'convert-batch' || toolId === 'batch-converter' || toolId === 'batch-convert-formats') {
+      toolId = 'batch-convert';
+      lastCategoryOrigin = 'convert';
+    }
+    if (toolId === 'batch-pdf' || toolId === 'doc-batch-pdf' || toolId === 'batch-document' || toolId === 'pdf-batch' || toolId === 'batch-pdf-processor') {
+      toolId = 'batch-pdf';
+      lastCategoryOrigin = 'document';
+    }
 
     // Converter category tool aliases & format presets
     if (toolId === 'svg-to-png') {
@@ -828,7 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const parentCrumb = document.getElementById('pdf-parent-crumb');
       const titleCrumb = document.getElementById('pdf-title-crumb');
       const backBtnText = document.getElementById('pdf-back-btn-text');
-      
+
       if (parentCrumb) parentCrumb.textContent = isFromDoc ? 'Tool 01 · Document Suite' : 'Tool 06 · Convert Suite';
       if (titleCrumb) titleCrumb.textContent = 'Images to PDF';
       if (backBtnText) backBtnText.textContent = isFromDoc ? 'Back to Document Tools' : 'Back to Convert Tools';
@@ -882,11 +940,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof window.gtag === 'function') {
         window.gtag('event', eventName, params);
       }
-    } catch (_) {}
+    } catch (_) { }
   }
   window.trackAnalyticsEvent = trackAnalyticsEvent;
 
-  window.showView = function(viewId) {
+  window.showView = function (viewId) {
     if (viewId === 'recent') {
       if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
         if (!window.PixKitRemote.isFeatureEnabled('community', 'recentFiles')) {
@@ -901,11 +959,11 @@ document.addEventListener('DOMContentLoaded', () => {
     navigateTo(`#/${viewId}`, true);
   };
 
-  window.getActiveTool = function() {
+  window.getActiveTool = function () {
     return activeTool;
   };
 
-  window.openToolWorkspace = function(toolId) {
+  window.openToolWorkspace = function (toolId) {
     if (window.PixKitRemote && typeof window.PixKitRemote.checkToolAccess === 'function') {
       if (!window.PixKitRemote.checkToolAccess(toolId)) return;
     }
@@ -913,7 +971,7 @@ document.addEventListener('DOMContentLoaded', () => {
     navigateTo(`#/tool/${toolId}`, true);
   };
 
-  window.sharePixKitStudio = function() {
+  window.sharePixKitStudio = function () {
     let toolSlug = '';
     if (activeTool) {
       const slugMap = {
@@ -933,7 +991,9 @@ document.addEventListener('DOMContentLoaded', () => {
         'resize': 'resize-image',
         'crop': 'crop-image',
         'blur': 'blur-image',
-        'adjust': 'adjust-image'
+        'adjust': 'adjust-image',
+        'batch-edit': 'batch-image-processor',
+        'batch-convert': 'batch-convert'
       };
       toolSlug = slugMap[activeTool] || '';
     }
@@ -942,7 +1002,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const shareText = 'Edit images, convert formats, and manage PDFs with 100% in-browser privacy:';
 
     if (navigator.share) {
-      navigator.share({ title: shareTitle, text: shareText, url: shareUrl }).catch(() => {});
+      navigator.share({ title: shareTitle, text: shareText, url: shareUrl }).catch(() => { });
     } else {
       navigator.clipboard.writeText(shareUrl).then(() => {
         showToast('🔗 PixKit link copied to clipboard!');
@@ -1091,7 +1151,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showImageUploadProgress(f.name, pct, `Imported ${i + 1} of ${files.length} images`);
             try {
               await handleImageFile(f);
-            } catch (_) {}
+            } catch (_) { }
           }
         }
         e.target.value = '';
@@ -1148,7 +1208,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const el = document.getElementById(id);
       if (el) el.textContent = `${engine.filename} (${w} × ${h} px)`;
     });
-    
+
     const resizeW = document.getElementById('resize-w');
     const resizeH = document.getElementById('resize-h');
     if (resizeW && resizeH) {
@@ -1204,6 +1264,8 @@ document.addEventListener('DOMContentLoaded', () => {
       initDrawingCanvas();
     } else if (toolId === 'blur') {
       initBlurCanvas();
+    } else if (toolId === 'batch-edit') {
+      initBatchEditStage();
     } else if (toolId === 'convert-format') {
       initConvertFormatStage();
     } else if (toolId === 'convert-heic') {
@@ -1216,6 +1278,8 @@ document.addEventListener('DOMContentLoaded', () => {
       initConvertBase64Stage();
     } else if (toolId === 'convert-pdf') {
       initConvertPdfStage();
+    } else if (toolId === 'batch-convert') {
+      initBatchConvertStage();
     } else if (toolId === 'doc-pdf-to-images') {
       initPdfExtractStage();
     } else if (toolId === 'doc-merge-pdf') {
@@ -1228,6 +1292,8 @@ document.addEventListener('DOMContentLoaded', () => {
       initPdfRotateStage();
     } else if (toolId === 'doc-delete-pdf') {
       initPdfDeleteStage();
+    } else if (toolId === 'batch-pdf') {
+      initBatchPdfStage();
     }
 
     updateHistoryUI();
@@ -1277,7 +1343,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.handleGlobalUndo = function() {
+  window.handleGlobalUndo = function () {
     // 1. If inside Draw tool and shapes are staged on canvas, undo last shape first
     if (activeTool === 'draw' && typeof drawnShapes !== 'undefined' && drawnShapes.length > 0) {
       drawnShapes.pop();
@@ -1302,7 +1368,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.handleGlobalRedo = function() {
+  window.handleGlobalRedo = function () {
     if (engine && engine.redo()) {
       const currentLabel = engine.historyStack && engine.historyStack[engine.historyIndex]
         ? engine.historyStack[engine.historyIndex].label
@@ -1317,8 +1383,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // --- Studio Mobile Menu Management (< 768px) ---
+  window.toggleStudioMobileMenu = function (e) {
+    if (e) e.stopPropagation();
+    const dropdown = document.getElementById('studio-mobile-menu-dropdown');
+    if (!dropdown) return;
+    const isShowing = dropdown.style.display !== 'none';
+    dropdown.style.display = isShowing ? 'none' : 'flex';
+  };
+
+  window.closeStudioMobileMenu = function () {
+    const dropdown = document.getElementById('studio-mobile-menu-dropdown');
+    if (dropdown) dropdown.style.display = 'none';
+  };
+
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.mobile-menu-wrapper')) {
+      window.closeStudioMobileMenu();
+    }
+  });
+
   // --- Keyboard Shortcuts Modal Management ---
-  window.toggleShortcutsModal = function(open) {
+  window.toggleShortcutsModal = function (open) {
     const modal = document.getElementById('shortcuts-modal');
     if (!modal) return;
     if (open) {
@@ -1334,14 +1420,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.handleShortcutsBackdropClick = function(e) {
+  window.handleShortcutsBackdropClick = function (e) {
     if (e.target.id === 'shortcuts-modal') {
       window.toggleShortcutsModal(false);
     }
   };
 
   // --- Keyboard Shortcuts Modal Filtering & Search ---
-  window.filterShortcutsTab = function(tabName) {
+  window.filterShortcutsTab = function (tabName) {
     document.querySelectorAll('.shortcuts-tab-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
@@ -1370,7 +1456,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  window.filterShortcutsSearch = function(query) {
+  window.filterShortcutsSearch = function (query) {
     const q = (query || '').toLowerCase().trim();
     const clearBtn = document.getElementById('shortcuts-search-clear');
     if (clearBtn) clearBtn.style.display = q ? 'block' : 'none';
@@ -1417,7 +1503,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.clearShortcutsSearch = function() {
+  window.clearShortcutsSearch = function () {
     const input = document.getElementById('shortcuts-search-input');
     if (input) {
       input.value = '';
@@ -1427,17 +1513,17 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // --- Aceternity UI Floating Dock Navigation ---
-  window.dockNavigateHome = function() {
+  window.dockNavigateHome = function () {
     window.showView('home');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  window.triggerGlobalUpload = function() {
+  window.triggerGlobalUpload = function () {
     const picker = document.querySelector('.global-file-picker');
     if (picker) picker.click();
   };
 
-  window.recordRecentFile = function(name, size, type, width, height, category, customBlob, customPreviewUrl, originTool, sourceFiles, operation) {
+  window.recordRecentFile = function (name, size, type, width, height, category, customBlob, customPreviewUrl, originTool, sourceFiles, operation) {
     if (!name || name === 'mountain-view.jpg') return;
     if (window.PixKitRemote && typeof window.PixKitRemote.isFeatureEnabled === 'function') {
       if (!window.PixKitRemote.isFeatureEnabled('community', 'recentFiles')) return;
@@ -1462,7 +1548,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const tctx = thumbCanvas.getContext('2d');
           tctx.drawImage(engine.activeCanvas, 0, 0, tw, th);
           previewUrl = thumbCanvas.toDataURL('image/jpeg', 0.65);
-        } catch (_) {}
+        } catch (_) { }
       }
 
       const fileCategory = category || getFileCategory({ name, type });
@@ -1486,7 +1572,7 @@ document.addEventListener('DOMContentLoaded', () => {
         recents = recents.filter(f => !srcNames.has(f.name));
         srcNames.forEach(sn => {
           if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.deleteRecentFile === 'function') {
-            PixKitStorage.deleteRecentFile(sn).catch(() => {});
+            PixKitStorage.deleteRecentFile(sn).catch(() => { });
           }
         });
       }
@@ -1548,7 +1634,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof currentView !== 'undefined' && currentView === 'recent') {
         window.renderRecentFilesPage();
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   function formatDockTimeAgo(timestamp) {
@@ -1607,11 +1693,14 @@ document.addEventListener('DOMContentLoaded', () => {
     a.click();
     document.body.removeChild(a);
     setTimeout(() => {
-      try { URL.revokeObjectURL(url); } catch (_) {}
+      try { URL.revokeObjectURL(url); } catch (_) { }
     }, 2000);
+    if (typeof window.triggerDownloadSupportPrompt === 'function') {
+      window.triggerDownloadSupportPrompt();
+    }
   }
 
-  window.downloadRecentFileItem = async function(name, event) {
+  window.downloadRecentFileItem = async function (name, event) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -1626,7 +1715,7 @@ document.addEventListener('DOMContentLoaded', () => {
           showToast(`Downloaded latest edit of ${name}`);
         }, mimeType);
         return;
-      } catch (_) {}
+      } catch (_) { }
     }
 
     // 2. High-res blob from IndexedDB recent store
@@ -1640,7 +1729,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
       }
-    } catch (_) {}
+    } catch (_) { }
 
     // 3. Fallback to active session in PixKitStorage
     try {
@@ -1650,7 +1739,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(`Downloaded latest edit of ${name}`);
         return;
       }
-    } catch (_) {}
+    } catch (_) { }
 
     // 4. Fallback to preview thumbnail
     try {
@@ -1666,12 +1755,12 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(`Downloaded preview of ${name}`);
         return;
       }
-    } catch (_) {}
+    } catch (_) { }
 
     showToast(`No saved edit found for ${name}`);
   };
 
-  window.downloadCurrentSessionFile = function(event) {
+  window.downloadCurrentSessionFile = function (event) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -1683,7 +1772,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.openRecentFromPage = async function(name, isCurrent, event) {
+  window.openRecentFromPage = async function (name, isCurrent, event) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -1733,7 +1822,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
       }
-    } catch (_) {}
+    } catch (_) { }
 
     // 2. Fallback to active session
     try {
@@ -1755,7 +1844,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
       }
-    } catch (_) {}
+    } catch (_) { }
 
     // 3. Prompt user if memory purged
     showToast(`Select "${name}" to load original file`);
@@ -1763,7 +1852,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // --- Replace Image Dropdown & Quick Recent Picker ---
-  window.toggleReplaceDropdown = function(btn, event) {
+  window.toggleReplaceDropdown = function (btn, event) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -1777,22 +1866,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.closeAllReplaceDropdowns = function() {
+  window.closeAllReplaceDropdowns = function () {
     document.querySelectorAll('.replace-dropdown-wrap.open').forEach(w => w.classList.remove('open'));
   };
 
-  window.closeRecentPickerModal = function() {
+  window.closeRecentPickerModal = function () {
     const modal = document.getElementById('recent-picker-modal');
     if (modal) modal.classList.remove('active');
   };
 
-  window.handleRecentPickerBackdropClick = function(event) {
+  window.handleRecentPickerBackdropClick = function (event) {
     if (event.target && event.target.id === 'recent-picker-modal') {
       window.closeRecentPickerModal();
     }
   };
 
-  window.triggerActiveToolUpload = function() {
+  window.triggerActiveToolUpload = function () {
     window.closeAllReplaceDropdowns();
     let input = null;
     if (activeTool) {
@@ -1809,7 +1898,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.openRecentFilesPicker = async function(event, filterType) {
+  window.openRecentFilesPicker = async function (event, filterType) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -1951,7 +2040,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.classList.add('active');
   };
 
-  window.togglePickerCardSources = function(safeId, event) {
+  window.togglePickerCardSources = function (safeId, event) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -2103,13 +2192,13 @@ document.addEventListener('DOMContentLoaded', () => {
           record = await PixKitStorage.getRecentFile(parentName);
         }
       }
-    } catch (_) {}
+    } catch (_) { }
 
     // Find metadata from localStorage if needed
     let recents = [];
     try {
       recents = JSON.parse(localStorage.getItem('pixkit_recent_files') || '[]');
-    } catch (_) {}
+    } catch (_) { }
     const parentMeta = recents.find(f => f.name === cleanParentName || f.name === parentName);
     const sourceList = (record && Array.isArray(record.sourceFiles) && record.sourceFiles.length)
       ? record.sourceFiles
@@ -2136,7 +2225,7 @@ document.addEventListener('DOMContentLoaded', () => {
             blob = directBlob;
           }
         }
-      } catch (_) {}
+      } catch (_) { }
     }
 
     // C. Check if it's one of the built-in sample PDFs
@@ -2187,7 +2276,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return { blob, fileName, src };
   }
 
-  window.selectPickerSourceFile = async function(parentName, index, event) {
+  window.selectPickerSourceFile = async function (parentName, index, event) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -2196,7 +2285,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     showImageUploadProgress('source_doc', 35, 'Loading source document...');
     try {
-      const { blob, fileName } = await getSourceFileBlob(parentName, index);
+      const blobPromise = getSourceFileBlob(parentName, index);
+      const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ blob: null, fileName: '' }), 5000));
+      const { blob, fileName } = await Promise.race([blobPromise, timeoutPromise]);
 
       if (blob) {
         const isPdf = (fileName.toLowerCase().endsWith('.pdf')) || (blob.type && blob.type.includes('pdf'));
@@ -2231,9 +2322,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     showImageUploadProgress('source_doc', 100, 'Source file unavailable');
     showToast('Source file buffer not available in local cache');
+    setTimeout(() => hideImageUploadProgress(), 1500);
   };
 
-  window.selectRecentForTool = async function(name) {
+  window.selectRecentForTool = async function (name) {
     window.closeRecentPickerModal();
     const isPdf = name.toLowerCase().endsWith('.pdf');
     if (!isPdf && engine && engine.filename === name && hasUserAddedImage && !engine.isSampleArtwork) {
@@ -2329,7 +2421,7 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
       }
-    } catch (_) {}
+    } catch (_) { }
 
     // 4. Prompt user if memory was purged
     showImageUploadProgress(name, 100, 'Cache purged');
@@ -2338,7 +2430,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // --- PDF Source Files Modal Controller ---
-  window.openPdfSourcesModal = async function(parentName, event) {
+  window.openPdfSourcesModal = async function (parentName, event) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -2369,7 +2461,7 @@ document.addEventListener('DOMContentLoaded', () => {
           sourceFiles = storageRecord.sourceFiles;
         }
       }
-    } catch (_) {}
+    } catch (_) { }
 
     if (titleEl) titleEl.textContent = `Source Files: ${parentName}`;
     if (subEl) subEl.textContent = `${sourceFiles.length} original file${sourceFiles.length === 1 ? '' : 's'} used to create this document`;
@@ -2449,18 +2541,18 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.classList.add('active');
   };
 
-  window.closePdfSourcesModal = function() {
+  window.closePdfSourcesModal = function () {
     const modal = document.getElementById('pdf-sources-modal');
     if (modal) modal.classList.remove('active');
   };
 
-  window.handlePdfSourcesBackdropClick = function(event) {
+  window.handlePdfSourcesBackdropClick = function (event) {
     if (event.target && event.target.id === 'pdf-sources-modal') {
       window.closePdfSourcesModal();
     }
   };
 
-  window.downloadSourceItem = async function(parentName, index, event) {
+  window.downloadSourceItem = async function (parentName, index, event) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -2478,7 +2570,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('Source file buffer not found in cache');
   };
 
-  window.openSourceItemInStudio = async function(parentName, index, event) {
+  window.openSourceItemInStudio = async function (parentName, index, event) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -2507,7 +2599,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('Source file buffer not available in local cache');
   };
 
-  window.downloadAllSourceItemsZip = async function(parentName, event) {
+  window.downloadAllSourceItemsZip = async function (parentName, event) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -2550,7 +2642,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  window.deleteRecentFileItem = function(name, event) {
+  window.deleteRecentFileItem = function (name, event) {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
@@ -2561,14 +2653,14 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('pixkit_recent_files', JSON.stringify(recents));
 
       if (typeof PixKitStorage !== 'undefined' && typeof PixKitStorage.deleteRecentFile === 'function') {
-        PixKitStorage.deleteRecentFile(name).catch(() => {});
+        PixKitStorage.deleteRecentFile(name).catch(() => { });
       }
 
       if (engine && engine.filename === name) {
         hasUserAddedImage = false;
         localStorage.removeItem('pixkit_saved_session');
         if (PixKitStorage && typeof PixKitStorage.clearSession === 'function') {
-          PixKitStorage.clearSession().catch(() => {});
+          PixKitStorage.clearSession().catch(() => { });
         }
         engine.isSampleArtwork = true;
         engine.filename = 'mountain-view.jpg';
@@ -2582,13 +2674,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       window.renderRecentFilesPage();
       showToast(`Removed "${name}" from history`);
-    } catch (e) {}
+    } catch (e) { }
   };
 
   let clearConfirmPending = false;
   let clearConfirmTimeout = null;
 
-  window.clearAllRecentFiles = function(force = false) {
+  window.clearAllRecentFiles = function (force = false) {
     const btn = document.getElementById('clear-recent-page-btn');
 
     // First click: Ask confirmation inline on the button without annoying/blocked browser modal
@@ -2631,10 +2723,10 @@ document.addEventListener('DOMContentLoaded', () => {
       sessionStorage.removeItem('pixkit_saved_session');
 
       if (PixKitStorage && typeof PixKitStorage.clearSession === 'function') {
-        PixKitStorage.clearSession().catch(() => {});
+        PixKitStorage.clearSession().catch(() => { });
       }
       if (PixKitStorage && typeof PixKitStorage.clearAllRecentFiles === 'function') {
-        PixKitStorage.clearAllRecentFiles().catch(() => {});
+        PixKitStorage.clearAllRecentFiles().catch(() => { });
       }
 
       hasUserAddedImage = false;
@@ -2663,7 +2755,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.setAppTheme = function(themeName) {
+  window.setAppTheme = function (themeName) {
     applyTheme(themeName);
     updateSettingsThemeUI();
   };
@@ -2684,7 +2776,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==============================================================
   // STUDIO SETTINGS BENTO GRID INTERACTIONS & STATE
   // ==============================================================
-  window.refreshStorageMeter = async function() {
+  window.refreshStorageMeter = async function () {
     try {
       let usedBytes = 0;
       let quotaBytes = 500 * 1024 * 1024; // Default fallback: 500MB
@@ -2733,7 +2825,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.verifyPrivacyShield = function() {
+  window.verifyPrivacyShield = function () {
     const btn = document.getElementById('verify-privacy-btn');
     if (!btn) return;
     const originalHtml = btn.innerHTML;
@@ -2752,14 +2844,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 900);
   };
 
-  window.optimizeStudioCache = async function() {
+  window.optimizeStudioCache = async function () {
     const btn = document.getElementById('optimize-cache-btn');
     if (btn) btn.disabled = true;
 
     // Revoke any tracked temporary object URLs
     if (window.activeObjectURLs && Array.isArray(window.activeObjectURLs)) {
       window.activeObjectURLs.forEach(url => {
-        try { URL.revokeObjectURL(url); } catch(e) {}
+        try { URL.revokeObjectURL(url); } catch (e) { }
       });
       window.activeObjectURLs = [];
     }
@@ -2769,7 +2861,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btn) btn.disabled = false;
   };
 
-  window.testKeycapPress = function(action) {
+  window.testKeycapPress = function (action) {
     const idMap = {
       help: 'keycap-help',
       undo: 'keycap-undo',
@@ -2792,12 +2884,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.toggleSettingCanvasGrid = function(checked) {
+  window.toggleSettingCanvasGrid = function (checked) {
     localStorage.setItem('pixkit_setting_grid', checked ? 'true' : 'false');
     showToast(`Canvas dot matrix grid ${checked ? 'enabled' : 'disabled'}`);
   };
 
-  window.toggleSettingHardwareAccel = function(checked) {
+  window.toggleSettingHardwareAccel = function (checked) {
     localStorage.setItem('pixkit_setting_accel', checked ? 'true' : 'false');
     showToast(`Hardware WebGL acceleration ${checked ? 'enabled' : 'disabled'}`);
   };
@@ -2814,8 +2906,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Deduplicates all tabs in Brave, Chrome, etc. on the SAME physical computer/phone to 1 user!
     function getDeviceFingerprint() {
       let storedId = null;
-      try { storedId = localStorage.getItem('pixkit_dev_id'); } catch(e) {}
-      
+      try { storedId = localStorage.getItem('pixkit_dev_id'); } catch (e) { }
+
       const hwSignature = [
         screen.width,
         screen.height,
@@ -2824,7 +2916,7 @@ document.addEventListener('DOMContentLoaded', () => {
         (navigator.hardwareConcurrency || 4),
         (navigator.platform || '')
       ].join('__');
-      
+
       let hash = 0;
       for (let i = 0; i < hwSignature.length; i++) {
         hash = ((hash << 5) - hash) + hwSignature.charCodeAt(i);
@@ -2834,7 +2926,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (!storedId) {
         storedId = hwKey;
-        try { localStorage.setItem('pixkit_dev_id', storedId); } catch(e) {}
+        try { localStorage.setItem('pixkit_dev_id', storedId); } catch (e) { }
       }
       return storedId;
     }
@@ -2998,7 +3090,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Expose for route trigger
-    window.triggerSettingsSpeedRoll = function() {
+    window.triggerSettingsSpeedRoll = function () {
       playEntranceSpeedRoll(targetNumber);
     };
   })();
@@ -3035,7 +3127,7 @@ document.addEventListener('DOMContentLoaded', () => {
     searchQuery: ''
   };
 
-  window.setRecentCategoryFilter = function(category) {
+  window.setRecentCategoryFilter = function (category) {
     if (recentPageState.currentCategory === category) return;
     const container = document.getElementById('recent-files-page-container');
     if (container) {
@@ -3056,14 +3148,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.handleRecentSearch = function(query) {
+  window.handleRecentSearch = function (query) {
     recentPageState.searchQuery = (query || '').trim().toLowerCase();
     const clearBtn = document.getElementById('recent-search-clear');
     if (clearBtn) clearBtn.classList.toggle('visible', !!recentPageState.searchQuery);
     window.renderRecentFilesPage();
   };
 
-  window.clearRecentSearch = function() {
+  window.clearRecentSearch = function () {
     recentPageState.searchQuery = '';
     const input = document.getElementById('recent-search-input');
     if (input) input.value = '';
@@ -3072,7 +3164,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderRecentFilesPage();
   };
 
-  window.resetRecentFilters = function() {
+  window.resetRecentFilters = function () {
     recentPageState.currentCategory = 'all';
     recentPageState.searchQuery = '';
     const input = document.getElementById('recent-search-input');
@@ -3082,7 +3174,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renderRecentFilesPage();
   };
 
-  window.renderRecentFilesPage = function() {
+  window.renderRecentFilesPage = function () {
     const container = document.getElementById('recent-files-page-container');
     const controlsBar = document.getElementById('recentControlsBar');
     if (!container) return;
@@ -3133,12 +3225,12 @@ document.addEventListener('DOMContentLoaded', () => {
           localStorage.setItem('pixkit_recent_files', JSON.stringify(recents));
         }
       }
-    } catch (_) {}
+    } catch (_) { }
 
     if (recents.length !== rawRecents.length) {
       try {
         localStorage.setItem('pixkit_recent_files', JSON.stringify(recents));
-      } catch (_) {}
+      } catch (_) { }
     }
 
     // Collect all child source file names so they don't show as separate duplicate cards
@@ -3159,7 +3251,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (hasActiveSession) {
       try {
         activeThumbUrl = engine.activeCanvas.toDataURL('image/jpeg', 0.85);
-      } catch (_) {}
+      } catch (_) { }
     }
 
     // Combine active session and recents into unified list of actual files
@@ -3568,7 +3660,7 @@ document.addEventListener('DOMContentLoaded', () => {
       startAnimation();
     }
 
-    window.cancelDockStageTimer = function() {
+    window.cancelDockStageTimer = function () {
       if (stage2GraceTimer) {
         clearTimeout(stage2GraceTimer);
         stage2GraceTimer = null;
@@ -3576,7 +3668,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Called when Stage 3 tension release finishes settling
-    window.onDockDragSettled = function() {
+    window.onDockDragSettled = function () {
       // Dock has smoothly settled into Stage 2 (Hover State)
       // Keep Stage 2 active for half a second (500ms), then gracefully transition to Stage 1 if cursor is outside
       if (stage2GraceTimer) clearTimeout(stage2GraceTimer);
@@ -3585,7 +3677,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.isDockDragging) return;
         const rect = container.getBoundingClientRect();
         const withinZone = lastKnownMouseX >= rect.left - 40 && lastKnownMouseX <= rect.right + 105 &&
-                           lastKnownMouseY >= rect.top - 60 && lastKnownMouseY <= rect.bottom + 60;
+          lastKnownMouseY >= rect.top - 60 && lastKnownMouseY <= rect.bottom + 60;
         if (!withinZone) {
           enterStage1();
         }
@@ -3611,7 +3703,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const rect = container.getBoundingClientRect();
       // Continuous 2D smooth zone out to 105px: zero cliff, zero jump
       const withinZone = e.clientX >= rect.left - 40 && e.clientX <= rect.right + 105 &&
-                         e.clientY >= rect.top - 60 && e.clientY <= rect.bottom + 60;
+        e.clientY >= rect.top - 60 && e.clientY <= rect.bottom + 60;
 
       if (withinZone) {
         enterStage2(e.clientX, e.clientY);
@@ -3630,7 +3722,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-    // ==============================================================
+  // ==============================================================
   // ACETERNITY UI ELASTIC MEMBRANE & RECOIL DYNAMICS
   // Unified connected-body localized deformation with hover magnification
   // ==============================================================
@@ -3885,7 +3977,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
           container.setPointerCapture(e.pointerId);
-        } catch (_) {}
+        } catch (_) { }
       }
 
       if (isDragging) {
@@ -3909,7 +4001,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e && e.pointerId && container.hasPointerCapture && container.hasPointerCapture(e.pointerId)) {
           container.releasePointerCapture(e.pointerId);
         }
-      } catch (_) {}
+      } catch (_) { }
 
       if (isDragging) {
         dragEndedTimestamp = Date.now();
@@ -4342,15 +4434,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- Global Undo & Reset ---
-  window.undoEdit = function() {
+  window.undoEdit = function () {
     window.handleGlobalUndo();
   };
 
-  window.redoEdit = function() {
+  window.redoEdit = function () {
     window.handleGlobalRedo();
   };
 
-  window.resetEdit = function() {
+  window.resetEdit = function () {
     if (activeTool === 'draw') {
       drawnShapes = [];
       if (typeof redrawDrawCanvas === 'function') redrawDrawCanvas();
@@ -4367,7 +4459,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // 1. RESIZE HANDLERS
   // ==============================================================
   let keepAspect = true;
-  window.toggleAspect = function() {
+  window.toggleAspect = function () {
     keepAspect = !keepAspect;
     document.getElementById('aspect-btn')?.classList.toggle('active', keepAspect);
   };
@@ -4393,7 +4485,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  window.setPresetSize = function(w, h, btn) {
+  window.setPresetSize = function (w, h, btn) {
     document.querySelectorAll('#tool-resize-view .preset-card').forEach(p => p.classList.remove('active'));
     if (btn) btn.classList.add('active');
     if (rw && rh) {
@@ -4402,7 +4494,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.applyResizeAction = async function(download = false) {
+  window.applyResizeAction = async function (download = false) {
     const w = parseInt(rw.value, 10);
     const h = parseInt(rh.value, 10);
     if (!w || !h || w <= 0 || h <= 0) {
@@ -4458,6 +4550,7 @@ document.addEventListener('DOMContentLoaded', () => {
       badge.textContent = `${realW} × ${realH} px`;
     }
 
+    syncStudioCropPrecisionInputs();
     bindCropEvents();
   }
 
@@ -4493,7 +4586,7 @@ document.addEventListener('DOMContentLoaded', () => {
           pointerId: e.pointerId
         };
         handleElem.classList.add('active');
-        try { wrapper.setPointerCapture(e.pointerId); } catch (_) {}
+        try { wrapper.setPointerCapture(e.pointerId); } catch (_) { }
         e.preventDefault();
         return;
       }
@@ -4509,7 +4602,7 @@ document.addEventListener('DOMContentLoaded', () => {
           origBox: { ...cropBoxState },
           pointerId: e.pointerId
         };
-        try { wrapper.setPointerCapture(e.pointerId); } catch (_) {}
+        try { wrapper.setPointerCapture(e.pointerId); } catch (_) { }
         e.preventDefault();
         return;
       }
@@ -4530,7 +4623,7 @@ document.addEventListener('DOMContentLoaded', () => {
         h: 0.01
       };
       initCropOverlay();
-      try { wrapper.setPointerCapture(e.pointerId); } catch (_) {}
+      try { wrapper.setPointerCapture(e.pointerId); } catch (_) { }
       e.preventDefault();
     });
 
@@ -4641,6 +4734,8 @@ document.addEventListener('DOMContentLoaded', () => {
         cropBoxState.h = Math.max(0.02, Math.min(1 - cropBoxState.y, y2 - y1));
         initCropOverlay();
       }
+
+      updateStudioCropMagnifier(e.clientX, e.clientY, cropInteractionState ? cropInteractionState.handle : null);
     });
 
     const finishInteraction = () => {
@@ -4652,11 +4747,14 @@ document.addEventListener('DOMContentLoaded', () => {
         initCropOverlay();
       }
 
+      hideStudioCropMagnifier();
+      syncStudioCropPrecisionInputs();
+
       try {
         if (cropInteractionState.pointerId !== undefined) {
           wrapper.releasePointerCapture(cropInteractionState.pointerId);
         }
-      } catch (_) {}
+      } catch (_) { }
 
       cropInteractionState = null;
     };
@@ -4666,7 +4764,174 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('pointerup', finishInteraction);
   }
 
-  window.setCropRatio = function(ratio, btn) {
+  // ============================================================
+  // Studio Pixel-Perfect Magnifier Loupe & Precision Nudge
+  // ============================================================
+  let studioNudgeTarget = 'box';
+
+  window.setStudioNudgeTarget = function (target, btn) {
+    studioNudgeTarget = target;
+    document.querySelectorAll('#studioCropPrecisionCard .target-pill').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    const tag = document.getElementById('studioNudgeTargetTag');
+    if (tag) {
+      const names = { box: 'Entire Box', tl: 'Top-Left Corner', tr: 'Top-Right Corner', bl: 'Bottom-Left Corner', br: 'Bottom-Right Corner' };
+      tag.textContent = `Target: ${names[target] || 'Box'}`;
+    }
+  };
+
+  window.nudgeStudioCrop = function (dxPx, dyPx) {
+    if (!engine || !engine.activeCanvas) return;
+    const imgW = engine.activeCanvas.width;
+    const imgH = engine.activeCanvas.height;
+    if (!imgW || !imgH) return;
+
+    const dxNorm = dxPx / imgW;
+    const dyNorm = dyPx / imgH;
+    const minNormW = 10 / imgW;
+    const minNormH = 10 / imgH;
+
+    let { x, y, w, h } = cropBoxState;
+
+    if (studioNudgeTarget === 'box') {
+      x = Math.max(0, Math.min(1 - w, x + dxNorm));
+      y = Math.max(0, Math.min(1 - h, y + dyNorm));
+    } else if (studioNudgeTarget === 'tl') {
+      const newX = Math.max(0, Math.min(x + w - minNormW, x + dxNorm));
+      const newY = Math.max(0, Math.min(y + h - minNormH, y + dyNorm));
+      w = w + (x - newX);
+      h = h + (y - newY);
+      x = newX;
+      y = newY;
+    } else if (studioNudgeTarget === 'tr') {
+      w = Math.max(minNormW, Math.min(1 - x, w + dxNorm));
+      const newY = Math.max(0, Math.min(y + h - minNormH, y + dyNorm));
+      h = h + (y - newY);
+      y = newY;
+    } else if (studioNudgeTarget === 'bl') {
+      const newX = Math.max(0, Math.min(x + w - minNormW, x + dxNorm));
+      w = w + (x - newX);
+      x = newX;
+      h = Math.max(minNormH, Math.min(1 - y, h + dyNorm));
+    } else if (studioNudgeTarget === 'br') {
+      w = Math.max(minNormW, Math.min(1 - x, w + dxNorm));
+      h = Math.max(minNormH, Math.min(1 - y, h + dyNorm));
+    }
+
+    cropBoxState = { x, y, w, h };
+    initCropOverlay();
+    syncStudioCropPrecisionInputs();
+  };
+
+  function syncStudioCropPrecisionInputs() {
+    if (!engine || !engine.activeCanvas) return;
+    const inX = document.getElementById('studioCropX');
+    const inY = document.getElementById('studioCropY');
+    const inW = document.getElementById('studioCropW');
+    const inH = document.getElementById('studioCropH');
+
+    const imgW = engine.activeCanvas.width;
+    const imgH = engine.activeCanvas.height;
+
+    if (inX) inX.value = Math.round(cropBoxState.x * imgW);
+    if (inY) inY.value = Math.round(cropBoxState.y * imgH);
+    if (inW) inW.value = Math.max(1, Math.round(cropBoxState.w * imgW));
+    if (inH) inH.value = Math.max(1, Math.round(cropBoxState.h * imgH));
+  }
+
+  window.onStudioManualCropChange = function () {
+    if (!engine || !engine.activeCanvas) return;
+    const inX = document.getElementById('studioCropX');
+    const inY = document.getElementById('studioCropY');
+    const inW = document.getElementById('studioCropW');
+    const inH = document.getElementById('studioCropH');
+
+    const imgW = engine.activeCanvas.width;
+    const imgH = engine.activeCanvas.height;
+    if (!inX || !inY || !inW || !inH || !imgW || !imgH) return;
+
+    let pxX = parseInt(inX.value, 10) || 0;
+    let pxY = parseInt(inY.value, 10) || 0;
+    let pxW = parseInt(inW.value, 10) || 10;
+    let pxH = parseInt(inH.value, 10) || 10;
+
+    pxW = Math.max(5, Math.min(imgW, pxW));
+    pxH = Math.max(5, Math.min(imgH, pxH));
+    pxX = Math.max(0, Math.min(imgW - pxW, pxX));
+    pxY = Math.max(0, Math.min(imgH - pxH, pxY));
+
+    cropBoxState = {
+      x: pxX / imgW,
+      y: pxY / imgH,
+      w: pxW / imgW,
+      h: pxH / imgH
+    };
+
+    initCropOverlay();
+    syncStudioCropPrecisionInputs();
+  };
+
+  function updateStudioCropMagnifier(clientX, clientY, handle) {
+    const magnifier = document.getElementById('studioCropMagnifier');
+    const canvas = document.getElementById('studioCropMagnifierCanvas');
+    const coordsLabel = document.getElementById('studioMagnifierCoords');
+    if (!magnifier || !canvas || !engine || !engine.activeCanvas) return;
+
+    const imgW = engine.activeCanvas.width;
+    const imgH = engine.activeCanvas.height;
+
+    let normX = cropBoxState.x;
+    let normY = cropBoxState.y;
+
+    if (handle) {
+      if (handle.includes('r')) normX = cropBoxState.x + cropBoxState.w;
+      else if (handle.includes('l')) normX = cropBoxState.x;
+      else normX = cropBoxState.x + cropBoxState.w / 2;
+
+      if (handle.includes('b')) normY = cropBoxState.y + cropBoxState.h;
+      else if (handle.includes('t')) normY = cropBoxState.y;
+      else normY = cropBoxState.y + cropBoxState.h / 2;
+    } else {
+      normX = cropBoxState.x + cropBoxState.w / 2;
+      normY = cropBoxState.y + cropBoxState.h / 2;
+    }
+
+    const pxX = Math.round(normX * imgW);
+    const pxY = Math.round(normY * imgH);
+
+    if (coordsLabel) {
+      coordsLabel.textContent = `X: ${pxX}, Y: ${pxY} px`;
+    }
+
+    const ctx = canvas.getContext('2d');
+    const magW = canvas.width;
+    const magH = canvas.height;
+    const zoomFactor = 3.5;
+    const sampleW = magW / zoomFactor;
+    const sampleH = magH / zoomFactor;
+    const srcX = pxX - sampleW / 2;
+    const srcY = pxY - sampleH / 2;
+
+    ctx.clearRect(0, 0, magW, magH);
+    ctx.imageSmoothingEnabled = false;
+    try {
+      ctx.drawImage(engine.activeCanvas, srcX, srcY, sampleW, sampleH, 0, 0, magW, magH);
+    } catch (_) {}
+
+    magnifier.style.display = 'block';
+    let targetTop = clientY - 80;
+    if (targetTop < 80) targetTop = clientY + 130;
+    let targetLeft = Math.max(70, Math.min(window.innerWidth - 70, clientX));
+    magnifier.style.left = `${targetLeft}px`;
+    magnifier.style.top = `${targetTop}px`;
+  }
+
+  function hideStudioCropMagnifier() {
+    const magnifier = document.getElementById('studioCropMagnifier');
+    if (magnifier) magnifier.style.display = 'none';
+  }
+
+  window.setCropRatio = function (ratio, btn) {
     document.querySelectorAll('#tool-crop-view .preset-card').forEach(p => p.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
@@ -4696,7 +4961,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initCropOverlay();
   };
 
-  window.applyCropAction = async function(download = false) {
+  window.applyCropAction = async function (download = false) {
     const realX = Math.round(cropBoxState.x * engine.activeCanvas.width);
     const realY = Math.round(cropBoxState.y * engine.activeCanvas.height);
     const realW = Math.max(1, Math.round(cropBoxState.w * engine.activeCanvas.width));
@@ -4723,12 +4988,12 @@ document.addEventListener('DOMContentLoaded', () => {
   let fH = false;
   let fV = false;
 
-  window.stepRotate = function(deg) {
+  window.stepRotate = function (deg) {
     rotDeg = (rotDeg + deg) % 360;
     renderRotatePreview();
   };
 
-  window.flipAxis = function(axis) {
+  window.flipAxis = function (axis) {
     if (axis === 'h') fH = !fH;
     if (axis === 'v') fV = !fV;
     renderRotatePreview();
@@ -4759,7 +5024,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('rotate-angle-info').textContent = `Angle: ${rotDeg}°`;
   }
 
-  window.applyRotateAction = async function(download = false) {
+  window.applyRotateAction = async function (download = false) {
     engine.rotateAndFlip(rotDeg, fH, fV);
     showToast(`Applied ${rotDeg}° rotation`);
     rotDeg = 0; fH = false; fV = false;
@@ -4785,7 +5050,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return selected ? selected.value : 'image/jpeg';
   }
 
-  window.setCompressMode = function(mode) {
+  window.setCompressMode = function (mode) {
     compressMode = mode;
     document.getElementById('compress-tab-target')?.classList.toggle('active', mode === 'target');
     document.getElementById('compress-tab-pixels')?.classList.toggle('active', mode === 'pixels');
@@ -4832,15 +5097,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }, delay);
   }
 
-  window.onTargetSizeInput = function() {
+  window.onTargetSizeInput = function () {
     scheduleCalibration(160);
   };
 
-  window.onTargetUnitChange = function() {
+  window.onTargetUnitChange = function () {
     scheduleCalibration(20);
   };
 
-  window.setQuickTargetSize = function(val, unit) {
+  window.setQuickTargetSize = function (val, unit) {
     const input = document.getElementById('compress-target-val');
     const select = document.getElementById('compress-target-unit');
     if (input) input.value = val;
@@ -4853,16 +5118,44 @@ document.addEventListener('DOMContentLoaded', () => {
     scheduleCalibration(20);
   };
 
-  window.calibrateCompressTarget = async function() {
+  window.calibrateCompressTarget = async function () {
     const thisId = ++activeCalibrationId;
-    setCalibratingUI(true);
 
     const input = document.getElementById('compress-target-val');
     const select = document.getElementById('compress-target-unit');
-    let val = parseFloat(input?.value || 200);
+    const errEl = document.getElementById('compress-target-error');
     const unit = select?.value || 'KB';
+    const rawVal = parseFloat(input?.value);
 
-    if (isNaN(val) || val <= 0) val = 200;
+    // Validation: Check for invalid, negative, or zero inputs
+    if (isNaN(rawVal) || rawVal <= 0) {
+      if (errEl) {
+        errEl.textContent = 'Please enter a positive target size (minimum 1 KB).';
+        errEl.style.display = 'block';
+      }
+      if (input) input.style.borderColor = 'var(--danger, #ef4444)';
+      const qualText = document.getElementById('calibrated-quality-text');
+      const dimsText = document.getElementById('calibrated-dims-text');
+      const sizeText = document.getElementById('calibrated-size-text');
+      const finalEl = document.getElementById('compress-final-size');
+      const badge = document.getElementById('compress-savings-badge');
+      const stat = document.getElementById('compress-stat');
+
+      if (qualText) qualText.textContent = 'Invalid target';
+      if (dimsText) dimsText.textContent = 'Target size must be positive';
+      if (sizeText) sizeText.textContent = '--';
+      if (finalEl) finalEl.textContent = '--';
+      if (badge) badge.style.display = 'none';
+      if (stat) stat.textContent = 'Enter a valid target size (min 1 KB)';
+      return;
+    }
+
+    if (errEl) errEl.style.display = 'none';
+    if (input) input.style.borderColor = '';
+
+    setCalibratingUI(true);
+
+    const val = rawVal;
     const targetBytes = unit === 'MB' ? val * 1024 * 1024 : val * 1024;
     const format = getCompressFormat();
 
@@ -4883,7 +5176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCompressSummaryStats(result.blob.size, result.width, result.height);
   };
 
-  window.toggleCompressAspectLock = function() {
+  window.toggleCompressAspectLock = function () {
     compressLockAspect = !compressLockAspect;
     const btn = document.getElementById('compress-px-lock-btn');
     if (btn) {
@@ -4892,7 +5185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.setCompressPxPreset = function(w, h) {
+  window.setCompressPxPreset = function (w, h) {
     const srcW = engine.activeCanvas.width;
     const srcH = engine.activeCanvas.height;
     const aspect = srcW / srcH;
@@ -4917,7 +5210,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCompressPxLive();
   };
 
-  window.onCompressPxChange = function(changedField) {
+  window.onCompressPxChange = function (changedField) {
     const inputW = document.getElementById('compress-px-width');
     const inputH = document.getElementById('compress-px-height');
     if (!inputW || !inputH) return;
@@ -4939,11 +5232,11 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCompressPxLive();
   };
 
-  window.updateCompressPxLive = async function() {
+  window.updateCompressPxLive = async function () {
     const inputW = document.getElementById('compress-px-width');
     const inputH = document.getElementById('compress-px-height');
     const slider = document.getElementById('compress-px-slider');
-    
+
     const w = parseInt(inputW?.value, 10) || engine.activeCanvas.width;
     const h = parseInt(inputH?.value, 10) || engine.activeCanvas.height;
     const qVal = parseInt(slider?.value || 82, 10);
@@ -4958,7 +5251,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCompressSummaryStats(result.blob.size, result.width, result.height);
   };
 
-  window.updateCompressManualLive = async function() {
+  window.updateCompressManualLive = async function () {
     const slider = document.getElementById('compress-slider');
     const val = slider ? parseInt(slider.value, 10) : 80;
     const qualEl = document.getElementById('compress-quality-val');
@@ -4978,7 +5271,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCompressSummaryStats(blob.size, engine.activeCanvas.width, engine.activeCanvas.height);
   };
 
-  window.recalculateCompression = function() {
+  window.recalculateCompression = function () {
     if (compressMode === 'target') {
       scheduleCalibration(30);
     } else if (compressMode === 'pixels') {
@@ -5012,6 +5305,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const savings = Math.max(1, Math.round(((origBytes - finalBytes) / origBytes) * 100));
       if (badge) {
         badge.textContent = `↓ ${savings}% Savings`;
+        badge.style.background = '';
+        badge.style.color = '';
         badge.style.display = 'inline-block';
       }
       if (stat) {
@@ -5019,11 +5314,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else if (origBytes > 0 && finalBytes >= origBytes) {
       if (badge) {
-        badge.textContent = `✓ Target Met (${PixKitEngine.formatBytes(finalBytes)})`;
+        badge.textContent = `Already Optimized`;
+        badge.style.background = 'rgba(125, 125, 125, 0.15)';
+        badge.style.color = 'var(--muted)';
         badge.style.display = 'inline-block';
       }
       if (stat) {
-        stat.textContent = `${PixKitEngine.formatBytes(finalBytes)} · ${finalW} × ${finalH} px (Target met)`;
+        stat.textContent = `${PixKitEngine.formatBytes(finalBytes)} · ${finalW} × ${finalH} px (Output is already at minimum size)`;
       }
     } else {
       if (badge) badge.style.display = 'none';
@@ -5034,7 +5331,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   let isComparingOriginal = false;
-  window.showCompressOriginal = function(showOriginal) {
+  window.showCompressOriginal = function (showOriginal) {
     isComparingOriginal = showOriginal;
     const title = document.getElementById('compress-stage-title');
     if (showOriginal) {
@@ -5048,7 +5345,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.downloadCompressedAction = async function() {
+  window.downloadCompressedAction = async function () {
     if (!compressCalibratedResult) {
       await recalculateCompression();
     }
@@ -5066,9 +5363,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
     showToast(`Downloaded compressed file (${PixKitEngine.formatBytes(blob.size)})`);
+    if (typeof window.triggerDownloadSupportPrompt === 'function') {
+      window.triggerDownloadSupportPrompt();
+    }
   };
 
-  window.applyCompressedToStudio = async function() {
+  window.applyCompressedToStudio = async function () {
     if (!compressCalibratedResult || !compressCalibratedResult.canvas) {
       await recalculateCompression();
     }
@@ -5090,7 +5390,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==============================================================
   // 5. ADJUST
   // ==============================================================
-  window.updateAdjustPreview = function() {
+  window.updateAdjustPreview = function () {
     const bright = parseFloat(document.getElementById('adj-bright')?.value || 100);
     const contrast = parseFloat(document.getElementById('adj-contrast')?.value || 100);
     const sat = parseFloat(document.getElementById('adj-sat')?.value || 100);
@@ -5111,7 +5411,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.drawImage(rendered, 0, 0);
   };
 
-  window.applyAdjustAction = async function(download = false) {
+  window.applyAdjustAction = async function (download = false) {
     const bright = parseFloat(document.getElementById('adj-bright')?.value || 100);
     const contrast = parseFloat(document.getElementById('adj-contrast')?.value || 100);
     const sat = parseFloat(document.getElementById('adj-sat')?.value || 100);
@@ -5134,7 +5434,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==============================================================
   let activeFilterParams = { brightness: 100, contrast: 100, saturation: 100, warmth: 0, grayscale: 0, sepia: 0 };
 
-  window.applyFilterPreset = function(type, btn) {
+  window.applyFilterPreset = function (type, btn) {
     document.querySelectorAll('#tool-filters-view .preset-card').forEach(p => p.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
@@ -5161,7 +5461,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.commitFilterAction = async function(download = false) {
+  window.commitFilterAction = async function (download = false) {
     engine.commitFilters(activeFilterParams);
     showToast('Applied preset filter');
     syncMetadata();
@@ -5182,7 +5482,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let isDraggingText = false;
   let textCanvas, textCtx;
 
-  window.setQuickTextPos = function(preset) {
+  window.setQuickTextPos = function (preset) {
     document.querySelectorAll('#tool-text-view .preset-card').forEach(p => p.classList.remove('active'));
     event?.currentTarget?.classList?.add('active');
 
@@ -5257,7 +5557,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTextLive();
   }
 
-  window.updateTextLive = function(showDragGuide = false) {
+  window.updateTextLive = function (showDragGuide = false) {
     if (!textCanvas) textCanvas = document.getElementById('canvas-text');
     if (!textCanvas) return;
     textCtx = textCanvas.getContext('2d');
@@ -5310,7 +5610,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.commitTextAction = async function(download = false) {
+  window.commitTextAction = async function (download = false) {
     const text = document.getElementById('txt-content')?.value || 'PixKit Studio';
     const size = parseFloat(document.getElementById('txt-size')?.value || 52);
     const color = document.getElementById('txt-color')?.value || '#FFFFFF';
@@ -5361,7 +5661,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedShapeIndex = -1;
   let currentShapeBeingDrawn = null;
 
-  window.setDrawMode = function(mode) {
+  window.setDrawMode = function (mode) {
     drawMode = mode;
     selectedShapeIndex = -1;
 
@@ -5391,12 +5691,12 @@ document.addEventListener('DOMContentLoaded', () => {
     redrawDrawCanvas();
   };
 
-  window.updateDrawStroke = function(val) {
+  window.updateDrawStroke = function (val) {
     strokeW = parseInt(val, 10);
     document.getElementById('lbl-draw-stroke').textContent = `${strokeW}px`;
   };
 
-  window.clearDrawings = function() {
+  window.clearDrawings = function () {
     drawnShapes = [];
     selectedShapeIndex = -1;
     redrawDrawCanvas();
@@ -5631,7 +5931,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.stroke();
   }
 
-  window.commitDrawAction = async function(download = false) {
+  window.commitDrawAction = async function (download = false) {
     if (drawCanvas) {
       engine.commitDrawing(drawCanvas);
       showToast('Committed drawings & shapes');
@@ -5814,7 +6114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateBlurLive();
   }
 
-  window.clearBlurBrush = function() {
+  window.clearBlurBrush = function () {
     if (blurBrushMaskCanvas) {
       const ctx = blurBrushMaskCanvas.getContext('2d');
       ctx.clearRect(0, 0, blurBrushMaskCanvas.width, blurBrushMaskCanvas.height);
@@ -5823,16 +6123,16 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast('Cleared painted blur brush');
   };
 
-  window.updateBlurBrushSize = function(val) {
+  window.updateBlurBrushSize = function (val) {
     blurOptions.brushSize = parseInt(val, 10);
     document.getElementById('lbl-blur-brush-size').textContent = `${val}px`;
     drawBlurOverlayGuides();
   };
 
-  window.setBlurMode = function(mode) {
+  window.setBlurMode = function (mode) {
     blurOptions.mode = mode;
     document.querySelectorAll('#blur-mode-radial, #blur-mode-tilt, #blur-mode-brush, #blur-mode-full').forEach(btn => btn.classList.remove('active'));
-    
+
     let btnId = `blur-mode-${mode}`;
     if (mode === 'tiltshift') btnId = 'blur-mode-tilt';
     document.getElementById(btnId)?.classList.add('active');
@@ -5877,7 +6177,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateBlurLive();
   };
 
-  window.setBlurType = function(type) {
+  window.setBlurType = function (type) {
     blurOptions.blurType = type;
     document.querySelectorAll('#blur-type-gaussian, #blur-type-pixelate, #blur-type-motion, #blur-type-zoom, #blur-type-frosted').forEach(btn => btn.classList.remove('active'));
     document.getElementById(`blur-type-${type}`)?.classList.add('active');
@@ -5894,7 +6194,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateBlurLive();
   };
 
-  window.updateBlurLive = function() {
+  window.updateBlurLive = function () {
     blurOptions.blurRadius = parseInt(document.getElementById('blur-radius')?.value || 18, 10);
     const focusPct = parseInt(document.getElementById('blur-focus-size')?.value || 35, 10);
     blurOptions.focusRadius = focusPct / 100;
@@ -5920,7 +6220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     drawBlurOverlayGuides();
   };
 
-  window.drawBlurOverlayGuides = function() {
+  window.drawBlurOverlayGuides = function () {
     const overlay = document.getElementById('canvas-blur-overlay');
     if (!overlay) return;
     const ctx = overlay.getContext('2d');
@@ -6075,7 +6375,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.commitBlurAction = async function(download = false) {
+  window.commitBlurAction = async function (download = false) {
     engine.commitSelectiveBlur({
       ...blurOptions,
       brushCanvas: blurBrushMaskCanvas
@@ -6096,6 +6396,2088 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ==============================================================
+  // TOOL 10: BATCH IMAGE PROCESSOR CONTROLLER
+  // ==============================================================
+  const batchState = {
+    items: [], // Array of { id, name, size, type, width, height, originalBlob, originalUrl, img, thumbUrl }
+    activeIndex: 0,
+    compareOriginal: false,
+    isExpanded: false,
+    isProcessing: false,
+    activeAccordion: 'compress',
+    activeDetailTool: null,
+    configs: {
+      resize: {
+        enabled: false,
+        mode: 'exact', // 'exact' | 'scale'
+        scale: 100,
+        w: 1600,
+        h: 1200,
+        lockAspect: true
+      },
+      crop: {
+        enabled: false,
+        ratio: 'original', // 'original' | '1:1' | '4:5' | '16:9' | '3:2' | '9:16'
+        anchor: 'center' // 'center' | 'top' | 'bottom'
+      },
+      rotate: {
+        enabled: false,
+        angle: 0, // 0 | 90 | 180 | 270
+        flipH: false,
+        flipV: false
+      },
+      compress: {
+        enabled: true,
+        mode: 'target', // 'target' | 'pixels' | 'manual'
+        targetVal: 200,
+        targetUnit: 'KB',
+        pxWidth: 1600,
+        pxHeight: 1200,
+        pxQuality: 82,
+        lockAspect: true,
+        manualQuality: 80,
+        format: 'image/jpeg', // 'image/jpeg' | 'image/webp' | 'image/png' | 'original'
+        calibratedQuality: 82,
+        calibratedDims: '1600 × 1200',
+        calibratedSize: 184000
+      },
+      adjust: {
+        enabled: false,
+        bright: 100,
+        contrast: 100,
+        saturate: 100,
+        warmth: 0
+      },
+      filters: {
+        enabled: false,
+        preset: 'natural' // 'natural' | 'bw' | 'vintage' | 'warm' | 'cool' | 'crisp' | 'sepia'
+      },
+      blur: {
+        enabled: false,
+        mode: 'radial', // 'radial' | 'tiltshift' | 'full' | 'none'
+        type: 'gaussian', // 'gaussian' | 'pixelate' | 'motion' | 'zoom' | 'frosted'
+        radius: 18,
+        focusSize: 35
+      }
+    }
+  };
+
+  let batchDropzoneBound = false;
+  let batchCalibrationTimer = null;
+
+  async function initBatchEditStage() {
+    setupBatchDropzoneEvents();
+    if (batchState.items.length === 0) {
+      await restoreBatchSession();
+    }
+    syncBatchViewUI();
+    updateBatchAccordionUI();
+    updateAllBatchToolStatusLabels();
+    if (batchState.items.length > 0) {
+      renderBatchPreviewCanvas();
+      recalculateBatchCompression();
+    }
+  }
+  window.initBatchEditStage = initBatchEditStage;
+
+  function setupBatchDropzoneEvents() {
+    if (batchDropzoneBound) return;
+    const dropzone = document.getElementById('batch-dropzone');
+    const viewport = document.getElementById('batch-viewport');
+
+    [dropzone, viewport].forEach(el => {
+      if (!el) return;
+      el.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (dropzone) dropzone.classList.add('drag-over');
+      });
+      el.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (dropzone) dropzone.classList.remove('drag-over');
+      });
+      el.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (dropzone) dropzone.classList.remove('drag-over');
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+          processBatchInputFiles(e.dataTransfer.files);
+        }
+      });
+    });
+    batchDropzoneBound = true;
+  }
+
+  function triggerBatchUpload() {
+    const input = document.getElementById('batch-files-input');
+    if (input) input.click();
+  }
+  window.triggerBatchUpload = triggerBatchUpload;
+
+  function handleBatchFilesSelect(e) {
+    if (e.target && e.target.files && e.target.files.length) {
+      processBatchInputFiles(e.target.files);
+      e.target.value = '';
+    }
+  }
+  window.handleBatchFilesSelect = handleBatchFilesSelect;
+
+  async function processBatchInputFiles(fileList) {
+    const files = Array.from(fileList);
+    if (!files.length) return;
+
+    showToast('Loading batch files...');
+    let addedCount = 0;
+
+    for (const file of files) {
+      const lowerName = (file.name || '').toLowerCase();
+      // Check if ZIP archive
+      if (lowerName.endsWith('.zip') || file.type === 'application/zip' || file.type === 'application/x-zip-compressed') {
+        try {
+          if (!window.JSZip) {
+            showToast('Loading ZIP engine...');
+            await new Promise(r => setTimeout(r, 200));
+          }
+          if (window.JSZip) {
+            const zip = await window.JSZip.loadAsync(file);
+            const zipEntries = Object.keys(zip.files).filter(k => {
+              const f = zip.files[k];
+              if (f.dir || k.startsWith('__MACOSX') || k.endsWith('.DS_Store')) return false;
+              const ext = k.toLowerCase();
+              return ext.match(/\.(jpe?g|png|webp|gif|bmp|svg|avif|heic)$/i);
+            });
+
+            for (const entryPath of zipEntries) {
+              const zipFile = zip.files[entryPath];
+              const blob = await zipFile.async('blob');
+              const cleanFileName = entryPath.split('/').pop();
+              const item = await createBatchItemFromBlob(blob, cleanFileName);
+              if (item) {
+                batchState.items.push(item);
+                addedCount++;
+              }
+            }
+          }
+        } catch (zipErr) {
+          console.error('Batch ZIP unpack error:', zipErr);
+          showToast(`Error unpacking ZIP: ${zipErr.message}`);
+        }
+      } else if (file.type.startsWith('image/') || lowerName.match(/\.(jpe?g|png|webp|gif|bmp|svg|avif|heic)$/i)) {
+        const item = await createBatchItemFromBlob(file, file.name);
+        if (item) {
+          batchState.items.push(item);
+          addedCount++;
+        }
+      }
+    }
+
+    if (addedCount > 0) {
+      if (batchState.activeIndex >= batchState.items.length) {
+        batchState.activeIndex = Math.max(0, batchState.items.length - 1);
+      }
+      syncBatchViewUI();
+      renderBatchPreviewCanvas();
+      recalculateBatchCompression();
+      persistBatchSession();
+      showToast(`Added ${addedCount} image${addedCount > 1 ? 's' : ''} to batch queue!`);
+    } else {
+      showToast('No supported image files detected in selection.');
+    }
+  }
+
+  function createBatchItemFromBlob(blob, fileName) {
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        // Generate compact thumbnail for carousel
+        const thumbCanvas = document.createElement('canvas');
+        const aspect = img.naturalWidth / img.naturalHeight;
+        thumbCanvas.width = 160;
+        thumbCanvas.height = Math.round(160 / (aspect || 1));
+        const ctx = thumbCanvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, thumbCanvas.width, thumbCanvas.height);
+        const thumbUrl = thumbCanvas.toDataURL('image/jpeg', 0.82);
+
+        resolve({
+          id: 'batch_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+          name: fileName || 'image.jpg',
+          size: blob.size,
+          type: blob.type || 'image/jpeg',
+          width: img.naturalWidth,
+          height: img.naturalHeight,
+          originalBlob: blob,
+          originalUrl: url,
+          img: img,
+          thumbUrl: thumbUrl
+        });
+      };
+      img.onerror = () => {
+        resolve(null);
+      };
+      img.src = url;
+    });
+  }
+
+  let persistBatchTimer = null;
+  function persistBatchSession() {
+    clearTimeout(persistBatchTimer);
+    persistBatchTimer = setTimeout(async () => {
+      try {
+        if (!batchState.items || batchState.items.length === 0) {
+          return;
+        }
+        const serializableItems = batchState.items.map(it => ({
+          id: it.id,
+          name: it.name,
+          size: it.size,
+          type: it.type,
+          width: it.width,
+          height: it.height,
+          blob: it.originalBlob
+        }));
+        if (typeof PixKitStorage !== 'undefined') {
+          await PixKitStorage.setItem('batch_session', {
+            items: serializableItems,
+            activeIndex: batchState.activeIndex,
+            configs: batchState.configs,
+            activeDetailTool: batchState.activeDetailTool
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to persist batch session:', err);
+      }
+    }, 60);
+  }
+
+  function syncBatchConfigsToDOM() {
+    try {
+      const cfg = batchState.configs;
+      if (!cfg) return;
+
+      // 1. Compress
+      if (cfg.compress) {
+        const c = cfg.compress;
+        ['target', 'pixels', 'manual'].forEach(m => {
+          const btn = document.getElementById(`batch-comp-mode-${m}`);
+          if (btn) btn.classList.toggle('active', c.mode === m);
+          const panel = document.getElementById(`batch-comp-panel-${m}`);
+          if (panel) panel.style.display = (c.mode === m) ? 'block' : 'none';
+        });
+        const tVal = document.getElementById('batch-comp-target-val');
+        if (tVal && c.targetVal) tVal.value = c.targetVal;
+        const tUnit = document.getElementById('batch-comp-target-unit');
+        if (tUnit && c.targetUnit) tUnit.value = c.targetUnit;
+        document.querySelectorAll('.batch-target-pill').forEach(pill => {
+          const v = parseInt(pill.dataset.val, 10);
+          const u = pill.dataset.unit || 'KB';
+          pill.classList.toggle('active', (v === c.targetVal && u === c.targetUnit));
+        });
+        const pxW = document.getElementById('batch-comp-px-w');
+        if (pxW && c.pxWidth) pxW.value = c.pxWidth;
+        const pxH = document.getElementById('batch-comp-px-h');
+        if (pxH && c.pxHeight) pxH.value = c.pxHeight;
+        const pxQ = document.getElementById('batch-comp-px-q');
+        if (pxQ && c.pxQuality) pxQ.value = c.pxQuality;
+        const pxQVal = document.getElementById('batch-comp-px-q-val');
+        if (pxQVal && c.pxQuality) pxQVal.textContent = c.pxQuality + '%';
+        const lockAspectBtn = document.getElementById('btn-batch-comp-aspect');
+        if (lockAspectBtn) lockAspectBtn.classList.toggle('active', !!c.lockAspect);
+        const manQ = document.getElementById('batch-comp-manual-q');
+        if (manQ && c.manualQuality) manQ.value = c.manualQuality;
+        const manQVal = document.getElementById('batch-comp-manual-q-val');
+        if (manQVal && c.manualQuality) manQVal.textContent = c.manualQuality + '%';
+        ['jpeg', 'webp', 'png', 'original'].forEach(fmt => {
+          const btn = document.getElementById(`batch-comp-fmt-${fmt}`);
+          const isFmt = (fmt === 'original' && c.format === 'original') || (c.format === `image/${fmt}`);
+          if (btn) btn.classList.toggle('active', isFmt);
+        });
+      }
+
+      // 2. Resize
+      if (cfg.resize) {
+        const r = cfg.resize;
+        const exactBtn = document.getElementById('batch-resize-mode-exact');
+        const scaleBtn = document.getElementById('batch-resize-mode-scale');
+        if (exactBtn) exactBtn.classList.toggle('active', r.mode === 'exact');
+        if (scaleBtn) scaleBtn.classList.toggle('active', r.mode === 'scale');
+        const scalePanel = document.getElementById('batch-resize-scale-panel');
+        const exactPanel = document.getElementById('batch-resize-exact-panel');
+        if (scalePanel) scalePanel.style.display = (r.mode === 'scale') ? 'block' : 'none';
+        if (exactPanel) exactPanel.style.display = (r.mode === 'exact') ? 'block' : 'none';
+        const scaleVal = document.getElementById('batch-resize-scale-val');
+        if (scaleVal && r.scale) scaleVal.value = r.scale;
+        const scaleNum = document.getElementById('batch-resize-scale-num');
+        if (scaleNum && r.scale) scaleNum.textContent = r.scale + '%';
+        const wVal = document.getElementById('batch-resize-w');
+        if (wVal && r.w) wVal.value = r.w;
+        const hVal = document.getElementById('batch-resize-h');
+        if (hVal && r.h) hVal.value = r.h;
+        const lockAspectBtn = document.getElementById('btn-batch-resize-aspect');
+        if (lockAspectBtn) lockAspectBtn.classList.toggle('active', !!r.lockAspect);
+      }
+
+      // 3. Crop
+      if (cfg.crop) {
+        const cr = cfg.crop;
+        document.querySelectorAll('.batch-crop-pill').forEach(pill => {
+          pill.classList.toggle('active', pill.dataset.ratio === cr.ratio);
+        });
+        document.querySelectorAll('.batch-anchor-dot').forEach(dot => {
+          dot.classList.toggle('active', dot.dataset.anchor === cr.anchor);
+        });
+      }
+
+      // 4. Rotate
+      if (cfg.rotate) {
+        const rot = cfg.rotate;
+        const flipH = document.getElementById('btn-batch-flip-h');
+        if (flipH) flipH.classList.toggle('active', !!rot.flipH);
+        const flipV = document.getElementById('btn-batch-flip-v');
+        if (flipV) flipV.classList.toggle('active', !!rot.flipV);
+      }
+
+      // 5. Adjust
+      if (cfg.adjust) {
+        const adj = cfg.adjust;
+        const b = document.getElementById('batch-adj-bright');
+        if (b) b.value = adj.bright || 100;
+        const c = document.getElementById('batch-adj-contrast');
+        if (c) c.value = adj.contrast || 100;
+        const s = document.getElementById('batch-adj-saturate');
+        if (s) s.value = adj.saturate || 100;
+        const w = document.getElementById('batch-adj-warmth');
+        if (w) w.value = adj.warmth || 0;
+        const bVal = document.getElementById('batch-adj-bright-val');
+        if (bVal) bVal.textContent = (adj.bright || 100) + '%';
+        const cVal = document.getElementById('batch-adj-contrast-val');
+        if (cVal) cVal.textContent = (adj.contrast || 100) + '%';
+        const sVal = document.getElementById('batch-adj-saturate-val');
+        if (sVal) sVal.textContent = (adj.saturate || 100) + '%';
+        const wVal = document.getElementById('batch-adj-warmth-val');
+        if (wVal) wVal.textContent = (adj.warmth || 0) + '%';
+      }
+
+      // 6. Filters
+      if (cfg.filters) {
+        document.querySelectorAll('.batch-filter-card').forEach(card => {
+          card.classList.toggle('active', card.dataset.preset === cfg.filters.preset);
+        });
+      }
+
+      // 7. Blur
+      if (cfg.blur) {
+        const bl = cfg.blur;
+        document.querySelectorAll('.batch-blur-mode-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.mode === bl.mode);
+        });
+        document.querySelectorAll('.batch-blur-type-btn').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.type === bl.type);
+        });
+        const rad = document.getElementById('batch-blur-radius');
+        if (rad && bl.radius) rad.value = bl.radius;
+        const radVal = document.getElementById('batch-blur-radius-val');
+        if (radVal && bl.radius) radVal.textContent = bl.radius + 'px';
+        const foc = document.getElementById('batch-blur-focus');
+        if (foc && bl.focusSize) foc.value = bl.focusSize;
+        const focVal = document.getElementById('batch-blur-focus-val');
+        if (focVal && bl.focusSize) focVal.textContent = bl.focusSize + '%';
+      }
+
+      updateAllBatchToolStatusLabels();
+    } catch (e) {
+      console.warn('syncBatchConfigsToDOM error:', e);
+    }
+  }
+
+  async function restoreBatchSession() {
+    try {
+      if (typeof PixKitStorage === 'undefined') return false;
+      const data = await PixKitStorage.getItem('batch_session');
+      if (!data || !data.items || data.items.length === 0) return false;
+
+      const restoredItems = [];
+      for (const it of data.items) {
+        if (!it.blob) continue;
+        const item = await createBatchItemFromBlob(it.blob, it.name);
+        if (item) {
+          item.id = it.id || item.id;
+          restoredItems.push(item);
+        }
+      }
+      if (restoredItems.length === 0) return false;
+
+      batchState.items = restoredItems;
+      batchState.activeIndex = Math.min(data.activeIndex || 0, restoredItems.length - 1);
+      if (data.configs) {
+        batchState.configs = Object.assign(batchState.configs, data.configs);
+      }
+      syncBatchConfigsToDOM();
+      syncBatchViewUI();
+      updateBatchAccordionUI();
+      updateAllBatchToolStatusLabels();
+      if (data.activeDetailTool) {
+        openBatchToolDetail(data.activeDetailTool);
+      }
+      renderBatchPreviewCanvas();
+      recalculateBatchCompression();
+      return true;
+    } catch (err) {
+      console.warn('Failed to restore batch session:', err);
+      return false;
+    }
+  }
+
+  // Load 5 curated, distinct sample artworks for 1-click testing
+  window.loadSampleBatchImages = async function () {
+    showToast('Generating 5 sample artworks for batch...');
+    const samples = [
+      {
+        name: 'mountain-sunrise.jpg', w: 1600, h: 1200, gen: (ctx, w, h) => {
+          const sky = ctx.createLinearGradient(0, 0, 0, h);
+          sky.addColorStop(0, '#FFA07A');
+          sky.addColorStop(0.4, '#FFD700');
+          sky.addColorStop(0.7, '#20B2AA');
+          sky.addColorStop(1, '#1C3144');
+          ctx.fillStyle = sky;
+          ctx.fillRect(0, 0, w, h);
+          // Sun
+          ctx.beginPath();
+          ctx.arc(w * 0.5, h * 0.45, w * 0.1, 0, Math.PI * 2);
+          ctx.fillStyle = '#FFF8E7';
+          ctx.fill();
+          // Mountains
+          ctx.beginPath();
+          ctx.moveTo(0, h);
+          ctx.lineTo(w * 0.3, h * 0.5);
+          ctx.lineTo(w * 0.6, h * 0.7);
+          ctx.lineTo(w, h * 0.4);
+          ctx.lineTo(w, h);
+          ctx.fillStyle = '#0F1D2C';
+          ctx.fill();
+        }
+      },
+      {
+        name: 'emerald-forest.jpg', w: 1400, h: 933, gen: (ctx, w, h) => {
+          const grad = ctx.createLinearGradient(0, 0, w, h);
+          grad.addColorStop(0, '#134E5E');
+          grad.addColorStop(0.5, '#71B280');
+          grad.addColorStop(1, '#2E7D32');
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, w, h);
+          for (let i = 0; i < 18; i++) {
+            ctx.beginPath();
+            const cx = (w / 18) * i + 30;
+            const cy = h * 0.85;
+            ctx.arc(cx, cy, 60 + (i % 5) * 15, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.08 + (i % 3) * 0.05})`;
+            ctx.fill();
+          }
+        }
+      },
+      {
+        name: 'ocean-waves.jpg', w: 1920, h: 1080, gen: (ctx, w, h) => {
+          const sea = ctx.createLinearGradient(0, 0, 0, h);
+          sea.addColorStop(0, '#00C9FF');
+          sea.addColorStop(0.5, '#92FE9D');
+          sea.addColorStop(1, '#005C97');
+          ctx.fillStyle = sea;
+          ctx.fillRect(0, 0, w, h);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+          for (let i = 0; i < 5; i++) {
+            ctx.beginPath();
+            ctx.ellipse(w * 0.5, h * 0.6 + i * 50, w * 0.6, 60, 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      },
+      {
+        name: 'desert-dunes.jpg', w: 1200, h: 1200, gen: (ctx, w, h) => {
+          const sand = ctx.createLinearGradient(0, 0, w, h);
+          sand.addColorStop(0, '#F3904F');
+          sand.addColorStop(0.6, '#3B4371');
+          sand.addColorStop(1, '#1A1E36');
+          ctx.fillStyle = sand;
+          ctx.fillRect(0, 0, w, h);
+          ctx.beginPath();
+          ctx.moveTo(0, h * 0.6);
+          ctx.bezierCurveTo(w * 0.3, h * 0.4, w * 0.7, h * 0.8, w, h * 0.55);
+          ctx.lineTo(w, h);
+          ctx.lineTo(0, h);
+          ctx.fillStyle = '#E65100';
+          ctx.fill();
+        }
+      },
+      {
+        name: 'neon-cyber-city.jpg', w: 1080, h: 1350, gen: (ctx, w, h) => {
+          ctx.fillStyle = '#0a0a12';
+          ctx.fillRect(0, 0, w, h);
+          const neon = ctx.createRadialGradient(w * 0.5, h * 0.5, 0, w * 0.5, h * 0.5, w * 0.6);
+          neon.addColorStop(0, '#FF007F');
+          neon.addColorStop(0.5, '#7928CA');
+          neon.addColorStop(1, '#00F0FF');
+          ctx.fillStyle = neon;
+          ctx.beginPath();
+          ctx.arc(w * 0.5, h * 0.5, w * 0.4, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    ];
+
+    for (const s of samples) {
+      const c = document.createElement('canvas');
+      c.width = s.w;
+      c.height = s.h;
+      const ctx = c.getContext('2d');
+      s.gen(ctx, s.w, s.h);
+      await new Promise(res => {
+        c.toBlob(async (blob) => {
+          const item = await createBatchItemFromBlob(blob, s.name);
+          if (item) batchState.items.push(item);
+          res();
+        }, 'image/jpeg', 0.92);
+      });
+    }
+
+    batchState.activeIndex = 0;
+    syncBatchViewUI();
+    renderBatchPreviewCanvas();
+    recalculateBatchCompression();
+    persistBatchSession();
+    showToast('Loaded 5 sample batch photos!');
+  };
+
+  function syncBatchViewUI() {
+    const hasItems = batchState.items.length > 0;
+    const dropzone = document.getElementById('batch-dropzone');
+    const canvasWrap = document.getElementById('batch-canvas-wrapper');
+    const sliderPanel = document.getElementById('batch-slider-panel');
+    const stageFooter = document.getElementById('batch-stage-footer');
+    const topbarTools = document.getElementById('batch-topbar-tools');
+    const statusHint = document.getElementById('batch-stage-status');
+    const viewingTag = document.getElementById('batch-viewing-tag');
+
+    if (dropzone) dropzone.style.display = hasItems ? 'none' : 'flex';
+    if (canvasWrap) canvasWrap.style.display = hasItems ? 'flex' : 'none';
+    if (sliderPanel) sliderPanel.style.display = hasItems ? 'block' : 'none';
+    if (stageFooter) stageFooter.style.display = hasItems ? 'flex' : 'none';
+    if (topbarTools) topbarTools.style.display = hasItems ? 'flex' : 'none';
+
+    if (hasItems) {
+      const cur = batchState.items[batchState.activeIndex];
+      const count = batchState.items.length;
+      if (viewingTag) {
+        viewingTag.style.display = 'inline-flex';
+        viewingTag.textContent = `Viewing ${batchState.activeIndex + 1} of ${count}`;
+      }
+      if (statusHint) {
+        statusHint.textContent = cur ? cur.name : '';
+        statusHint.title = cur ? `${cur.name} (${cur.width} × ${cur.height} px)` : '';
+      }
+      renderBatchCarousel();
+    } else {
+      if (viewingTag) viewingTag.style.display = 'none';
+      if (statusHint) {
+        statusHint.textContent = 'Batch queue empty · Drop images or ZIP to begin';
+        statusHint.title = '';
+      }
+    }
+  }
+
+  function renderBatchCarousel() {
+    const strip = document.getElementById('batch-carousel-strip');
+    const countPill = document.getElementById('batch-count-pill');
+    const activeName = document.getElementById('batch-active-name');
+    const metaSummary = document.getElementById('batch-meta-summary');
+    const metaDetails = document.getElementById('batch-meta-details');
+
+    if (!strip) return;
+    strip.innerHTML = '';
+
+    const count = batchState.items.length;
+    let totalBytes = 0;
+    batchState.items.forEach(it => { totalBytes += (it.size || 0); });
+    const sizeMb = (totalBytes / (1024 * 1024)).toFixed(1);
+
+    if (countPill) countPill.textContent = `${count} Image${count !== 1 ? 's' : ''}`;
+    const activeItem = batchState.items[batchState.activeIndex];
+    if (activeName) activeName.textContent = activeItem ? `· ${activeItem.name}` : '';
+    if (metaSummary) metaSummary.textContent = `${count} Images in Queue · ${sizeMb} MB Total`;
+    if (metaDetails) metaDetails.textContent = activeItem ? `Active: ${activeItem.name} (${activeItem.width} × ${activeItem.height} px)` : 'Ready to process';
+
+    batchState.items.forEach((item, index) => {
+      const card = document.createElement('div');
+      card.className = `batch-thumb-card ${index === batchState.activeIndex ? 'active' : ''}`;
+      card.onclick = () => selectBatchImage(index);
+
+      card.innerHTML = `
+        <span class="batch-thumb-badge">#${index + 1}</span>
+        <button type="button" class="batch-thumb-del-btn" title="Remove image from batch" onclick="removeBatchItem(${index}, event)">×</button>
+        <div class="batch-thumb-img-wrap">
+          <img src="${item.thumbUrl || item.originalUrl}" alt="${item.name}" loading="lazy" />
+        </div>
+        <div class="batch-thumb-info">
+          <span class="batch-thumb-name" title="${item.name}">${item.name}</span>
+          <span class="batch-thumb-meta">${item.width} × ${item.height}</span>
+        </div>
+      `;
+      strip.appendChild(card);
+    });
+
+    const activeCard = strip.children[batchState.activeIndex];
+    if (activeCard && !batchState.isExpanded) {
+      activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }
+
+  window.selectBatchImage = function (index) {
+    if (index < 0 || index >= batchState.items.length) return;
+    batchState.activeIndex = index;
+    renderBatchCarousel();
+    renderBatchPreviewCanvas();
+    recalculateBatchCompression();
+
+    const cur = batchState.items[index];
+    const count = batchState.items.length;
+    const viewingTag = document.getElementById('batch-viewing-tag');
+    const statusHint = document.getElementById('batch-stage-status');
+    if (viewingTag) {
+      viewingTag.style.display = 'inline-flex';
+      viewingTag.textContent = `Viewing ${index + 1} of ${count}`;
+    }
+    if (statusHint && cur) {
+      statusHint.textContent = cur.name;
+      statusHint.title = `${cur.name} (${cur.width} × ${cur.height} px)`;
+    }
+    persistBatchSession();
+  };
+
+  // Keyboard Left / Right Navigation for Batch Mode
+  document.addEventListener('keydown', (e) => {
+    const batchView = document.getElementById('tool-batch-edit-view');
+    if (!batchView || batchView.style.display === 'none') return;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      navigateBatchImage(-1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      navigateBatchImage(1);
+    }
+  });
+
+  window.navigateBatchImage = function (dir) {
+    if (!batchState.items.length) return;
+    let next = batchState.activeIndex + dir;
+    if (next < 0) next = batchState.items.length - 1;
+    if (next >= batchState.items.length) next = 0;
+    selectBatchImage(next);
+  };
+
+  window.scrollBatchCarousel = function (dir) {
+    const strip = document.getElementById('batch-carousel-strip');
+    if (strip) {
+      strip.scrollBy({ left: dir * 260, behavior: 'smooth' });
+    }
+  };
+
+  window.toggleBatchGridExpand = function () {
+    const panel = document.getElementById('batch-slider-panel');
+    const btnText = document.getElementById('batch-expand-btn-text');
+    if (!panel) return;
+    batchState.isExpanded = !batchState.isExpanded;
+    panel.classList.toggle('expanded', batchState.isExpanded);
+    if (btnText) {
+      btnText.textContent = batchState.isExpanded ? 'Collapse Strip' : 'Expand Grid';
+    }
+  };
+
+  window.removeBatchItem = function (index, e) {
+    if (e) e.stopPropagation();
+    if (index < 0 || index >= batchState.items.length) return;
+    const removed = batchState.items.splice(index, 1)[0];
+    if (removed && removed.originalUrl) {
+      try { URL.revokeObjectURL(removed.originalUrl); } catch (_) { }
+    }
+    if (batchState.activeIndex >= batchState.items.length) {
+      batchState.activeIndex = Math.max(0, batchState.items.length - 1);
+    }
+    syncBatchViewUI();
+    if (batchState.items.length > 0) {
+      renderBatchPreviewCanvas();
+      recalculateBatchCompression();
+    }
+    persistBatchSession();
+    showToast('Removed image from batch queue');
+  };
+
+  window.clearBatchQueue = function () {
+    batchState.items.forEach(it => {
+      if (it.originalUrl) {
+        try { URL.revokeObjectURL(it.originalUrl); } catch (_) { }
+      }
+    });
+    batchState.items = [];
+    batchState.activeIndex = 0;
+    batchState.activeCalibratedCanvas = null;
+    if (typeof closeBatchToolDetail === 'function') {
+      closeBatchToolDetail();
+    }
+    if (typeof PixKitStorage !== 'undefined') {
+      PixKitStorage.removeItem('batch_session');
+    }
+    syncBatchViewUI();
+    showToast('Cleared all images from batch queue');
+  };
+
+  // ==============================================================
+  // MASTER-DETAIL CONTROL CENTER HANDLERS (Slide-over sub-views)
+  // ==============================================================
+  const batchToolMeta = {
+    resize: {
+      icon: '↗',
+      title: 'Resize',
+      desc: 'Exact dimensions (px) or proportional scaling (%)'
+    },
+    crop: {
+      icon: '⌗',
+      title: 'Crop & Aspect',
+      desc: 'Aspect ratio presets & focal anchor position'
+    },
+    rotate: {
+      icon: '↻',
+      title: 'Rotate & Mirror',
+      desc: '90°/180° rotation & horizontal/vertical flipping'
+    },
+    compress: {
+      icon: '◉',
+      title: 'Compress Image',
+      desc: 'Auto-calibrate target size, pixel sizing, or manual quality'
+    },
+    adjust: {
+      icon: '☼',
+      title: 'Lighting & Tone',
+      desc: 'Fine-tune brightness, contrast, saturation, and warmth'
+    },
+    filters: {
+      icon: '✧',
+      title: 'Preset Styles',
+      desc: 'Curated photographic tone and aesthetic filters'
+    },
+    blur: {
+      icon: '◎',
+      title: 'Focus & Depth',
+      desc: 'Bokeh lens, tilt-shift, blur styles & intensity'
+    }
+  };
+
+  window.openBatchToolDetail = function (toolName) {
+    if (!toolName || !batchState.configs[toolName]) return;
+    batchState.activeDetailTool = toolName;
+
+    // Update Detail Header
+    const meta = batchToolMeta[toolName] || { icon: '◉', title: toolName, desc: '' };
+    const iconEl = document.getElementById('batch-detail-icon');
+    const titleEl = document.getElementById('batch-detail-title');
+    const descEl = document.getElementById('batch-detail-desc');
+    const toggleBtn = document.getElementById('batch-detail-toggle-btn');
+
+    if (iconEl) iconEl.textContent = meta.icon;
+    if (titleEl) titleEl.textContent = meta.title;
+    if (descEl) descEl.textContent = meta.desc;
+
+    const isEnabled = !!batchState.configs[toolName].enabled;
+    if (toggleBtn) {
+      toggleBtn.textContent = isEnabled ? 'Active' : 'Off';
+      toggleBtn.classList.toggle('active', isEnabled);
+    }
+
+    // Hide all sub-panels, show target sub-panel
+    const allPanels = document.querySelectorAll('.batch-tool-detail-body');
+    allPanels.forEach(p => p.style.display = 'none');
+
+    const targetPanel = document.getElementById(`batch-detail-${toolName}`);
+    if (targetPanel) {
+      targetPanel.style.display = 'block';
+    }
+
+    // Switch Views
+    const masterView = document.getElementById('batch-cc-master-view');
+    const detailView = document.getElementById('batch-cc-detail-view');
+    if (masterView) masterView.style.display = 'none';
+    if (detailView) detailView.style.display = 'block';
+
+    // Scroll Control Center panel to top smoothly
+    const panel = document.getElementById('batch-control-center-panel');
+    if (panel) panel.scrollTop = 0;
+
+    if (toolName === 'compress' || toolName === 'resize') {
+      recalculateBatchCompression();
+    }
+    persistBatchSession();
+  };
+
+  window.closeBatchToolDetail = function () {
+    batchState.activeDetailTool = null;
+
+    // Switch Views
+    const masterView = document.getElementById('batch-cc-master-view');
+    const detailView = document.getElementById('batch-cc-detail-view');
+    if (detailView) detailView.style.display = 'none';
+    if (masterView) masterView.style.display = 'block';
+
+    // Update all status labels & toggle pills in Master View
+    updateAllBatchToolStatusLabels();
+    renderBatchPreviewCanvas();
+
+    // Scroll Control Center panel to top
+    const panel = document.getElementById('batch-control-center-panel');
+    if (panel) panel.scrollTop = 0;
+    persistBatchSession();
+  };
+
+  window.toggleBatchFeatureFromDetail = function () {
+    const toolName = batchState.activeDetailTool;
+    if (!toolName) return;
+    toggleBatchFeature(toolName);
+    const isEnabled = !!batchState.configs[toolName]?.enabled;
+    const toggleBtn = document.getElementById('batch-detail-toggle-btn');
+    if (toggleBtn) {
+      toggleBtn.textContent = isEnabled ? 'Active' : 'Off';
+      toggleBtn.classList.toggle('active', isEnabled);
+    }
+  };
+
+  // Backwards compatibility alias
+  window.toggleBatchAccordion = function (toolName) {
+    openBatchToolDetail(toolName);
+  };
+
+  function updateBatchAccordionUI() {
+    // Legacy accordion support if rendered elsewhere
+    const items = document.querySelectorAll('#batch-accordion-list .batch-acc-item');
+    items.forEach(item => {
+      const tool = item.getAttribute('data-tool');
+      const isOpen = (tool === batchState.activeDetailTool);
+      item.classList.toggle('open', isOpen);
+    });
+  }
+
+  function updateAllBatchToolStatusLabels() {
+    ['resize', 'crop', 'rotate', 'compress', 'adjust', 'filters', 'blur'].forEach(t => {
+      updateBatchToolStatusLabel(t);
+      const pill = document.getElementById(`batch-toggle-${t}`);
+      if (pill && batchState.configs[t]) {
+        const active = !!batchState.configs[t].enabled;
+        pill.textContent = active ? 'Active' : 'Off';
+        pill.classList.toggle('active', active);
+      }
+    });
+  }
+  window.updateAllBatchToolStatusLabels = updateAllBatchToolStatusLabels;
+
+  window.toggleBatchFeature = function (toolName) {
+    const cfg = batchState.configs[toolName];
+    if (!cfg) return;
+    cfg.enabled = !cfg.enabled;
+    const pill = document.getElementById(`batch-toggle-${toolName}`);
+    if (pill) {
+      pill.textContent = cfg.enabled ? 'Active' : 'Off';
+      pill.classList.toggle('active', cfg.enabled);
+    }
+    updateBatchToolStatusLabel(toolName);
+    renderBatchPreviewCanvas();
+    if (toolName === 'compress' || toolName === 'resize') {
+      recalculateBatchCompression();
+    }
+    showToast(`${toolName.charAt(0).toUpperCase() + toolName.slice(1)} ${cfg.enabled ? 'enabled' : 'disabled'} for batch`);
+  };
+
+  function updateBatchToolStatusLabel(toolName) {
+    const lbl = document.getElementById(`batch-status-${toolName}`);
+    const cfg = batchState.configs[toolName];
+    if (!lbl || !cfg) return;
+
+    // Sync header toggle button if this tool is currently open in Detail View
+    if (batchState.activeDetailTool === toolName) {
+      const toggleBtn = document.getElementById('batch-detail-toggle-btn');
+      if (toggleBtn) {
+        toggleBtn.textContent = cfg.enabled ? 'Active' : 'Off';
+        toggleBtn.classList.toggle('active', !!cfg.enabled);
+      }
+    }
+
+    if (!cfg.enabled) {
+      lbl.textContent = 'Off';
+      return;
+    }
+
+    if (toolName === 'resize') {
+      if (cfg.mode === 'scale') lbl.textContent = `${cfg.scale}% Scale`;
+      else lbl.textContent = `${cfg.w} × ${cfg.h} px`;
+    } else if (toolName === 'crop') {
+      lbl.textContent = cfg.ratio === 'original' ? 'Original (No Crop)' : `${cfg.ratio} (${cfg.anchor})`;
+    } else if (toolName === 'rotate') {
+      lbl.textContent = `${cfg.angle}°${cfg.flipH ? ' FlipH' : ''}${cfg.flipV ? ' FlipV' : ''}`;
+    } else if (toolName === 'compress') {
+      const fmt = cfg.format === 'original' ? 'Auto' : cfg.format.replace('image/', '').toUpperCase();
+      if (cfg.mode === 'target') {
+        lbl.textContent = `< ${cfg.targetVal} ${cfg.targetUnit} (${fmt})`;
+      } else if (cfg.mode === 'pixels') {
+        lbl.textContent = `${cfg.pxWidth}×${cfg.pxHeight} (${cfg.pxQuality}%)`;
+      } else {
+        lbl.textContent = `${cfg.manualQuality}% ${fmt}`;
+      }
+    } else if (toolName === 'adjust') {
+      lbl.textContent = `B:${cfg.bright}% C:${cfg.contrast}% S:${cfg.saturate}%${cfg.warmth !== 0 ? ' W:' + cfg.warmth : ''}`;
+    } else if (toolName === 'filters') {
+      lbl.textContent = cfg.preset.charAt(0).toUpperCase() + cfg.preset.slice(1);
+    } else if (toolName === 'blur') {
+      lbl.textContent = cfg.mode === 'none' ? 'Sharp' : `${cfg.mode.toUpperCase()} (${cfg.type}, ${cfg.radius}px)`;
+    }
+  }
+
+  // --- 1. Resize Tool Handlers ---
+  window.setBatchResizeMode = function (mode) {
+    batchState.configs.resize.mode = mode;
+    batchState.configs.resize.enabled = true;
+    document.getElementById('batch-toggle-resize')?.classList.add('active');
+    const pill = document.getElementById('batch-toggle-resize');
+    if (pill) pill.textContent = 'Active';
+
+    document.getElementById('btn-batch-resize-mode-exact')?.classList.toggle('active', mode === 'exact');
+    document.getElementById('btn-batch-resize-mode-scale')?.classList.toggle('active', mode === 'scale');
+
+    const exactBox = document.getElementById('batch-resize-exact-box');
+    const scaleBox = document.getElementById('batch-resize-scale-box');
+    if (exactBox) exactBox.style.display = (mode === 'exact') ? 'block' : 'none';
+    if (scaleBox) scaleBox.style.display = (mode === 'scale') ? 'block' : 'none';
+
+    updateBatchToolStatusLabel('resize');
+    renderBatchPreviewCanvas();
+    recalculateBatchCompression();
+  };
+
+  window.updateBatchResizeScale = function (val) {
+    const v = parseInt(val, 10) || 100;
+    batchState.configs.resize.scale = v;
+    batchState.configs.resize.enabled = true;
+    const slider = document.getElementById('batch-resize-scale-slider');
+    const text = document.getElementById('batch-resize-scale-val');
+    if (slider) slider.value = v;
+    if (text) text.textContent = `${v}%`;
+    document.getElementById('batch-toggle-resize')?.classList.add('active');
+    const pill = document.getElementById('batch-toggle-resize');
+    if (pill) pill.textContent = 'Active';
+    updateBatchToolStatusLabel('resize');
+    renderBatchPreviewCanvas();
+    recalculateBatchCompression();
+  };
+
+  window.setBatchResizePreset = function (w, h, btn) {
+    batchState.configs.resize.w = w;
+    batchState.configs.resize.h = h;
+    batchState.configs.resize.enabled = true;
+
+    const wInput = document.getElementById('batch-resize-w');
+    const hInput = document.getElementById('batch-resize-h');
+    if (wInput) wInput.value = w;
+    if (hInput) hInput.value = h;
+
+    const box = document.getElementById('batch-resize-exact-box');
+    if (box) {
+      box.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+    }
+    document.getElementById('batch-toggle-resize')?.classList.add('active');
+    const pill = document.getElementById('batch-toggle-resize');
+    if (pill) pill.textContent = 'Active';
+    updateBatchToolStatusLabel('resize');
+    renderBatchPreviewCanvas();
+    recalculateBatchCompression();
+  };
+
+  window.toggleBatchResizeAspect = function () {
+    const btn = document.getElementById('batch-resize-aspect-btn');
+    batchState.configs.resize.lockAspect = !batchState.configs.resize.lockAspect;
+    if (btn) btn.classList.toggle('active', batchState.configs.resize.lockAspect);
+  };
+
+  window.onBatchResizeDimsChange = function () {
+    const wInput = document.getElementById('batch-resize-w');
+    const hInput = document.getElementById('batch-resize-h');
+    if (!wInput || !hInput) return;
+    const w = parseInt(wInput.value, 10);
+    const h = parseInt(hInput.value, 10);
+    if (w > 0) batchState.configs.resize.w = w;
+    if (h > 0) batchState.configs.resize.h = h;
+    batchState.configs.resize.enabled = true;
+    document.getElementById('batch-toggle-resize')?.classList.add('active');
+    const pill = document.getElementById('batch-toggle-resize');
+    if (pill) pill.textContent = 'Active';
+    updateBatchToolStatusLabel('resize');
+    renderBatchPreviewCanvas();
+    recalculateBatchCompression();
+  };
+
+  // --- 2. Crop Tool Handlers ---
+  window.setBatchCropRatio = function (ratio, btn) {
+    batchState.configs.crop.ratio = ratio;
+    batchState.configs.crop.enabled = (ratio !== 'original');
+    const group = btn ? btn.parentElement : null;
+    if (group) {
+      group.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+    }
+    const pill = document.getElementById('batch-toggle-crop');
+    if (pill) {
+      pill.textContent = batchState.configs.crop.enabled ? 'Active' : 'Off';
+      pill.classList.toggle('active', batchState.configs.crop.enabled);
+    }
+    updateBatchToolStatusLabel('crop');
+    renderBatchPreviewCanvas();
+    recalculateBatchCompression();
+  };
+
+  window.setBatchCropAnchor = function (anchor, btn) {
+    batchState.configs.crop.anchor = anchor;
+    if (btn) {
+      btn.parentElement.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    updateBatchToolStatusLabel('crop');
+    renderBatchPreviewCanvas();
+    recalculateBatchCompression();
+  };
+
+  // --- 3. Rotate & Flip Handlers ---
+  window.batchRotateStep = function (degrees) {
+    let angle = (batchState.configs.rotate.angle + degrees) % 360;
+    if (angle < 0) angle += 360;
+    batchState.configs.rotate.angle = angle;
+    batchState.configs.rotate.enabled = (angle !== 0 || batchState.configs.rotate.flipH || batchState.configs.rotate.flipV);
+    const pill = document.getElementById('batch-toggle-rotate');
+    if (pill) {
+      pill.textContent = batchState.configs.rotate.enabled ? 'Active' : 'Off';
+      pill.classList.toggle('active', batchState.configs.rotate.enabled);
+    }
+    updateBatchToolStatusLabel('rotate');
+    renderBatchPreviewCanvas();
+  };
+
+  window.batchRotateReset = function () {
+    batchState.configs.rotate.angle = 0;
+    batchState.configs.rotate.flipH = false;
+    batchState.configs.rotate.flipV = false;
+    batchState.configs.rotate.enabled = false;
+    document.getElementById('btn-batch-flip-h')?.classList.remove('active');
+    document.getElementById('btn-batch-flip-v')?.classList.remove('active');
+    const pill = document.getElementById('batch-toggle-rotate');
+    if (pill) {
+      pill.textContent = 'Off';
+      pill.classList.remove('active');
+    }
+    updateBatchToolStatusLabel('rotate');
+    renderBatchPreviewCanvas();
+  };
+
+  window.batchToggleFlip = function (axis) {
+    if (axis === 'h') {
+      batchState.configs.rotate.flipH = !batchState.configs.rotate.flipH;
+      document.getElementById('btn-batch-flip-h')?.classList.toggle('active', batchState.configs.rotate.flipH);
+    } else if (axis === 'v') {
+      batchState.configs.rotate.flipV = !batchState.configs.rotate.flipV;
+      document.getElementById('btn-batch-flip-v')?.classList.toggle('active', batchState.configs.rotate.flipV);
+    }
+    batchState.configs.rotate.enabled = (batchState.configs.rotate.angle !== 0 || batchState.configs.rotate.flipH || batchState.configs.rotate.flipV);
+    const pill = document.getElementById('batch-toggle-rotate');
+    if (pill) {
+      pill.textContent = batchState.configs.rotate.enabled ? 'Active' : 'Off';
+      pill.classList.toggle('active', batchState.configs.rotate.enabled);
+    }
+    updateBatchToolStatusLabel('rotate');
+    renderBatchPreviewCanvas();
+  };
+
+  // --- 4. Compress Tool Handlers (Complete Match with Default Tool) ---
+  window.setBatchCompressMode = function (mode) {
+    batchState.configs.compress.mode = mode;
+    batchState.configs.compress.enabled = true;
+    document.getElementById('batch-compress-tab-target')?.classList.toggle('active', mode === 'target');
+    document.getElementById('batch-compress-tab-pixels')?.classList.toggle('active', mode === 'pixels');
+    document.getElementById('batch-compress-tab-manual')?.classList.toggle('active', mode === 'manual');
+
+    const targetPanel = document.getElementById('batch-compress-mode-target-panel');
+    const pixelsPanel = document.getElementById('batch-compress-mode-pixels-panel');
+    const manualPanel = document.getElementById('batch-compress-mode-manual-panel');
+
+    if (targetPanel) targetPanel.style.display = mode === 'target' ? 'block' : 'none';
+    if (pixelsPanel) pixelsPanel.style.display = mode === 'pixels' ? 'block' : 'none';
+    if (manualPanel) manualPanel.style.display = mode === 'manual' ? 'block' : 'none';
+
+    updateBatchToolStatusLabel('compress');
+    recalculateBatchCompression();
+  };
+
+  window.onBatchTargetSizeInput = function () {
+    if (batchCalibrationTimer) clearTimeout(batchCalibrationTimer);
+    batchState.configs.compress.enabled = true;
+    batchCalibrationTimer = setTimeout(() => {
+      const input = document.getElementById('batch-compress-target-val');
+      const val = parseFloat(input?.value || 200);
+      if (val > 0) batchState.configs.compress.targetVal = val;
+
+      const unit = batchState.configs.compress.targetUnit;
+      document.querySelectorAll('#batch-compress-mode-target-panel .chip-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim() === `${val} ${unit}`);
+      });
+
+      const pill = document.getElementById('batch-toggle-compress');
+      if (pill) {
+        pill.textContent = 'Active';
+        pill.classList.add('active');
+      }
+      const detailPill = document.getElementById('batch-detail-toggle-btn');
+      if (detailPill && batchState.activeDetailTool === 'compress') {
+        detailPill.textContent = 'Active';
+        detailPill.classList.add('active');
+      }
+
+      recalculateBatchCompression();
+    }, 140);
+  };
+
+  window.onBatchTargetUnitChange = function () {
+    const select = document.getElementById('batch-compress-target-unit');
+    batchState.configs.compress.targetUnit = select?.value || 'KB';
+    batchState.configs.compress.enabled = true;
+
+    const val = batchState.configs.compress.targetVal;
+    const unit = batchState.configs.compress.targetUnit;
+    document.querySelectorAll('#batch-compress-mode-target-panel .chip-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent.trim() === `${val} ${unit}`);
+    });
+
+    const pill = document.getElementById('batch-toggle-compress');
+    if (pill) {
+      pill.textContent = 'Active';
+      pill.classList.add('active');
+    }
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'compress') {
+      detailPill.textContent = 'Active';
+      detailPill.classList.add('active');
+    }
+
+    recalculateBatchCompression();
+  };
+
+  window.setBatchQuickTargetSize = function (val, unit) {
+    batchState.configs.compress.targetVal = val;
+    batchState.configs.compress.targetUnit = unit;
+    batchState.configs.compress.enabled = true;
+
+    const input = document.getElementById('batch-compress-target-val');
+    const select = document.getElementById('batch-compress-target-unit');
+    if (input) input.value = val;
+    if (select) select.value = unit;
+
+    document.querySelectorAll('#batch-compress-mode-target-panel .chip-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent.trim() === `${val} ${unit}`);
+    });
+
+    const pill = document.getElementById('batch-toggle-compress');
+    if (pill) {
+      pill.textContent = 'Active';
+      pill.classList.add('active');
+    }
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'compress') {
+      detailPill.textContent = 'Active';
+      detailPill.classList.add('active');
+    }
+
+    recalculateBatchCompression();
+  };
+
+  window.toggleBatchCompressAspectLock = function () {
+    batchState.configs.compress.lockAspect = !batchState.configs.compress.lockAspect;
+    const btn = document.getElementById('batch-compress-px-lock-btn');
+    if (btn) btn.classList.toggle('active', batchState.configs.compress.lockAspect);
+  };
+
+  window.setBatchCompressPxPreset = function (w, h) {
+    const activeItem = batchState.items[batchState.activeIndex];
+    const srcW = activeItem ? activeItem.width : 1600;
+    const srcH = activeItem ? activeItem.height : 1200;
+    const aspect = srcW / srcH;
+
+    let targetW = w;
+    let targetH = h;
+    if (batchState.configs.compress.lockAspect) {
+      if (srcW >= srcH) {
+        targetW = w;
+        targetH = Math.round(w / aspect);
+      } else {
+        targetH = h;
+        targetW = Math.round(h * aspect);
+      }
+    }
+
+    batchState.configs.compress.pxWidth = targetW;
+    batchState.configs.compress.pxHeight = targetH;
+    batchState.configs.compress.enabled = true;
+
+    const wInput = document.getElementById('batch-compress-px-width');
+    const hInput = document.getElementById('batch-compress-px-height');
+    if (wInput) wInput.value = targetW;
+    if (hInput) hInput.value = targetH;
+
+    const pill = document.getElementById('batch-toggle-compress');
+    if (pill) {
+      pill.textContent = 'Active';
+      pill.classList.add('active');
+    }
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'compress') {
+      detailPill.textContent = 'Active';
+      detailPill.classList.add('active');
+    }
+
+    updateBatchCompressPxLive();
+  };
+
+  window.onBatchCompressPxChange = function (field) {
+    const wInput = document.getElementById('batch-compress-px-width');
+    const hInput = document.getElementById('batch-compress-px-height');
+    if (!wInput || !hInput) return;
+
+    const activeItem = batchState.items[batchState.activeIndex];
+    const srcW = activeItem ? activeItem.width : 1600;
+    const srcH = activeItem ? activeItem.height : 1200;
+    const aspect = srcW / srcH;
+
+    let w = parseInt(wInput.value, 10) || srcW;
+    let h = parseInt(hInput.value, 10) || srcH;
+
+    if (batchState.configs.compress.lockAspect) {
+      if (field === 'width') {
+        h = Math.max(1, Math.round(w / aspect));
+        hInput.value = h;
+      } else {
+        w = Math.max(1, Math.round(h * aspect));
+        wInput.value = w;
+      }
+    }
+    batchState.configs.compress.pxWidth = w;
+    batchState.configs.compress.pxHeight = h;
+    batchState.configs.compress.enabled = true;
+
+    const pill = document.getElementById('batch-toggle-compress');
+    if (pill) {
+      pill.textContent = 'Active';
+      pill.classList.add('active');
+    }
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'compress') {
+      detailPill.textContent = 'Active';
+      detailPill.classList.add('active');
+    }
+
+    updateBatchCompressPxLive();
+  };
+
+  window.updateBatchCompressPxLive = function () {
+    const slider = document.getElementById('batch-compress-px-slider');
+    const val = parseInt(slider?.value || 82, 10);
+    batchState.configs.compress.pxQuality = val;
+    const valText = document.getElementById('batch-compress-px-quality-val');
+    if (valText) valText.textContent = `${val}%`;
+
+    const wInput = document.getElementById('batch-compress-px-width');
+    const hInput = document.getElementById('batch-compress-px-height');
+    if (wInput) batchState.configs.compress.pxWidth = parseInt(wInput.value, 10) || 1600;
+    if (hInput) batchState.configs.compress.pxHeight = parseInt(hInput.value, 10) || 1200;
+
+    recalculateBatchCompression();
+  };
+
+  window.updateBatchCompressManualLive = function () {
+    const slider = document.getElementById('batch-compress-manual-slider');
+    const val = parseInt(slider?.value || 80, 10);
+    batchState.configs.compress.manualQuality = val;
+    batchState.configs.compress.enabled = true;
+    const valText = document.getElementById('batch-compress-manual-quality-val');
+    if (valText) valText.textContent = `${val}%`;
+
+    const pill = document.getElementById('batch-toggle-compress');
+    if (pill) {
+      pill.textContent = 'Active';
+      pill.classList.add('active');
+    }
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'compress') {
+      detailPill.textContent = 'Active';
+      detailPill.classList.add('active');
+    }
+
+    recalculateBatchCompression();
+  };
+
+  window.setBatchCompressFormat = function (fmt) {
+    batchState.configs.compress.format = fmt;
+    batchState.configs.compress.enabled = true;
+
+    const pill = document.getElementById('batch-toggle-compress');
+    if (pill) {
+      pill.textContent = 'Active';
+      pill.classList.add('active');
+    }
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'compress') {
+      detailPill.textContent = 'Active';
+      detailPill.classList.add('active');
+    }
+
+    updateBatchToolStatusLabel('compress');
+    recalculateBatchCompression();
+  };
+
+  let activeBatchCalibrationId = 0;
+
+  function setBatchCalibratingUI(isCalibrating) {
+    const qualEl = document.getElementById('batch-calibrated-quality-text');
+    const dimsEl = document.getElementById('batch-calibrated-dims-text');
+    const sizeEl = document.getElementById('batch-calibrated-size-text');
+    const finalEl = document.getElementById('batch-compress-final-size');
+    const badge = document.getElementById('batch-compress-savings-badge');
+
+    if (isCalibrating) {
+      if (qualEl) qualEl.innerHTML = '<span class="calibrating-pulse" style="color:var(--muted); font-size:11px;">Auto-tuning quality...</span>';
+      if (dimsEl) dimsEl.innerHTML = '<span class="calibrating-pulse" style="color:var(--muted); font-size:11px;">Optimizing resolution...</span>';
+      if (sizeEl) sizeEl.innerHTML = '<span class="calibrating-pulse" style="color:var(--accent-olive); font-size:11px;">Calibrating budget...</span>';
+      if (finalEl) finalEl.innerHTML = '<span class="calibrating-pulse" style="color:var(--muted); font-size:11px;">Calculating...</span>';
+      if (badge) badge.style.display = 'none';
+    }
+  }
+
+  // Auto-calibrates compression on active image and updates UI status cards
+  async function recalculateBatchCompression() {
+    const thisId = ++activeBatchCalibrationId;
+    const activeItem = batchState.items[batchState.activeIndex];
+    const compCfg = batchState.configs.compress;
+    if (!activeItem || !activeItem.img) return;
+
+    let targetBytes = 200 * 1024;
+    if (compCfg.mode === 'target') {
+      const v = compCfg.targetVal || 200;
+      targetBytes = (compCfg.targetUnit === 'MB' ? v * 1024 * 1024 : v * 1024);
+      setBatchCalibratingUI(true);
+    }
+
+    let exportMime = compCfg.format || 'image/jpeg';
+    if (exportMime === 'original') exportMime = activeItem.type || 'image/jpeg';
+    if (!exportMime || exportMime.includes('svg') || exportMime.includes('heic') || exportMime.includes('gif')) {
+      exportMime = 'image/jpeg';
+    }
+
+    const testCanvas = await processSingleBatchItem(activeItem, false);
+    if (!testCanvas) return;
+    if (thisId !== activeBatchCalibrationId) return;
+
+    if (compCfg.mode === 'target') {
+      // Precision auto-calibration using PixKit engine with adaptive scaling & strict budget guarantee
+      const result = await engine.autoCalibrateCompression(targetBytes, exportMime, testCanvas);
+      if (thisId !== activeBatchCalibrationId) return;
+      if (!result || !result.blob) return;
+
+      compCfg.calibratedQuality = result.quality;
+      compCfg.calibratedDims = (result.scale < 0.98)
+        ? `${result.width} × ${result.height} px (${Math.round(result.scale * 100)}% res)`
+        : `${result.width} × ${result.height} px`;
+      compCfg.calibratedSize = result.blob.size;
+      compCfg.calibratedScale = result.scale;
+      batchState.activeCalibratedCanvas = result.canvas;
+
+      const qualEl = document.getElementById('batch-calibrated-quality-text');
+      const dimsEl = document.getElementById('batch-calibrated-dims-text');
+      const sizeEl = document.getElementById('batch-calibrated-size-text');
+
+      if (qualEl) qualEl.textContent = `${result.quality}%`;
+      if (dimsEl) dimsEl.textContent = compCfg.calibratedDims;
+      if (sizeEl) {
+        sizeEl.textContent = `${formatBytes(result.blob.size)} (Target: < ${compCfg.targetVal} ${compCfg.targetUnit})`;
+      }
+
+      updateBatchSavingsCard(activeItem.size, result.blob.size);
+    } else if (compCfg.mode === 'pixels') {
+      const q = (compCfg.pxQuality || 82) / 100;
+      const b = await new Promise(res => testCanvas.toBlob(res, exportMime, q));
+      if (thisId !== activeBatchCalibrationId) return;
+      const finalSize = b ? b.size : Math.round(activeItem.size * 0.35);
+      batchState.activeCalibratedCanvas = testCanvas;
+      updateBatchSavingsCard(activeItem.size, finalSize);
+    } else if (compCfg.mode === 'manual') {
+      const q = (compCfg.manualQuality || 80) / 100;
+      const b = await new Promise(res => testCanvas.toBlob(res, exportMime, q));
+      if (thisId !== activeBatchCalibrationId) return;
+      const finalSize = b ? b.size : Math.round(activeItem.size * 0.4);
+      batchState.activeCalibratedCanvas = testCanvas;
+      updateBatchSavingsCard(activeItem.size, finalSize);
+    }
+
+    updateBatchToolStatusLabel('compress');
+    renderBatchPreviewCanvas();
+  }
+
+  function updateBatchSavingsCard(origBytes, finalBytes) {
+    const origEl = document.getElementById('batch-compress-orig-size');
+    const finalEl = document.getElementById('batch-compress-final-size');
+    const badge = document.getElementById('batch-compress-savings-badge');
+
+    if (origEl) origEl.textContent = formatBytes(origBytes);
+    if (finalEl) finalEl.textContent = formatBytes(finalBytes);
+
+    if (badge && origBytes > 0) {
+      const savedBytes = Math.max(0, origBytes - finalBytes);
+      const pct = Math.round((savedBytes / origBytes) * 100);
+      badge.textContent = `↓ ${pct}% Savings`;
+      badge.style.display = pct > 0 ? 'inline-block' : 'none';
+    }
+  }
+
+  function formatBytes(bytes) {
+    if (!bytes || bytes <= 0) return '0 KB';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+
+  // --- 5. Adjust Tone Handlers ---
+  window.updateBatchAdjust = function () {
+    const b = parseInt(document.getElementById('batch-adj-bright')?.value, 10) || 100;
+    const c = parseInt(document.getElementById('batch-adj-contrast')?.value, 10) || 100;
+    const s = parseInt(document.getElementById('batch-adj-saturate')?.value, 10) || 100;
+    const w = parseInt(document.getElementById('batch-adj-warmth')?.value, 10) || 0;
+
+    batchState.configs.adjust.bright = b;
+    batchState.configs.adjust.contrast = c;
+    batchState.configs.adjust.saturate = s;
+    batchState.configs.adjust.warmth = w;
+    batchState.configs.adjust.enabled = (b !== 100 || c !== 100 || s !== 100 || w !== 0);
+
+    const bText = document.getElementById('batch-adj-bright-val');
+    const cText = document.getElementById('batch-adj-contrast-val');
+    const sText = document.getElementById('batch-adj-saturate-val');
+    const wText = document.getElementById('batch-adj-warmth-val');
+    if (bText) bText.textContent = `${b}%`;
+    if (cText) cText.textContent = `${c}%`;
+    if (sText) sText.textContent = `${s}%`;
+    if (wText) wText.textContent = `${w}`;
+
+    const pill = document.getElementById('batch-toggle-adjust');
+    if (pill) {
+      pill.textContent = batchState.configs.adjust.enabled ? 'Active' : 'Off';
+      pill.classList.toggle('active', batchState.configs.adjust.enabled);
+    }
+    updateBatchToolStatusLabel('adjust');
+    renderBatchPreviewCanvas();
+  };
+
+  window.resetBatchAdjust = function () {
+    batchState.configs.adjust.bright = 100;
+    batchState.configs.adjust.contrast = 100;
+    batchState.configs.adjust.saturate = 100;
+    batchState.configs.adjust.warmth = 0;
+    batchState.configs.adjust.enabled = false;
+
+    const bSlider = document.getElementById('batch-adj-bright');
+    const cSlider = document.getElementById('batch-adj-contrast');
+    const sSlider = document.getElementById('batch-adj-saturate');
+    const wSlider = document.getElementById('batch-adj-warmth');
+    if (bSlider) bSlider.value = 100;
+    if (cSlider) cSlider.value = 100;
+    if (sSlider) sSlider.value = 100;
+    if (wSlider) wSlider.value = 0;
+
+    document.getElementById('batch-adj-bright-val')?.replaceChildren('100%');
+    document.getElementById('batch-adj-contrast-val')?.replaceChildren('100%');
+    document.getElementById('batch-adj-saturate-val')?.replaceChildren('100%');
+    document.getElementById('batch-adj-warmth-val')?.replaceChildren('0');
+
+    const pill = document.getElementById('batch-toggle-adjust');
+    if (pill) {
+      pill.textContent = 'Off';
+      pill.classList.remove('active');
+    }
+    updateBatchToolStatusLabel('adjust');
+    renderBatchPreviewCanvas();
+  };
+
+  // --- 6. Preset Filters Handlers ---
+  window.setBatchFilterPreset = function (preset, btn) {
+    batchState.configs.filters.preset = preset;
+    batchState.configs.filters.enabled = (preset !== 'natural');
+    if (btn) {
+      btn.parentElement.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    const pill = document.getElementById('batch-toggle-filters');
+    if (pill) {
+      pill.textContent = batchState.configs.filters.enabled ? 'Active' : 'Off';
+      pill.classList.toggle('active', batchState.configs.filters.enabled);
+    }
+    updateBatchToolStatusLabel('filters');
+    renderBatchPreviewCanvas();
+  };
+
+  // --- 7. Blur & Focus Handlers ---
+  window.setBatchBlurMode = function (mode, btn) {
+    batchState.configs.blur.mode = mode;
+    batchState.configs.blur.enabled = (mode !== 'none');
+    if (btn) {
+      btn.parentElement.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    const focusGroup = document.getElementById('batch-group-focus-radius');
+    if (focusGroup) {
+      focusGroup.style.display = (mode === 'radial' || mode === 'tiltshift') ? 'block' : 'none';
+    }
+    const pill = document.getElementById('batch-toggle-blur');
+    if (pill) {
+      pill.textContent = batchState.configs.blur.enabled ? 'Active' : 'Off';
+      pill.classList.toggle('active', batchState.configs.blur.enabled);
+    }
+    updateBatchToolStatusLabel('blur');
+    renderBatchPreviewCanvas();
+  };
+
+  window.setBatchBlurType = function (type, btn) {
+    batchState.configs.blur.type = type;
+    if (btn) {
+      btn.parentElement.querySelectorAll('.preset-card').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    if (batchState.configs.blur.mode === 'none') {
+      batchState.configs.blur.mode = 'radial';
+      document.getElementById('batch-blur-mode-radial')?.classList.add('active');
+      document.getElementById('batch-blur-mode-none')?.classList.remove('active');
+    }
+    batchState.configs.blur.enabled = true;
+    document.getElementById('batch-toggle-blur')?.classList.add('active');
+    const pill = document.getElementById('batch-toggle-blur');
+    if (pill) pill.textContent = 'Active';
+    updateBatchToolStatusLabel('blur');
+    renderBatchPreviewCanvas();
+  };
+
+  window.updateBatchBlurRadius = function (val) {
+    const r = Math.max(2, Math.min(48, parseInt(val, 10) || 18));
+    batchState.configs.blur.radius = r;
+    const text = document.getElementById('batch-blur-radius-val');
+    if (text) text.textContent = `${r}px`;
+    if (batchState.configs.blur.mode !== 'none') {
+      batchState.configs.blur.enabled = true;
+      document.getElementById('batch-toggle-blur')?.classList.add('active');
+      const pill = document.getElementById('batch-toggle-blur');
+      if (pill) pill.textContent = 'Active';
+    }
+    updateBatchToolStatusLabel('blur');
+    renderBatchPreviewCanvas();
+  };
+
+  window.updateBatchFocusSize = function (val) {
+    const f = Math.max(10, Math.min(85, parseInt(val, 10) || 35));
+    batchState.configs.blur.focusSize = f;
+    const text = document.getElementById('batch-focus-size-val');
+    if (text) text.textContent = `${f}%`;
+    renderBatchPreviewCanvas();
+  };
+
+  window.resetAllBatchOperations = function () {
+    batchState.configs.resize.enabled = false;
+    batchState.configs.resize.mode = 'exact';
+    batchState.configs.resize.scale = 100;
+
+    batchState.configs.crop.enabled = false;
+    batchState.configs.crop.ratio = 'original';
+    batchState.configs.crop.anchor = 'center';
+
+    batchState.configs.rotate.enabled = false;
+    batchState.configs.rotate.angle = 0;
+    batchState.configs.rotate.flipH = false;
+    batchState.configs.rotate.flipV = false;
+
+    batchState.configs.compress.enabled = true;
+    batchState.configs.compress.mode = 'target';
+    batchState.configs.compress.targetVal = 200;
+    batchState.configs.compress.targetUnit = 'KB';
+    batchState.configs.compress.format = 'image/jpeg';
+
+    resetBatchAdjust();
+
+    batchState.configs.filters.enabled = false;
+    batchState.configs.filters.preset = 'natural';
+
+    batchState.configs.blur.enabled = false;
+    batchState.configs.blur.mode = 'radial';
+    batchState.configs.blur.type = 'gaussian';
+    batchState.configs.blur.radius = 18;
+
+    ['resize', 'crop', 'rotate', 'adjust', 'filters', 'blur'].forEach(t => {
+      const pill = document.getElementById(`batch-toggle-${t}`);
+      if (pill) {
+        pill.textContent = 'Off';
+        pill.classList.remove('active');
+      }
+      updateBatchToolStatusLabel(t);
+    });
+    updateBatchToolStatusLabel('compress');
+
+    renderBatchPreviewCanvas();
+    recalculateBatchCompression();
+    showToast('Reset all batch settings to defaults');
+  };
+
+  // ==============================================================
+  // BATCH RENDERING PIPELINE (Canvas Execution)
+  // ==============================================================
+  async function processSingleBatchItem(item, forExport = false) {
+    if (!item || !item.img) return null;
+    const srcImg = item.img;
+    let sw = srcImg.naturalWidth;
+    let sh = srcImg.naturalHeight;
+
+    // Step 1: Crop Aspect Ratio
+    let sx = 0, sy = 0, cw = sw, ch = sh;
+    const cropCfg = batchState.configs.crop;
+    if (cropCfg.enabled && cropCfg.ratio !== 'original') {
+      const parts = cropCfg.ratio.split(':');
+      if (parts.length === 2) {
+        const targetRatio = parseFloat(parts[0]) / parseFloat(parts[1]);
+        const currentRatio = sw / sh;
+        if (currentRatio > targetRatio) {
+          cw = Math.round(sh * targetRatio);
+          ch = sh;
+          if (cropCfg.anchor === 'center') sx = Math.round((sw - cw) / 2);
+          else if (cropCfg.anchor === 'top') sx = 0;
+          else if (cropCfg.anchor === 'bottom') sx = sw - cw;
+        } else {
+          cw = sw;
+          ch = Math.round(sw / targetRatio);
+          if (cropCfg.anchor === 'center') sy = Math.round((sh - ch) / 2);
+          else if (cropCfg.anchor === 'top') sy = 0;
+          else if (cropCfg.anchor === 'bottom') sy = sh - ch;
+        }
+      }
+    }
+
+    // Intermediate Canvas 1: Cropped + Rotated/Flipped
+    const rotCfg = batchState.configs.rotate;
+    const angle = rotCfg.enabled ? rotCfg.angle : 0;
+    const flipH = rotCfg.enabled && rotCfg.flipH;
+    const flipV = rotCfg.enabled && rotCfg.flipV;
+
+    const isRot90or270 = (angle === 90 || angle === 270);
+    const postRotW = isRot90or270 ? ch : cw;
+    const postRotH = isRot90or270 ? cw : ch;
+
+    const c1 = document.createElement('canvas');
+    c1.width = postRotW;
+    c1.height = postRotH;
+    const ctx1 = c1.getContext('2d');
+
+    ctx1.save();
+    ctx1.translate(postRotW / 2, postRotH / 2);
+    if (angle !== 0) ctx1.rotate((angle * Math.PI) / 180);
+    if (flipH || flipV) ctx1.scale(flipH ? -1 : 1, flipV ? -1 : 1);
+    ctx1.drawImage(srcImg, sx, sy, cw, ch, -cw / 2, -ch / 2, cw, ch);
+    ctx1.restore();
+
+    // Step 2: Resize Calculation
+    const resCfg = batchState.configs.resize;
+    let targetW = postRotW;
+    let targetH = postRotH;
+
+    if (resCfg.enabled) {
+      if (resCfg.mode === 'scale') {
+        const factor = (resCfg.scale || 100) / 100;
+        targetW = Math.max(1, Math.round(postRotW * factor));
+        targetH = Math.max(1, Math.round(postRotH * factor));
+      } else if (resCfg.mode === 'exact') {
+        const tw = resCfg.w || postRotW;
+        const th = resCfg.h || postRotH;
+        if (resCfg.lockAspect) {
+          const ratio = postRotW / postRotH;
+          if (tw / th > ratio) {
+            targetW = Math.round(th * ratio);
+            targetH = th;
+          } else {
+            targetW = tw;
+            targetH = Math.round(tw / ratio);
+          }
+        } else {
+          targetW = tw;
+          targetH = th;
+        }
+      }
+    }
+
+    // Step 2B: If Compress is in pixel mode, resample targetW / targetH
+    const compCfg = batchState.configs.compress;
+    if (compCfg.enabled && compCfg.mode === 'pixels') {
+      const pw = compCfg.pxWidth || targetW;
+      const ph = compCfg.pxHeight || targetH;
+      if (compCfg.lockAspect) {
+        const ratio = targetW / targetH;
+        if (pw / ph > ratio) {
+          targetW = Math.round(ph * ratio);
+          targetH = ph;
+        } else {
+          targetW = pw;
+          targetH = Math.round(pw / ratio);
+        }
+      } else {
+        targetW = pw;
+        targetH = ph;
+      }
+    }
+
+    const c2 = document.createElement('canvas');
+    c2.width = targetW;
+    c2.height = targetH;
+    const ctx2 = c2.getContext('2d');
+    ctx2.imageSmoothingEnabled = true;
+    ctx2.imageSmoothingQuality = 'high';
+
+    // Step 3: Tone & Preset Filter String
+    const adjCfg = batchState.configs.adjust;
+    const fltCfg = batchState.configs.filters;
+    let filterParts = [];
+
+    if (adjCfg.enabled) {
+      if (adjCfg.bright !== 100) filterParts.push(`brightness(${adjCfg.bright}%)`);
+      if (adjCfg.contrast !== 100) filterParts.push(`contrast(${adjCfg.contrast}%)`);
+      if (adjCfg.saturate !== 100) filterParts.push(`saturate(${adjCfg.saturate}%)`);
+      if (adjCfg.warmth > 0) {
+        filterParts.push(`sepia(${adjCfg.warmth * 0.7}%) saturate(${100 + adjCfg.warmth * 0.6}%)`);
+      } else if (adjCfg.warmth < 0) {
+        filterParts.push(`hue-rotate(${adjCfg.warmth * 1.5}deg) saturate(${100 - adjCfg.warmth * 0.4}%)`);
+      }
+    }
+
+    if (fltCfg.enabled && fltCfg.preset !== 'natural') {
+      if (fltCfg.preset === 'bw') filterParts.push('grayscale(100%)');
+      else if (fltCfg.preset === 'vintage') filterParts.push('sepia(45%) contrast(110%) brightness(105%)');
+      else if (fltCfg.preset === 'warm') filterParts.push('sepia(25%) saturate(135%) brightness(105%)');
+      else if (fltCfg.preset === 'cool') filterParts.push('hue-rotate(185deg) saturate(90%) contrast(105%)');
+      else if (fltCfg.preset === 'crisp') filterParts.push('contrast(125%) saturate(130%) brightness(102%)');
+      else if (fltCfg.preset === 'sepia') filterParts.push('sepia(90%) contrast(95%)');
+    }
+
+    if (filterParts.length) {
+      ctx2.filter = filterParts.join(' ');
+    }
+
+    ctx2.drawImage(c1, 0, 0, targetW, targetH);
+    ctx2.filter = 'none';
+
+    // Step 4: Focus & Blur Effects
+    const blurCfg = batchState.configs.blur;
+    if (blurCfg.enabled && blurCfg.mode !== 'none') {
+      const radius = blurCfg.radius || 18;
+      const bType = blurCfg.type || 'gaussian';
+
+      // Create blurred layer according to effect type
+      const cBlur = document.createElement('canvas');
+      cBlur.width = targetW;
+      cBlur.height = targetH;
+      const ctxBlur = cBlur.getContext('2d');
+
+      if (bType === 'pixelate') {
+        const factor = Math.max(2, Math.round(radius * 0.6));
+        const smallW = Math.max(4, Math.round(targetW / factor));
+        const smallH = Math.max(4, Math.round(targetH / factor));
+        const cSmall = document.createElement('canvas');
+        cSmall.width = smallW;
+        cSmall.height = smallH;
+        const ctxSmall = cSmall.getContext('2d');
+        ctxSmall.drawImage(c2, 0, 0, smallW, smallH);
+        ctxBlur.imageSmoothingEnabled = false;
+        ctxBlur.drawImage(cSmall, 0, 0, targetW, targetH);
+      } else if (bType === 'motion') {
+        const steps = 7;
+        const offset = radius * 1.2;
+        ctxBlur.globalAlpha = 1 / steps;
+        for (let i = -steps / 2; i <= steps / 2; i++) {
+          ctxBlur.drawImage(c2, (i / steps) * offset, 0);
+        }
+        ctxBlur.globalAlpha = 1.0;
+      } else if (bType === 'zoom') {
+        const steps = 6;
+        ctxBlur.globalAlpha = 1 / steps;
+        for (let i = 0; i < steps; i++) {
+          const scale = 1 + (i / steps) * 0.12 * (radius / 18);
+          ctxBlur.save();
+          ctxBlur.translate(targetW / 2, targetH / 2);
+          ctxBlur.scale(scale, scale);
+          ctxBlur.drawImage(c2, -targetW / 2, -targetH / 2);
+          ctxBlur.restore();
+        }
+        ctxBlur.globalAlpha = 1.0;
+      } else if (bType === 'frosted') {
+        ctxBlur.filter = `blur(${Math.max(2, Math.round(radius * 0.7))}px)`;
+        ctxBlur.drawImage(c2, 0, 0);
+        ctxBlur.filter = 'none';
+        // Add subtle glass refraction noise
+        const imgData = ctxBlur.getImageData(0, 0, targetW, targetH);
+        const data = imgData.data;
+        for (let i = 0; i < data.length; i += 16) {
+          const n = (Math.random() - 0.5) * 16;
+          data[i] = Math.min(255, Math.max(0, data[i] + n));
+          data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + n));
+          data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + n));
+        }
+        ctxBlur.putImageData(imgData, 0, 0);
+      } else {
+        // Standard Gaussian
+        ctxBlur.filter = `blur(${radius}px)`;
+        ctxBlur.drawImage(c2, 0, 0);
+        ctxBlur.filter = 'none';
+      }
+
+      if (blurCfg.mode === 'full') {
+        ctx2.clearRect(0, 0, targetW, targetH);
+        ctx2.drawImage(cBlur, 0, 0);
+      } else if (blurCfg.mode === 'radial') {
+        // Bokeh Lens: Radial focus mask (sharp center oval, blurred surround)
+        const maskCanvas = document.createElement('canvas');
+        maskCanvas.width = targetW;
+        maskCanvas.height = targetH;
+        const mCtx = maskCanvas.getContext('2d');
+        const focusFactor = (blurCfg.focusSize || 35) / 100;
+        const rMax = Math.min(targetW, targetH) * 0.5;
+        const rInner = rMax * focusFactor;
+
+        const grad = mCtx.createRadialGradient(targetW / 2, targetH / 2, rInner, targetW / 2, targetH / 2, rMax);
+        grad.addColorStop(0, 'rgba(0,0,0,0)');
+        grad.addColorStop(1, 'rgba(0,0,0,1)');
+        mCtx.fillStyle = grad;
+        mCtx.fillRect(0, 0, targetW, targetH);
+
+        ctxBlur.globalCompositeOperation = 'destination-in';
+        ctxBlur.drawImage(maskCanvas, 0, 0);
+        ctx2.drawImage(cBlur, 0, 0);
+      } else if (blurCfg.mode === 'tiltshift') {
+        // Tilt-Shift: Horizontal focus strip (sharp center band, blurred top/bottom)
+        const maskCanvas = document.createElement('canvas');
+        maskCanvas.width = targetW;
+        maskCanvas.height = targetH;
+        const mCtx = maskCanvas.getContext('2d');
+        const focusSpan = (blurCfg.focusSize || 35) / 200; // e.g. 0.175
+        const topEnd = 0.5 - focusSpan;
+        const btmStart = 0.5 + focusSpan;
+
+        const grad = mCtx.createLinearGradient(0, 0, 0, targetH);
+        grad.addColorStop(0, 'rgba(0,0,0,1)');
+        grad.addColorStop(Math.max(0, topEnd - 0.15), 'rgba(0,0,0,1)');
+        grad.addColorStop(topEnd, 'rgba(0,0,0,0)');
+        grad.addColorStop(btmStart, 'rgba(0,0,0,0)');
+        grad.addColorStop(Math.min(1, btmStart + 0.15), 'rgba(0,0,0,1)');
+        grad.addColorStop(1, 'rgba(0,0,0,1)');
+        mCtx.fillStyle = grad;
+        mCtx.fillRect(0, 0, targetW, targetH);
+
+        ctxBlur.globalCompositeOperation = 'destination-in';
+        ctxBlur.drawImage(maskCanvas, 0, 0);
+        ctx2.drawImage(cBlur, 0, 0);
+      }
+    }
+
+    if (!forExport) {
+      return c2;
+    }
+
+    // Step 5: Export / Compress Blob
+    let exportMime = compCfg.format || 'image/jpeg';
+    if (exportMime === 'original') exportMime = item.type || 'image/jpeg';
+    if (!exportMime || exportMime.includes('svg') || exportMime.includes('heic') || exportMime.includes('gif')) {
+      exportMime = 'image/jpeg';
+    }
+
+    let exportBlob = null;
+    let finalW = targetW;
+    let finalH = targetH;
+
+    if (!compCfg.enabled) {
+      // Compress disabled: export at pristine high quality
+      const defaultQ = exportMime.includes('png') ? undefined : 0.92;
+      exportBlob = await new Promise(r => c2.toBlob(r, exportMime, defaultQ));
+    } else if (compCfg.mode === 'target') {
+      const v = compCfg.targetVal || 200;
+      const targetBytes = (compCfg.targetUnit === 'MB' ? v * 1024 * 1024 : v * 1024);
+
+      // Auto-calibrate this specific item's canvas c2 to guarantee strictly <= targetBytes
+      const calibResult = await engine.autoCalibrateCompression(targetBytes, exportMime, c2);
+      if (calibResult && calibResult.blob) {
+        exportBlob = calibResult.blob;
+        finalW = calibResult.width;
+        finalH = calibResult.height;
+      } else {
+        exportBlob = await new Promise(r => c2.toBlob(r, exportMime, 0.75));
+      }
+    } else if (compCfg.mode === 'pixels') {
+      const exportQuality = (compCfg.pxQuality || 82) / 100;
+      exportBlob = await new Promise(r => c2.toBlob(r, exportMime, exportQuality));
+    } else {
+      // manual mode
+      const exportQuality = (compCfg.manualQuality || 80) / 100;
+      exportBlob = await new Promise(r => c2.toBlob(r, exportMime, exportQuality));
+    }
+
+    let ext = 'jpg';
+    if (exportMime.includes('png')) ext = 'png';
+    else if (exportMime.includes('webp')) ext = 'webp';
+
+    const baseName = item.name.replace(/\.[^/.]+$/, '');
+    const finalName = `${baseName}_edited.${ext}`;
+    return { blob: exportBlob, name: finalName, width: finalW, height: finalH };
+  }
+
+  async function renderBatchPreviewCanvas() {
+    const canvas = document.getElementById('canvas-batch-preview');
+    if (!canvas) return;
+    const activeItem = batchState.items[batchState.activeIndex];
+    if (!activeItem) return;
+
+    if (batchState.compareOriginal) {
+      canvas.width = activeItem.img.naturalWidth;
+      canvas.height = activeItem.img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(activeItem.img, 0, 0);
+      return;
+    }
+
+    let processedCanvas = null;
+    const compCfg = batchState.configs.compress;
+    if (compCfg.enabled && batchState.activeCalibratedCanvas) {
+      processedCanvas = batchState.activeCalibratedCanvas;
+    } else {
+      processedCanvas = await processSingleBatchItem(activeItem, false);
+    }
+    if (!processedCanvas) return;
+
+    canvas.width = processedCanvas.width;
+    canvas.height = processedCanvas.height;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(processedCanvas, 0, 0);
+  }
+
+  window.showBatchOriginal = function (show) {
+    batchState.compareOriginal = !!show;
+    renderBatchPreviewCanvas();
+  };
+
+  // ==============================================================
+  // DOWNLOAD & BATCH EXPORT HANDLERS
+  // ==============================================================
+  window.downloadCurrentBatchImage = async function () {
+    const activeItem = batchState.items[batchState.activeIndex];
+    if (!activeItem) {
+      showToast('No active image to download');
+      return;
+    }
+    showToast('Rendering active image for download...');
+    const result = await processSingleBatchItem(activeItem, true);
+    if (result && result.blob) {
+      triggerBlobDownload(result.blob, result.name);
+      showToast(`Downloaded ${result.name}`);
+    }
+  };
+
+  window.executeBatchExport = async function (downloadZip = true) {
+    if (!batchState.items.length) {
+      showToast('No images in batch to process. Please add images first.');
+      return;
+    }
+
+    if (!window.JSZip) {
+      showToast('ZIP packaging engine is loading...');
+      return;
+    }
+
+    const progressBox = document.getElementById('batch-progress-box');
+    const progressBar = document.getElementById('batch-progress-bar');
+    const progressText = document.getElementById('batch-progress-text');
+    const progressPercent = document.getElementById('batch-progress-percent');
+    const btnProcess = document.getElementById('btn-batch-process-all');
+
+    if (progressBox) progressBox.style.display = 'block';
+    if (btnProcess) btnProcess.disabled = true;
+    batchState.isProcessing = true;
+
+    const zip = new window.JSZip();
+    const total = batchState.items.length;
+
+    try {
+      for (let i = 0; i < total; i++) {
+        const item = batchState.items[i];
+        const pct = Math.round(((i) / total) * 100);
+        if (progressBar) progressBar.style.width = `${pct}%`;
+        if (progressPercent) progressPercent.textContent = `${pct}%`;
+        if (progressText) progressText.textContent = `Processing image ${i + 1} of ${total}: ${item.name}...`;
+
+        const processed = await processSingleBatchItem(item, true);
+        if (processed && processed.blob) {
+          zip.file(processed.name, processed.blob);
+        }
+
+        await new Promise(r => setTimeout(r, 15));
+      }
+
+      if (progressBar) progressBar.style.width = '100%';
+      if (progressPercent) progressPercent.textContent = '100%';
+      if (progressText) progressText.textContent = 'Packaging ZIP archive...';
+
+      const zipBlob = await zip.generateAsync({
+        type: 'blob',
+        compression: 'DEFLATE',
+        compressionOptions: { level: 6 }
+      }, (metadata) => {
+        if (progressPercent) progressPercent.textContent = `${Math.round(metadata.percent)}%`;
+      });
+
+      const zipName = `pixkit_batch_processed_${Date.now()}.zip`;
+      triggerBlobDownload(zipBlob, zipName);
+
+      showToast(`🎉 Processed and downloaded all ${total} images in ZIP!`);
+    } catch (err) {
+      console.error('Batch processing error:', err);
+      showToast(`Error processing batch: ${err.message}`);
+    } finally {
+      batchState.isProcessing = false;
+      if (btnProcess) btnProcess.disabled = false;
+      setTimeout(() => {
+        if (progressBox) progressBox.style.display = 'none';
+      }, 1200);
+    }
+  };
+
+  function triggerBlobDownload(blob, filename) {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(link.href), 20000);
+  }
+
+  // ==============================================================
   // TOOL 10: FORMAT CONVERTER CONTROLLER
   // ==============================================================
   let convertState = {
@@ -6108,7 +8490,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function initConvertFormatStage() {
     renderToCanvas('canvas-convert-format');
-    
+
     // Auto-select smart target format if current source matches default
     const origFmt = engine.getFormatLabel();
     if (origFmt === 'JPG' && convertState.targetFormat === 'jpeg') {
@@ -6125,7 +8507,7 @@ document.addEventListener('DOMContentLoaded', () => {
     recalculateConvertEstimates();
   }
 
-  window.setConvertTargetFormat = function(format) {
+  window.setConvertTargetFormat = function (format) {
     convertState.targetFormat = format;
     ['jpeg', 'png', 'webp', 'avif', 'heic', 'svg', 'ico', 'bmp'].forEach(f => {
       document.getElementById(`fmt-opt-${f}`)?.classList.toggle('active', f === format);
@@ -6156,7 +8538,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (targetNameSpan) targetNameSpan.textContent = fmtLabel;
   }
 
-  window.updateConvertQuality = function(val) {
+  window.updateConvertQuality = function (val) {
     convertState.quality = parseInt(val, 10);
     const lbl = document.getElementById('lbl-convert-quality');
     if (lbl) lbl.textContent = `${convertState.quality}%`;
@@ -6169,20 +8551,20 @@ document.addEventListener('DOMContentLoaded', () => {
     debouncedRecalculateConvert();
   };
 
-  window.setConvertQualityPreset = function(q) {
+  window.setConvertQualityPreset = function (q) {
     const slider = document.getElementById('convert-quality');
     if (slider) slider.value = q;
     window.updateConvertQuality(q);
   };
 
-  window.updateConvertBgPreview = function(color) {
+  window.updateConvertBgPreview = function (color) {
     convertState.bgColor = color;
     document.getElementById('btn-bg-white')?.classList.toggle('active', color.toLowerCase() === '#ffffff');
     document.getElementById('btn-bg-black')?.classList.toggle('active', color.toLowerCase() === '#000000');
     debouncedRecalculateConvert();
   };
 
-  window.setConvertBgColor = function(color) {
+  window.setConvertBgColor = function (color) {
     convertState.bgColor = color;
     const picker = document.getElementById('convert-bg-color');
     if (picker) picker.value = color;
@@ -6214,7 +8596,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const qFraction = convertState.quality / 100;
       const res = await engine.convertFormat(convertState.targetFormat, qFraction, convertState.bgColor);
-      
+
       const formattedSize = PixKitEngine.formatBytes(res.size);
       if (estSizeSpan) estSizeSpan.textContent = formattedSize;
       if (metaSpan) metaSpan.textContent = `${engine.filename || 'image'} (${res.width} × ${res.height} px) · ${res.extension.toUpperCase()} · ${formattedSize}`;
@@ -6262,7 +8644,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.commitConvertAction = async function(download = true) {
+  window.commitConvertAction = async function (download = true) {
     const qFraction = convertState.quality / 100;
     const res = await engine.convertFormat(convertState.targetFormat, qFraction, convertState.bgColor);
 
@@ -6286,7 +8668,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tctx.drawImage(engine.activeCanvas, 0, 0, tw, th);
         thumbUrl = thumbCanvas.toDataURL('image/jpeg', 0.7);
       }
-    } catch (_) {}
+    } catch (_) { }
 
     const origSource = {
       name: engine.filename || 'source_image.png',
@@ -6392,7 +8774,7 @@ document.addEventListener('DOMContentLoaded', () => {
     recalculateHeicEstimates();
   }
 
-  window.handleHeicFileSelect = async function(e) {
+  window.handleHeicFileSelect = async function (e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
@@ -6402,11 +8784,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isHeicExt) {
       heicState.isHeicValid = false;
       showToast(`⚠️ Incorrect format: "${file.name}" is not a .heic/.heif photo`);
-      
+
       const alertBox = document.getElementById('heic-format-alert');
       const warningText = document.getElementById('heic-warning-text');
       const successBox = document.getElementById('heic-format-success');
-      
+
       if (alertBox) alertBox.style.display = 'flex';
       if (successBox) successBox.style.display = 'none';
       if (warningText) {
@@ -6422,6 +8804,16 @@ document.addEventListener('DOMContentLoaded', () => {
     heicState.rawHeicName = file.name;
     heicState.rawHeicSize = file.size;
     heicState.isHeicValid = true;
+
+    try {
+      if (typeof PixKitStorage !== 'undefined') {
+        PixKitStorage.setItem('convert_session_convert-heic', {
+          blob: file,
+          name: file.name,
+          size: file.size
+        });
+      }
+    } catch (_) { }
 
     try {
       await Promise.all([
@@ -6444,7 +8836,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.setHeicTargetFormat = function(format) {
+  window.setHeicTargetFormat = function (format) {
     heicState.targetFormat = format;
     ['jpg', 'png'].forEach(f => {
       const isMatch = (f === 'jpg' && format === 'jpeg') || (f === format);
@@ -6467,7 +8859,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateHeicButtonStates(isValid) {
     const dlBtn = document.getElementById('btn-heic-download');
     const studioBtn = document.querySelector('#tool-convert-heic-view .btn-secondary');
-    
+
     if (dlBtn) {
       dlBtn.disabled = !isValid;
       dlBtn.style.opacity = isValid ? '1' : '0.45';
@@ -6521,7 +8913,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (targetNameSpan) targetNameSpan.textContent = fmtLabel;
   }
 
-  window.updateHeicQuality = function(val) {
+  window.updateHeicQuality = function (val) {
     heicState.quality = parseInt(val, 10);
     const lbl = document.getElementById('lbl-heic-quality');
     if (lbl) lbl.textContent = `${heicState.quality}%`;
@@ -6534,7 +8926,7 @@ document.addEventListener('DOMContentLoaded', () => {
     heicCalcTimeout = setTimeout(recalculateHeicEstimates, 180);
   };
 
-  window.setHeicQualityPreset = function(q) {
+  window.setHeicQualityPreset = function (q) {
     const slider = document.getElementById('heic-quality');
     if (slider) slider.value = q;
     window.updateHeicQuality(q);
@@ -6570,7 +8962,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const qFraction = heicState.quality / 100;
       const res = await engine.convertFormat(heicState.targetFormat, qFraction, '#ffffff');
       const formattedSize = PixKitEngine.formatBytes(res.size);
-      
+
       if (estSizeSpan) estSizeSpan.textContent = formattedSize;
       if (metaSpan) metaSpan.textContent = `${engine.filename || 'photo.heic'} (${res.width} × ${res.height} px) · ${res.extension.toUpperCase()} · ${formattedSize}`;
 
@@ -6606,7 +8998,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.commitHeicAction = async function(download = true) {
+  window.commitHeicAction = async function (download = true) {
     if (!heicState.isHeicValid && !isCurrentFileHeic()) {
       showToast('⚠️ Please choose a valid .HEIC photo first');
       return;
@@ -6635,7 +9027,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tctx.drawImage(engine.activeCanvas, 0, 0, tw, th);
         thumbUrl = thumbCanvas.toDataURL('image/jpeg', 0.7);
       }
-    } catch (_) {}
+    } catch (_) { }
 
     const baseName = (engine.filename || 'photo').replace(/\.[^/.]+$/, "");
     const outName = `${baseName}.${res.extension}`;
@@ -6712,7 +9104,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateSvgButtonStates(isValid) {
     const dlBtn = document.getElementById('btn-svg-download');
     const studioBtn = document.querySelector('#tool-convert-svg-view .btn-secondary');
-    
+
     if (dlBtn) {
       dlBtn.disabled = !isValid;
       dlBtn.style.opacity = isValid ? '1' : '0.45';
@@ -6728,6 +9120,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function initConvertSvgStage() {
+    if (!svgState.svgText && typeof PixKitStorage !== 'undefined') {
+      try {
+        const session = await PixKitStorage.getItem('convert_session_convert-svg');
+        if (session && session.svgText) {
+          svgState.svgText = session.svgText;
+          svgState.svgName = session.svgName || 'vector.svg';
+          svgState.svgSize = session.svgSize || 0;
+          svgState.isSvgValid = true;
+          if (session.scale) svgState.scale = session.scale;
+          if (session.customWidth) svgState.customWidth = session.customWidth;
+          if (session.customHeight) svgState.customHeight = session.customHeight;
+          if (session.bgFill) svgState.bgFill = session.bgFill;
+          if (session.targetFormat) svgState.targetFormat = session.targetFormat;
+          const dims = engine.parseSvgDimensions(session.svgText);
+          svgState.intrinsicWidth = dims.width;
+          svgState.intrinsicHeight = dims.height;
+        }
+      } catch (_) { }
+    }
+
     const isSvg = isCurrentFileSvg();
     const alertBox = document.getElementById('svg-format-alert');
     const warningText = document.getElementById('svg-warning-text');
@@ -6736,7 +9148,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!isSvg) {
       svgState.isSvgValid = false;
-      if (alertBox) alertBox.style.display = 'flex';
+      if (alertBox) alertBox.style.display = hasUserAddedImage ? 'flex' : 'none';
       if (successBox) successBox.style.display = 'none';
       if (warningText) {
         const curFormat = engine.getFormatLabel() || 'Raster Image';
@@ -6751,12 +9163,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const estSizeSpan = document.getElementById('svg-est-size');
       const origFormatSpan = document.getElementById('svg-orig-format');
 
-      if (metaSpan) metaSpan.textContent = `⚠️ Non-SVG file loaded (${curFormat}) · SVG vector required`;
+      if (metaSpan) metaSpan.textContent = hasUserAddedImage ? `⚠️ Non-SVG file loaded (${curFormat}) · SVG vector required` : 'Ready · Select SVG vector file to rasterize';
       if (badge) {
-        badge.textContent = 'SVG Required';
-        badge.style.background = '#fef2f2';
-        badge.style.color = '#b91c1c';
-        badge.style.borderColor = '#f87171';
+        badge.textContent = hasUserAddedImage ? 'SVG Required' : 'Ready';
+        badge.style.background = hasUserAddedImage ? '#fef2f2' : '';
+        badge.style.color = hasUserAddedImage ? '#b91c1c' : '';
+        badge.style.borderColor = hasUserAddedImage ? '#f87171' : '';
       }
       if (origFormatSpan) origFormatSpan.textContent = curFormat;
       if (origSizeSpan) origSizeSpan.textContent = engine.fileSize ? PixKitEngine.formatBytes(engine.fileSize) : '--';
@@ -6790,12 +9202,12 @@ document.addEventListener('DOMContentLoaded', () => {
     recalculateSvgRasterization();
   }
 
-  window.loadSampleSvgVector = function() {
+  window.loadSampleSvgVector = function () {
     svgState.svgText = engine.getSampleSvg();
     svgState.svgName = 'pixkit-badge.svg';
     svgState.svgSize = new Blob([svgState.svgText]).size;
     svgState.isSvgValid = true;
-    
+
     const dims = engine.parseSvgDimensions(svgState.svgText);
     svgState.intrinsicWidth = dims.width;
     svgState.intrinsicHeight = dims.height;
@@ -6806,7 +9218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initConvertSvgStage();
   };
 
-  window.handleSvgFileSelect = function(e) {
+  window.handleSvgFileSelect = function (e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
 
@@ -6816,11 +9228,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!isSvg) {
       svgState.isSvgValid = false;
       showToast(`⚠️ Incorrect format: "${file.name}" is not a .svg file`);
-      
+
       const alertBox = document.getElementById('svg-format-alert');
       const warningText = document.getElementById('svg-warning-text');
       const successBox = document.getElementById('svg-format-success');
-      
+
       if (alertBox) alertBox.style.display = 'flex';
       if (successBox) successBox.style.display = 'none';
       if (warningText) {
@@ -6845,6 +9257,21 @@ document.addEventListener('DOMContentLoaded', () => {
       svgState.customWidth = Math.round(dims.width * svgState.scale);
       svgState.customHeight = Math.round(dims.height * svgState.scale);
 
+      try {
+        if (typeof PixKitStorage !== 'undefined') {
+          PixKitStorage.setItem('convert_session_convert-svg', {
+            svgText: text,
+            svgName: file.name,
+            svgSize: file.size,
+            scale: svgState.scale,
+            customWidth: svgState.customWidth,
+            customHeight: svgState.customHeight,
+            bgFill: svgState.bgFill,
+            targetFormat: svgState.targetFormat
+          });
+        }
+      } catch (_) { }
+
       showToast(`Loaded vector ${file.name} (${dims.width} × ${dims.height} viewBox)`);
       initConvertSvgStage();
       startPreviewFadeUp();
@@ -6856,7 +9283,7 @@ document.addEventListener('DOMContentLoaded', () => {
     reader.readAsText(file);
   };
 
-  window.setSvgScale = function(scale) {
+  window.setSvgScale = function (scale) {
     svgState.scale = scale;
     [1, 2, 3, 4].forEach(s => {
       document.getElementById(`svg-scale-${s}`)?.classList.toggle('active', s === scale);
@@ -6868,7 +9295,7 @@ document.addEventListener('DOMContentLoaded', () => {
     recalculateSvgRasterization();
   };
 
-  window.handleSvgCustomDimension = function(type, val) {
+  window.handleSvgCustomDimension = function (type, val) {
     const num = parseInt(val, 10);
     if (isNaN(num) || num < 16) return;
 
@@ -6902,7 +9329,7 @@ document.addEventListener('DOMContentLoaded', () => {
     svgRenderTimeout = setTimeout(recalculateSvgRasterization, 200);
   };
 
-  window.toggleSvgAspectLock = function() {
+  window.toggleSvgAspectLock = function () {
     svgState.aspectRatioLocked = !svgState.aspectRatioLocked;
     const btn = document.getElementById('svg-aspect-lock');
     if (btn) {
@@ -6911,19 +9338,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.setSvgBackground = function(color) {
+  window.setSvgBackground = function (color) {
     svgState.bgFill = color;
     document.getElementById('svg-bg-transparent')?.classList.toggle('active', color === 'transparent');
     document.getElementById('svg-bg-white')?.classList.toggle('active', color.toLowerCase() === '#ffffff');
     document.getElementById('svg-bg-black')?.classList.toggle('active', color.toLowerCase() === '#000000');
-    
+
     const colorPicker = document.getElementById('svg-bg-custom');
     if (colorPicker && color !== 'transparent') colorPicker.value = color;
 
     recalculateSvgRasterization();
   };
 
-  window.setSvgTargetFormat = function(format) {
+  window.setSvgTargetFormat = function (format) {
     svgState.targetFormat = format;
     ['png', 'webp', 'jpeg'].forEach(f => {
       document.getElementById(`svg-fmt-${f}`)?.classList.toggle('active', f === format);
@@ -6990,7 +9417,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (targetNameSpan) targetNameSpan.textContent = res.extension.toUpperCase();
       if (estSizeSpan) estSizeSpan.textContent = formattedOutputSize;
       if (metaSpan) metaSpan.textContent = `${svgState.svgName} · ${res.width} × ${res.height} px · ${res.extension.toUpperCase()} · ${formattedOutputSize}`;
-      
+
       if (badge) {
         badge.textContent = `Raster: ${res.width}×${res.height}`;
         badge.style.background = 'var(--lime-tint)';
@@ -7002,7 +9429,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.commitSvgAction = async function(download = true) {
+  window.commitSvgAction = async function (download = true) {
     if (!svgState.isSvgValid || !svgState.svgText) {
       showToast('⚠️ Please choose a valid .SVG vector file first');
       return;
@@ -7038,7 +9465,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tctx.drawImage(res.canvas, 0, 0, tw, th);
         thumbUrl = thumbCanvas.toDataURL('image/png');
       }
-    } catch (_) {}
+    } catch (_) { }
 
     const baseName = (svgState.svgName || 'vector').replace(/\.[^/.]+$/, "");
     const scaleTag = svgState.scale > 1 ? `@${svgState.scale}x` : '';
@@ -7115,7 +9542,7 @@ document.addEventListener('DOMContentLoaded', () => {
     recalculateIcoPackage();
   }
 
-  window.toggleIcoSize = function(size) {
+  window.toggleIcoSize = function (size) {
     const idx = icoState.selectedSizes.indexOf(size);
     if (idx >= 0) {
       if (icoState.selectedSizes.length <= 1) {
@@ -7132,7 +9559,7 @@ document.addEventListener('DOMContentLoaded', () => {
     debouncedRecalculateIco();
   };
 
-  window.setIcoBundlePreset = function(preset) {
+  window.setIcoBundlePreset = function (preset) {
     if (preset === 'standard') {
       icoState.selectedSizes = [16, 32, 48];
     } else if (preset === 'all') {
@@ -7149,7 +9576,7 @@ document.addEventListener('DOMContentLoaded', () => {
     debouncedRecalculateIco();
   };
 
-  window.setIcoFitMode = function(mode) {
+  window.setIcoFitMode = function (mode) {
     icoState.fitMode = mode;
     ['cover', 'contain', 'stretch'].forEach(m => {
       document.getElementById(`ico-fit-${m}`)?.classList.toggle('active', m === mode);
@@ -7169,7 +9596,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.copyIcoHtmlCode = function() {
+  window.copyIcoHtmlCode = function () {
     const code = '<link rel="icon" type="image/x-icon" href="/favicon.ico">';
     navigator.clipboard.writeText(code).then(() => {
       showToast('Copied HTML <link> tag to clipboard!');
@@ -7241,7 +9668,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.commitIcoAction = async function(download = true) {
+  window.commitIcoAction = async function (download = true) {
     if (!icoState.icoResult) {
       await recalculateIcoPackage();
     }
@@ -7272,7 +9699,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tctx.drawImage(engine.activeCanvas, 0, 0, tw, th);
         thumbUrl = thumbCanvas.toDataURL('image/png');
       }
-    } catch (_) {}
+    } catch (_) { }
 
     const baseName = (engine.filename || 'favicon').replace(/\.[^/.]+$/, "");
     const outName = `${baseName}.ico`;
@@ -7336,7 +9763,7 @@ document.addEventListener('DOMContentLoaded', () => {
     recalculateBase64Package();
   }
 
-  window.setBase64SnippetType = function(type) {
+  window.setBase64SnippetType = function (type) {
     base64State.snippetType = type;
     const types = ['data-uri', 'html-img', 'css-bg', 'raw', 'markdown', 'json'];
     types.forEach(t => {
@@ -7357,7 +9784,7 @@ document.addEventListener('DOMContentLoaded', () => {
     debouncedRecalculateBase64();
   };
 
-  window.setBase64MimeType = function(mime) {
+  window.setBase64MimeType = function (mime) {
     base64State.mimeType = mime;
     document.getElementById('base64-mime-png')?.classList.toggle('active', mime === 'image/png');
     document.getElementById('base64-mime-jpeg')?.classList.toggle('active', mime === 'image/jpeg');
@@ -7371,14 +9798,14 @@ document.addEventListener('DOMContentLoaded', () => {
     debouncedRecalculateBase64();
   };
 
-  window.handleBase64QualityChange = function(val) {
+  window.handleBase64QualityChange = function (val) {
     base64State.quality = parseInt(val, 10) / 100;
     const valLabel = document.getElementById('base64-quality-val');
     if (valLabel) valLabel.textContent = `${val}%`;
     debouncedRecalculateBase64();
   };
 
-  window.setBase64MaxDim = function(dim) {
+  window.setBase64MaxDim = function (dim) {
     base64State.maxDim = dim;
     document.getElementById('base64-dim-orig')?.classList.toggle('active', dim === null);
     document.getElementById('base64-dim-800')?.classList.toggle('active', dim === 800);
@@ -7388,7 +9815,7 @@ document.addEventListener('DOMContentLoaded', () => {
     debouncedRecalculateBase64();
   };
 
-  window.toggleBase64Wrap = function() {
+  window.toggleBase64Wrap = function () {
     base64State.isWrapped = !base64State.isWrapped;
     const textarea = document.getElementById('base64-output-textarea');
     const btn = document.getElementById('btn-base64-wrap');
@@ -7461,7 +9888,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.copyBase64Code = async function() {
+  window.copyBase64Code = async function () {
     if (!base64State.lastResult) {
       await recalculateBase64Package();
     }
@@ -7483,7 +9910,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.downloadBase64Snippet = async function() {
+  window.downloadBase64Snippet = async function () {
     if (!base64State.lastResult) {
       await recalculateBase64Package();
     }
@@ -7501,7 +9928,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (engine.activeCanvas) {
         thumbUrl = engine.activeCanvas.toDataURL('image/jpeg', 0.6);
       }
-    } catch (_) {}
+    } catch (_) { }
 
     const origSource = {
       name: engine.filename || 'source_image.png',
@@ -7550,7 +9977,7 @@ document.addEventListener('DOMContentLoaded', () => {
     recalculatePdfPackage();
   }
 
-  window.setPdfPageSize = function(size) {
+  window.setPdfPageSize = function (size) {
     pdfState.pageSize = size;
     ['a4', 'letter', 'legal', 'auto'].forEach(s => {
       document.getElementById(`pdf-size-${s}`)?.classList.toggle('active', s === size);
@@ -7564,7 +9991,7 @@ document.addEventListener('DOMContentLoaded', () => {
     debouncedRecalculatePdf();
   };
 
-  window.setPdfOrientation = function(orient) {
+  window.setPdfOrientation = function (orient) {
     pdfState.orientation = orient;
     ['auto', 'portrait', 'landscape'].forEach(o => {
       document.getElementById(`pdf-orient-${o}`)?.classList.toggle('active', o === orient);
@@ -7572,7 +9999,7 @@ document.addEventListener('DOMContentLoaded', () => {
     debouncedRecalculatePdf();
   };
 
-  window.setPdfMargin = function(m) {
+  window.setPdfMargin = function (m) {
     pdfState.margin = m;
     ['none', 'small', 'standard'].forEach(val => {
       document.getElementById(`pdf-margin-${val}`)?.classList.toggle('active', val === m);
@@ -7580,7 +10007,7 @@ document.addEventListener('DOMContentLoaded', () => {
     debouncedRecalculatePdf();
   };
 
-  window.setPdfFitMode = function(fit) {
+  window.setPdfFitMode = function (fit) {
     pdfState.fitMode = fit;
     ['contain', 'cover', 'original'].forEach(f => {
       document.getElementById(`pdf-fit-${f}`)?.classList.toggle('active', f === fit);
@@ -7588,7 +10015,7 @@ document.addEventListener('DOMContentLoaded', () => {
     debouncedRecalculatePdf();
   };
 
-  window.setPdfQuality = function(q) {
+  window.setPdfQuality = function (q) {
     pdfState.quality = q;
     document.getElementById('pdf-quality-high')?.classList.toggle('active', q >= 0.9);
     document.getElementById('pdf-quality-medium')?.classList.toggle('active', q < 0.9);
@@ -7637,7 +10064,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxStageW = 420;
         const maxStageH = 440;
         const scale = Math.min(maxStageW / res.pageWidthPt, maxStageH / res.pageHeightPt);
-        
+
         const canvasW = Math.round(res.pageWidthPt * scale * 2); // 2x retina
         const canvasH = Math.round(res.pageHeightPt * scale * 2);
 
@@ -7651,7 +10078,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const ctx = stageCanvas.getContext('2d');
         ctx.clearRect(0, 0, canvasW, canvasH);
-        
+
         // Fill white sheet background
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvasW, canvasH);
@@ -7686,7 +10113,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.commitPdfAction = async function(download = true) {
+  window.commitPdfAction = async function (download = true) {
     if (!pdfState.pdfResult) {
       await recalculatePdfPackage();
     }
@@ -7703,7 +10130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (engine && engine.activeCanvas && engine.activeCanvas.width > 0) {
       try {
         pdfThumb = engine.activeCanvas.toDataURL('image/jpeg', 0.85);
-      } catch (_) {}
+      } catch (_) { }
     }
     const imageSource = {
       name: engine.filename || 'source_image.png',
@@ -7733,12 +10160,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.previewPdfInNewTab = function() {
+  window.previewPdfInNewTab = function () {
     commitPdfAction(false);
   };
 
   // Global Toast
-  window.showToast = function(message) {
+  window.showToast = function (message) {
     let container = document.querySelector('.toast-container');
     if (!container) {
       container = document.createElement('div');
@@ -7769,9 +10196,1372 @@ document.addEventListener('DOMContentLoaded', () => {
     a.click();
     document.body.removeChild(a);
     setTimeout(() => {
-      try { URL.revokeObjectURL(url); } catch (_) {}
+      try { URL.revokeObjectURL(url); } catch (_) { }
     }, 2500);
   }
+
+  // ==============================================================
+  // TOOL 07 (CONVERT SUITE): BATCH CONVERT CONTROLLER
+  // ==============================================================
+  const batchConvertState = {
+    items: [], // Array of { id, name, size, type, width, height, originalBlob, originalUrl, img, thumbUrl, svgText, isSvg }
+    activeIndex: 0,
+    compareOriginal: false,
+    isExpanded: false,
+    isProcessing: false,
+    activeDetailTool: null,
+    configs: {
+      format: {
+        enabled: true,
+        targetFormat: 'jpeg', // 'jpeg' | 'png' | 'webp' | 'avif' | 'bmp'
+        quality: 90,
+        bgColor: '#ffffff'
+      },
+      heic: {
+        enabled: true,
+        outputFormat: 'jpeg', // 'jpeg' | 'png' | 'webp'
+        quality: 92
+      },
+      svg: {
+        enabled: true,
+        scale: 2, // 1 | 2 | 3 | 4 | 8
+        outputFormat: 'png' // 'png' | 'jpeg' | 'webp'
+      },
+      ico: {
+        enabled: false,
+        pkgMode: 'ico', // 'ico' | 'pngs'
+        selectedSizes: [16, 32, 48, 64],
+        fitMode: 'contain' // 'contain' | 'cover'
+      },
+      base64: {
+        enabled: false,
+        exportType: 'dataurl', // 'dataurl' | 'html' | 'css' | 'raw'
+        pkgMode: 'json' // 'json' | 'txt'
+      },
+      pdf: {
+        enabled: false,
+        mode: 'combined', // 'combined' | 'separate'
+        pageSize: 'a4', // 'a4' | 'letter' | 'auto'
+        orientation: 'auto', // 'auto' | 'portrait' | 'landscape'
+        margin: 'none' // 'none' | 'small' | 'standard'
+      }
+    }
+  };
+
+  const batchConvertToolMeta = {
+    format: {
+      icon: '⇄',
+      title: 'Target Format & Quality',
+      desc: 'Convert between JPG, PNG, WEBP, AVIF, HEIC, and BMP'
+    },
+    heic: {
+      icon: '📱',
+      title: 'Apple HEIC Decoder',
+      desc: 'Auto-decode Apple iPhone / iPad HEIF photos to universal formats'
+    },
+    svg: {
+      icon: '⬡',
+      title: 'SVG Vector Rasterizer',
+      desc: 'Rasterize vector SVG files to sharp high-DPI raster images'
+    },
+    ico: {
+      icon: '★',
+      title: 'Favicon & ICO Package',
+      desc: 'Generate multi-size website favicons (.ico) and app icons'
+    },
+    base64: {
+      icon: '</>',
+      title: 'Base64 & Data URLs',
+      desc: 'Encode images into Data URLs, CSS background, or HTML snippets'
+    },
+    pdf: {
+      icon: '📄',
+      title: 'Images to PDF Document',
+      desc: 'Package queue into a single multi-page PDF or individual PDFs'
+    }
+  };
+
+  let batchConvertDropzoneBound = false;
+
+  async function initBatchConvertStage() {
+    setupBatchConvertDropzoneEvents();
+    if (batchConvertState.items.length === 0) {
+      await restoreBatchConvertSession();
+    }
+    syncBatchConvertViewUI();
+    updateAllBatchConvertToolStatusLabels();
+    if (batchConvertState.items.length > 0) {
+      renderBatchConvertPreviewCanvas();
+    }
+  }
+  window.initBatchConvertStage = initBatchConvertStage;
+
+  function setupBatchConvertDropzoneEvents() {
+    if (batchConvertDropzoneBound) return;
+    const dropzone = document.getElementById('batch-conv-dropzone');
+    const viewport = document.getElementById('batch-conv-viewport');
+
+    [dropzone, viewport].forEach(el => {
+      if (!el) return;
+      el.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (dropzone) dropzone.classList.add('drag-over');
+      });
+      el.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (dropzone) dropzone.classList.remove('drag-over');
+      });
+      el.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (dropzone) dropzone.classList.remove('drag-over');
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+          processBatchConvertInputFiles(e.dataTransfer.files);
+        }
+      });
+    });
+    batchConvertDropzoneBound = true;
+  }
+
+  function handleBatchConvertFilesSelect(e) {
+    if (e.target && e.target.files && e.target.files.length) {
+      processBatchConvertInputFiles(e.target.files);
+      e.target.value = '';
+    }
+  }
+  window.handleBatchConvertFilesSelect = handleBatchConvertFilesSelect;
+
+  async function processBatchConvertInputFiles(fileList) {
+    const files = Array.from(fileList);
+    if (!files.length) return;
+
+    showToast('Loading batch files...');
+    let addedCount = 0;
+
+    for (const file of files) {
+      const lowerName = (file.name || '').toLowerCase();
+      // Check if ZIP archive
+      if (lowerName.endsWith('.zip') || file.type === 'application/zip' || file.type === 'application/x-zip-compressed') {
+        try {
+          if (!window.JSZip) {
+            showToast('Loading ZIP engine...');
+            await new Promise(r => setTimeout(r, 200));
+          }
+          if (window.JSZip) {
+            const zip = await window.JSZip.loadAsync(file);
+            const zipEntries = Object.keys(zip.files).filter(k => {
+              const f = zip.files[k];
+              if (f.dir || k.startsWith('__MACOSX') || k.endsWith('.DS_Store')) return false;
+              const ext = k.toLowerCase();
+              return ext.match(/\.(jpe?g|png|webp|gif|bmp|svg|avif|heic|heif)$/i);
+            });
+
+            for (const entryPath of zipEntries) {
+              const zipFile = zip.files[entryPath];
+              const cleanFileName = entryPath.split('/').pop();
+              const isSvg = cleanFileName.toLowerCase().endsWith('.svg');
+              let svgText = null;
+              if (isSvg) {
+                try {
+                  svgText = await zipFile.async('text');
+                } catch (_) { }
+              }
+              const blob = await zipFile.async('blob');
+              const item = await createBatchConvertItemFromBlob(blob, cleanFileName, svgText);
+              if (item) {
+                batchConvertState.items.push(item);
+                addedCount++;
+              }
+            }
+          }
+        } catch (zipErr) {
+          console.error('Batch ZIP unpack error:', zipErr);
+          showToast(`Error unpacking ZIP: ${zipErr.message}`);
+        }
+      } else if (file.type.startsWith('image/') || lowerName.match(/\.(jpe?g|png|webp|gif|bmp|svg|avif|heic|heif)$/i)) {
+        let svgText = null;
+        if (lowerName.endsWith('.svg') || file.type === 'image/svg+xml') {
+          try {
+            svgText = await file.text();
+          } catch (_) { }
+        }
+        const item = await createBatchConvertItemFromBlob(file, file.name, svgText);
+        if (item) {
+          batchConvertState.items.push(item);
+          addedCount++;
+        }
+      }
+    }
+
+    if (addedCount > 0) {
+      if (batchConvertState.activeIndex >= batchConvertState.items.length) {
+        batchConvertState.activeIndex = Math.max(0, batchConvertState.items.length - 1);
+      }
+      syncBatchConvertViewUI();
+      renderBatchConvertPreviewCanvas();
+      persistBatchConvertSession();
+      showToast(`Added ${addedCount} image${addedCount > 1 ? 's' : ''} to convert queue!`);
+    } else {
+      showToast('No supported image files detected in selection.');
+    }
+  }
+
+  async function createBatchConvertItemFromBlob(blob, fileName, svgTextContent = null) {
+    const isSvg = (fileName && fileName.toLowerCase().endsWith('.svg')) || (blob.type === 'image/svg+xml');
+    let svgText = svgTextContent;
+    if (isSvg && !svgText) {
+      try {
+        svgText = await blob.text();
+      } catch (_) { }
+    }
+
+    // HEIC check
+    let targetBlob = blob;
+    const fn = (fileName || '').toLowerCase();
+    const isHeic = fn.endsWith('.heic') || fn.endsWith('.heif') || (blob.type && (blob.type.includes('heic') || blob.type.includes('heif')));
+    if (isHeic) {
+      try {
+        await engine.ensureHeicDecoder();
+        if (typeof window.heic2any === 'function') {
+          const converted = await window.heic2any({
+            blob: blob,
+            toType: 'image/jpeg',
+            quality: 0.92
+          });
+          targetBlob = Array.isArray(converted) ? converted[0] : converted;
+        }
+      } catch (heicErr) {
+        console.warn('HEIC inline decode error, fallback to blob:', heicErr);
+      }
+    }
+
+    return new Promise((resolve) => {
+      const url = URL.createObjectURL(targetBlob);
+      const img = new Image();
+      img.onload = () => {
+        const thumbCanvas = document.createElement('canvas');
+        const aspect = img.naturalWidth / (img.naturalHeight || 1);
+        thumbCanvas.width = 160;
+        thumbCanvas.height = Math.round(160 / (aspect || 1));
+        const ctx = thumbCanvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, thumbCanvas.width, thumbCanvas.height);
+        const thumbUrl = thumbCanvas.toDataURL('image/jpeg', 0.82);
+
+        resolve({
+          id: 'batch_conv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+          name: fileName || 'image.jpg',
+          size: blob.size,
+          type: blob.type || (isSvg ? 'image/svg+xml' : 'image/jpeg'),
+          width: img.naturalWidth || 800,
+          height: img.naturalHeight || 600,
+          originalBlob: blob,
+          originalUrl: url,
+          img: img,
+          thumbUrl: thumbUrl,
+          svgText: svgText,
+          isSvg: isSvg,
+          isHeic: isHeic
+        });
+      };
+      img.onerror = () => {
+        resolve(null);
+      };
+      img.src = url;
+    });
+  }
+
+  let persistBatchConvertTimer = null;
+  function persistBatchConvertSession() {
+    clearTimeout(persistBatchConvertTimer);
+    persistBatchConvertTimer = setTimeout(async () => {
+      try {
+        if (!batchConvertState.items || batchConvertState.items.length === 0) {
+          return;
+        }
+        const serializableItems = batchConvertState.items.map(it => ({
+          id: it.id,
+          name: it.name,
+          size: it.size,
+          type: it.type,
+          width: it.width,
+          height: it.height,
+          blob: it.originalBlob,
+          svgText: it.svgText,
+          isSvg: it.isSvg,
+          isHeic: it.isHeic
+        }));
+        if (typeof PixKitStorage !== 'undefined') {
+          await PixKitStorage.setItem('batch_convert_session', {
+            items: serializableItems,
+            activeIndex: batchConvertState.activeIndex,
+            configs: batchConvertState.configs,
+            activeDetailTool: batchConvertState.activeDetailTool
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to persist batch convert session:', err);
+      }
+    }, 60);
+  }
+
+  async function restoreBatchConvertSession() {
+    try {
+      if (typeof PixKitStorage === 'undefined') return;
+      const data = await PixKitStorage.getItem('batch_convert_session');
+      if (!data || !Array.isArray(data.items) || !data.items.length) return;
+
+      const restoredItems = [];
+      for (const it of data.items) {
+        if (!it.blob) continue;
+        const item = await createBatchConvertItemFromBlob(it.blob, it.name, it.svgText);
+        if (item) {
+          item.id = it.id || item.id;
+          restoredItems.push(item);
+        }
+      }
+
+      if (restoredItems.length > 0) {
+        batchConvertState.items = restoredItems;
+        batchConvertState.activeIndex = Math.min(data.activeIndex || 0, restoredItems.length - 1);
+        if (data.configs) {
+          batchConvertState.configs = Object.assign({}, batchConvertState.configs, data.configs);
+        }
+        syncBatchConvertConfigsToDOM();
+        updateAllBatchConvertToolStatusLabels();
+        if (data.activeDetailTool && batchConvertState.configs[data.activeDetailTool]) {
+          openBatchConvertToolDetail(data.activeDetailTool);
+        }
+      }
+    } catch (err) {
+      console.warn('Could not restore batch convert session:', err);
+    }
+  }
+
+  function syncBatchConvertConfigsToDOM() {
+    try {
+      const cfg = batchConvertState.configs;
+      if (!cfg) return;
+
+      // 1. Format
+      if (cfg.format) {
+        ['jpeg', 'png', 'webp', 'avif', 'bmp'].forEach(fmt => {
+          document.getElementById(`batch-conv-fmt-${fmt}`)?.classList.toggle('active', cfg.format.targetFormat === fmt);
+        });
+        const qVal = document.getElementById('batch-conv-quality');
+        if (qVal && cfg.format.quality) qVal.value = cfg.format.quality;
+        const lblQ = document.getElementById('batch-conv-lbl-quality');
+        if (lblQ && cfg.format.quality) lblQ.textContent = cfg.format.quality + '%';
+        [100, 90, 75, 50].forEach(q => {
+          document.getElementById(`batch-conv-chip-q-${q}`)?.classList.toggle('active', cfg.format.quality === q);
+        });
+      }
+
+      // 2. HEIC
+      if (cfg.heic) {
+        ['jpeg', 'png', 'webp'].forEach(f => {
+          document.getElementById(`batch-conv-heic-out-${f}`)?.classList.toggle('active', cfg.heic.outputFormat === f);
+        });
+        const hq = document.getElementById('batch-conv-heic-q');
+        if (hq && cfg.heic.quality) hq.value = cfg.heic.quality;
+        const hqV = document.getElementById('batch-conv-heic-q-val');
+        if (hqV && cfg.heic.quality) hqV.textContent = cfg.heic.quality + '%';
+      }
+
+      // 4. SVG
+      if (cfg.svg) {
+        [1, 2, 3, 4, 8].forEach(s => {
+          document.getElementById(`batch-conv-svg-scale-${s}`)?.classList.toggle('active', cfg.svg.scale === s);
+        });
+        ['png', 'jpeg', 'webp'].forEach(f => {
+          document.getElementById(`batch-conv-svg-out-${f}`)?.classList.toggle('active', cfg.svg.outputFormat === f);
+        });
+      }
+
+      // 5. ICO
+      if (cfg.ico) {
+        document.getElementById('batch-conv-ico-pkg-ico')?.classList.toggle('active', cfg.ico.pkgMode === 'ico');
+        document.getElementById('batch-conv-ico-pkg-pngs')?.classList.toggle('active', cfg.ico.pkgMode === 'pngs');
+        [16, 32, 48, 64, 128, 256].forEach(s => {
+          document.getElementById(`batch-conv-ico-sz-${s}`)?.classList.toggle('active', (cfg.ico.selectedSizes || []).includes(s));
+        });
+        document.getElementById('batch-conv-ico-fit-contain')?.classList.toggle('active', cfg.ico.fitMode === 'contain');
+        document.getElementById('batch-conv-ico-fit-cover')?.classList.toggle('active', cfg.ico.fitMode === 'cover');
+      }
+
+      // 6. Base64
+      if (cfg.base64) {
+        ['dataurl', 'html', 'css', 'raw'].forEach(t => {
+          document.getElementById(`batch-conv-b64-type-${t}`)?.classList.toggle('active', cfg.base64.exportType === t);
+        });
+        ['json', 'txt'].forEach(p => {
+          document.getElementById(`batch-conv-b64-pkg-${p}`)?.classList.toggle('active', cfg.base64.pkgMode === p);
+        });
+      }
+
+      // 7. PDF
+      if (cfg.pdf) {
+        document.getElementById('batch-conv-pdf-mode-combined')?.classList.toggle('active', cfg.pdf.mode === 'combined');
+        document.getElementById('batch-conv-pdf-mode-separate')?.classList.toggle('active', cfg.pdf.mode === 'separate');
+        ['a4', 'letter', 'auto'].forEach(s => {
+          document.getElementById(`batch-conv-pdf-size-${s}`)?.classList.toggle('active', cfg.pdf.pageSize === s);
+        });
+        ['auto', 'portrait', 'landscape'].forEach(o => {
+          document.getElementById(`batch-conv-pdf-orient-${o}`)?.classList.toggle('active', cfg.pdf.orientation === o);
+        });
+        ['none', 'small', 'standard'].forEach(m => {
+          document.getElementById(`batch-conv-pdf-margin-${m}`)?.classList.toggle('active', cfg.pdf.margin === m);
+        });
+      }
+    } catch (_) { }
+  }
+
+  // Load 5 curated, distinct sample artworks (Photos, Vectors & Graphics)
+  window.loadSampleBatchConvertImages = async function () {
+    showToast('Generating 5 sample artworks for batch convert...');
+
+    // 1. Vector SVG Badge
+    const svgBadgeStr = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+      <defs>
+        <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#4F46E5" />
+          <stop offset="100%" stop-color="#7C3AED" />
+        </linearGradient>
+      </defs>
+      <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+      <circle cx="256" cy="256" r="140" fill="none" stroke="#FFFFFF" stroke-width="18" opacity="0.9" />
+      <polygon points="256,150 286,225 365,225 300,270 325,350 256,305 187,350 212,270 147,225 226,225" fill="#FCD34D" />
+    </svg>`;
+    const svgBlob = new Blob([svgBadgeStr], { type: 'image/svg+xml' });
+
+    // 2-5. Procedural canvas images
+    const makeCanvasBlob = (w, h, renderFn, mime = 'image/jpeg', q = 0.92) => {
+      return new Promise((resolve) => {
+        const c = document.createElement('canvas');
+        c.width = w;
+        c.height = h;
+        const ctx = c.getContext('2d');
+        renderFn(ctx, w, h);
+        c.toBlob((blob) => resolve(blob), mime, q);
+      });
+    };
+
+    // 2. Sunset Coast (JPEG)
+    const sunsetBlob = await makeCanvasBlob(1600, 1000, (ctx, w, h) => {
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, '#FF4B1F');
+      grad.addColorStop(0.5, '#FF9068');
+      grad.addColorStop(1, '#1E3C72');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+      // Sun
+      ctx.beginPath();
+      ctx.arc(w * 0.5, h * 0.5, 90, 0, Math.PI * 2);
+      ctx.fillStyle = '#FFF8DC';
+      ctx.fill();
+    });
+
+    // 3. Transparent Neon Icon (PNG with alpha)
+    const neonPngBlob = await makeCanvasBlob(1024, 1024, (ctx, w, h) => {
+      ctx.clearRect(0, 0, w, h);
+      ctx.beginPath();
+      ctx.arc(w / 2, h / 2, 320, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
+      ctx.fill();
+      ctx.lineWidth = 24;
+      ctx.strokeStyle = '#10B981';
+      ctx.stroke();
+      // Inner diamond
+      ctx.beginPath();
+      ctx.moveTo(w / 2, h / 2 - 160);
+      ctx.lineTo(w / 2 + 160, h / 2);
+      ctx.lineTo(w / 2, h / 2 + 160);
+      ctx.lineTo(w / 2 - 160, h / 2);
+      ctx.closePath();
+      ctx.fillStyle = '#34D399';
+      ctx.fill();
+    }, 'image/png');
+
+    // 4. Abstract Cyber Grid (WebP)
+    const cyberWebpBlob = await makeCanvasBlob(1920, 1080, (ctx, w, h) => {
+      const grad = ctx.createLinearGradient(0, 0, w, h);
+      grad.addColorStop(0, '#0F2027');
+      grad.addColorStop(0.5, '#203A43');
+      grad.addColorStop(1, '#2C5364');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = 'rgba(0, 242, 254, 0.25)';
+      ctx.lineWidth = 2;
+      for (let x = 0; x < w; x += 80) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
+      }
+      for (let y = 0; y < h; y += 80) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+      }
+    }, 'image/webp');
+
+    // 5. Alpine Mountain View (JPEG)
+    const mountainBlob = await makeCanvasBlob(1400, 933, (ctx, w, h) => {
+      const sky = ctx.createLinearGradient(0, 0, 0, h);
+      sky.addColorStop(0, '#89F7FE');
+      sky.addColorStop(0.6, '#66A6FF');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, w, h);
+      ctx.beginPath();
+      ctx.moveTo(0, h);
+      ctx.lineTo(w * 0.35, h * 0.35);
+      ctx.lineTo(w * 0.7, h * 0.7);
+      ctx.lineTo(w, h * 0.4);
+      ctx.lineTo(w, h);
+      ctx.fillStyle = '#1A365D';
+      ctx.fill();
+    });
+
+    const samplesList = [
+      { blob: svgBlob, name: 'vector-app-badge.svg', svgText: svgBadgeStr },
+      { blob: sunsetBlob, name: 'sunset-coast.jpg' },
+      { blob: neonPngBlob, name: 'neon-glyph-alpha.png' },
+      { blob: cyberWebpBlob, name: 'cyber-grid.webp' },
+      { blob: mountainBlob, name: 'alpine-mountain.jpg' }
+    ];
+
+    batchConvertState.items = [];
+    for (const s of samplesList) {
+      const item = await createBatchConvertItemFromBlob(s.blob, s.name, s.svgText);
+      if (item) batchConvertState.items.push(item);
+    }
+
+    batchConvertState.activeIndex = 0;
+    syncBatchConvertViewUI();
+    renderBatchConvertPreviewCanvas();
+    persistBatchConvertSession();
+    showToast('Loaded 5 diverse sample files into batch convert queue!');
+  };
+
+  function syncBatchConvertViewUI() {
+    const hasItems = batchConvertState.items.length > 0;
+    const dropzone = document.getElementById('batch-conv-dropzone');
+    const canvasWrap = document.getElementById('batch-conv-canvas-wrapper');
+    const sliderPanel = document.getElementById('batch-conv-slider-panel');
+    const stageFooter = document.getElementById('batch-conv-stage-footer');
+    const topbarTools = document.getElementById('batch-conv-topbar-tools');
+    const statusHint = document.getElementById('batch-conv-stage-status');
+    const viewingTag = document.getElementById('batch-conv-viewing-tag');
+
+    if (dropzone) dropzone.style.display = hasItems ? 'none' : 'flex';
+    if (canvasWrap) canvasWrap.style.display = hasItems ? 'flex' : 'none';
+    if (sliderPanel) sliderPanel.style.display = hasItems ? 'block' : 'none';
+    if (stageFooter) stageFooter.style.display = hasItems ? 'flex' : 'none';
+    if (topbarTools) topbarTools.style.display = hasItems ? 'flex' : 'none';
+
+    if (hasItems) {
+      const cur = batchConvertState.items[batchConvertState.activeIndex];
+      const count = batchConvertState.items.length;
+      if (viewingTag) {
+        viewingTag.style.display = 'inline-flex';
+        viewingTag.textContent = `Viewing ${batchConvertState.activeIndex + 1} of ${count}`;
+      }
+      if (statusHint) {
+        statusHint.textContent = cur ? cur.name : '';
+        statusHint.title = cur ? `${cur.name} (${cur.width} × ${cur.height} px)` : '';
+      }
+      renderBatchConvertCarousel();
+    } else {
+      if (viewingTag) viewingTag.style.display = 'none';
+      if (statusHint) {
+        statusHint.textContent = 'Batch queue empty · Drop images or ZIP to begin';
+        statusHint.title = '';
+      }
+    }
+  }
+
+  function renderBatchConvertCarousel() {
+    const strip = document.getElementById('batch-conv-carousel-strip');
+    const countPill = document.getElementById('batch-conv-count-pill');
+    const activeName = document.getElementById('batch-conv-active-name');
+    const metaSummary = document.getElementById('batch-conv-meta-summary');
+    const metaDetails = document.getElementById('batch-conv-meta-details');
+
+    if (!strip) return;
+    strip.innerHTML = '';
+
+    const count = batchConvertState.items.length;
+    let totalBytes = 0;
+    batchConvertState.items.forEach(it => { totalBytes += (it.size || 0); });
+    const sizeMb = (totalBytes / (1024 * 1024)).toFixed(1);
+
+    if (countPill) countPill.textContent = `${count} Image${count !== 1 ? 's' : ''}`;
+    const activeItem = batchConvertState.items[batchConvertState.activeIndex];
+    if (activeName) activeName.textContent = activeItem ? `· ${activeItem.name}` : '';
+    if (metaSummary) metaSummary.textContent = `${count} Images in Queue · ${sizeMb} MB Total`;
+    if (metaDetails) metaDetails.textContent = activeItem ? `Active: ${activeItem.name} (${activeItem.width} × ${activeItem.height} px)` : 'Ready to convert';
+
+    batchConvertState.items.forEach((item, index) => {
+      const card = document.createElement('div');
+      card.className = `batch-thumb-card ${index === batchConvertState.activeIndex ? 'active' : ''}`;
+      card.onclick = () => selectBatchConvertImage(index);
+
+      card.innerHTML = `
+        <span class="batch-thumb-badge">#${index + 1}</span>
+        <button type="button" class="batch-thumb-del-btn" title="Remove image from batch" onclick="removeBatchConvertItem(${index}, event)">×</button>
+        <div class="batch-thumb-img-wrap">
+          <img src="${item.thumbUrl || item.originalUrl}" alt="${item.name}" loading="lazy" />
+        </div>
+        <div class="batch-thumb-info">
+          <span class="batch-thumb-name" title="${item.name}">${item.name}</span>
+          <span class="batch-thumb-meta">${item.width} × ${item.height}</span>
+        </div>
+      `;
+      strip.appendChild(card);
+    });
+
+    const activeCard = strip.children[batchConvertState.activeIndex];
+    if (activeCard && !batchConvertState.isExpanded) {
+      activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }
+
+  window.selectBatchConvertImage = function (index) {
+    if (index < 0 || index >= batchConvertState.items.length) return;
+    batchConvertState.activeIndex = index;
+    renderBatchConvertCarousel();
+    renderBatchConvertPreviewCanvas();
+
+    const cur = batchConvertState.items[index];
+    const count = batchConvertState.items.length;
+    const viewingTag = document.getElementById('batch-conv-viewing-tag');
+    const statusHint = document.getElementById('batch-conv-stage-status');
+    if (viewingTag) {
+      viewingTag.style.display = 'inline-flex';
+      viewingTag.textContent = `Viewing ${index + 1} of ${count}`;
+    }
+    if (statusHint && cur) {
+      statusHint.textContent = cur.name;
+      statusHint.title = `${cur.name} (${cur.width} × ${cur.height} px)`;
+    }
+    persistBatchConvertSession();
+  };
+
+  // Keyboard Left / Right Navigation for Batch Convert Mode
+  document.addEventListener('keydown', (e) => {
+    const batchConvView = document.getElementById('tool-batch-convert-view');
+    if (!batchConvView || batchConvView.style.display === 'none') return;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      navigateBatchConvertImage(-1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      navigateBatchConvertImage(1);
+    }
+  });
+
+  window.navigateBatchConvertImage = function (dir) {
+    if (!batchConvertState.items.length) return;
+    let next = batchConvertState.activeIndex + dir;
+    if (next < 0) next = batchConvertState.items.length - 1;
+    if (next >= batchConvertState.items.length) next = 0;
+    selectBatchConvertImage(next);
+  };
+
+  window.scrollBatchConvertCarousel = function (dir) {
+    const strip = document.getElementById('batch-conv-carousel-strip');
+    if (strip) {
+      strip.scrollBy({ left: dir * 260, behavior: 'smooth' });
+    }
+  };
+
+  window.toggleBatchConvertGridExpand = function () {
+    const panel = document.getElementById('batch-conv-slider-panel');
+    const btnText = document.getElementById('batch-conv-expand-btn-text');
+    if (!panel) return;
+    batchConvertState.isExpanded = !batchConvertState.isExpanded;
+    panel.classList.toggle('expanded', batchConvertState.isExpanded);
+    if (btnText) {
+      btnText.textContent = batchConvertState.isExpanded ? 'Collapse Strip' : 'Expand Grid';
+    }
+  };
+
+  window.removeBatchConvertItem = function (index, e) {
+    if (e) e.stopPropagation();
+    if (index < 0 || index >= batchConvertState.items.length) return;
+    const removed = batchConvertState.items.splice(index, 1)[0];
+    if (removed && removed.originalUrl) {
+      try { URL.revokeObjectURL(removed.originalUrl); } catch (_) { }
+    }
+    if (batchConvertState.activeIndex >= batchConvertState.items.length) {
+      batchConvertState.activeIndex = Math.max(0, batchConvertState.items.length - 1);
+    }
+    syncBatchConvertViewUI();
+    if (batchConvertState.items.length > 0) {
+      renderBatchConvertPreviewCanvas();
+    }
+    persistBatchConvertSession();
+    showToast('Removed image from batch queue');
+  };
+
+  window.clearBatchConvertQueue = function () {
+    batchConvertState.items.forEach(it => {
+      if (it.originalUrl) {
+        try { URL.revokeObjectURL(it.originalUrl); } catch (_) { }
+      }
+    });
+    batchConvertState.items = [];
+    batchConvertState.activeIndex = 0;
+    if (typeof closeBatchConvertToolDetail === 'function') {
+      closeBatchConvertToolDetail();
+    }
+    if (typeof PixKitStorage !== 'undefined') {
+      PixKitStorage.removeItem('batch_convert_session');
+    }
+    syncBatchConvertViewUI();
+    showToast('Cleared all images from batch convert queue');
+  };
+
+  // ==============================================================
+  // MASTER-DETAIL NAVIGATION & FEATURE TOGGLES
+  // ==============================================================
+  window.openBatchConvertToolDetail = function (toolName) {
+    if (!toolName || !batchConvertState.configs[toolName]) return;
+    batchConvertState.activeDetailTool = toolName;
+
+    // Update Detail Header
+    const meta = batchConvertToolMeta[toolName] || { icon: '⇄', title: toolName, desc: '' };
+    const iconEl = document.getElementById('batch-conv-detail-icon');
+    const titleEl = document.getElementById('batch-conv-detail-title');
+    const descEl = document.getElementById('batch-conv-detail-desc');
+    const toggleBtn = document.getElementById('batch-conv-detail-toggle-btn');
+
+    if (iconEl) iconEl.textContent = meta.icon;
+    if (titleEl) titleEl.textContent = meta.title;
+    if (descEl) descEl.textContent = meta.desc;
+
+    const isEnabled = !!batchConvertState.configs[toolName].enabled;
+    if (toggleBtn) {
+      toggleBtn.textContent = isEnabled ? 'Active' : 'Off';
+      toggleBtn.classList.toggle('active', isEnabled);
+    }
+
+    // Hide all sub-panels, show target sub-panel
+    const allPanels = document.querySelectorAll('.batch-conv-tool-detail-body');
+    allPanels.forEach(p => p.style.display = 'none');
+
+    const targetPanel = document.getElementById(`batch-conv-detail-${toolName}`);
+    if (targetPanel) {
+      targetPanel.style.display = 'block';
+    }
+
+    // Switch Views
+    const masterView = document.getElementById('batch-conv-cc-master-view');
+    const detailView = document.getElementById('batch-conv-cc-detail-view');
+    if (masterView) masterView.style.display = 'none';
+    if (detailView) detailView.style.display = 'block';
+
+    const panel = document.getElementById('batch-conv-control-center-panel');
+    if (panel) panel.scrollTop = 0;
+
+    persistBatchConvertSession();
+  };
+
+  window.closeBatchConvertToolDetail = function () {
+    batchConvertState.activeDetailTool = null;
+
+    const masterView = document.getElementById('batch-conv-cc-master-view');
+    const detailView = document.getElementById('batch-conv-cc-detail-view');
+    if (detailView) detailView.style.display = 'none';
+    if (masterView) masterView.style.display = 'block';
+
+    updateAllBatchConvertToolStatusLabels();
+    renderBatchConvertPreviewCanvas();
+
+    const panel = document.getElementById('batch-conv-control-center-panel');
+    if (panel) panel.scrollTop = 0;
+    persistBatchConvertSession();
+  };
+
+  window.toggleBatchConvertFeatureFromDetail = function () {
+    const toolName = batchConvertState.activeDetailTool;
+    if (!toolName) return;
+    toggleBatchConvertFeature(toolName);
+    const isEnabled = !!batchConvertState.configs[toolName]?.enabled;
+    const toggleBtn = document.getElementById('batch-conv-detail-toggle-btn');
+    if (toggleBtn) {
+      toggleBtn.textContent = isEnabled ? 'Active' : 'Off';
+      toggleBtn.classList.toggle('active', isEnabled);
+    }
+  };
+
+  window.toggleBatchConvertFeature = function (toolName) {
+    const cfg = batchConvertState.configs[toolName];
+    if (!cfg) return;
+    cfg.enabled = !cfg.enabled;
+    const pill = document.getElementById(`batch-conv-toggle-${toolName}`);
+    if (pill) {
+      pill.textContent = cfg.enabled ? 'Active' : 'Off';
+      pill.classList.toggle('active', cfg.enabled);
+    }
+    updateBatchConvertToolStatusLabel(toolName);
+    updateBatchConvertPrimaryButton();
+    renderBatchConvertPreviewCanvas();
+    persistBatchConvertSession();
+  };
+
+  function updateBatchConvertPrimaryButton() {
+    const primaryBtnText = document.getElementById('batch-conv-primary-btn-text');
+    if (!primaryBtnText) return;
+    const isPdfCombined = batchConvertState.configs.pdf.enabled && batchConvertState.configs.pdf.mode === 'combined';
+    if (isPdfCombined) {
+      const count = batchConvertState.items.length || 0;
+      primaryBtnText.textContent = `Generate & Download PDF (${count} Page${count !== 1 ? 's' : ''})`;
+    } else {
+      primaryBtnText.textContent = 'Process & Download All (ZIP)';
+    }
+  }
+
+  function updateAllBatchConvertToolStatusLabels() {
+    ['format', 'heic', 'svg', 'ico', 'base64', 'pdf'].forEach(t => {
+      updateBatchConvertToolStatusLabel(t);
+      const pill = document.getElementById(`batch-conv-toggle-${t}`);
+      if (pill && batchConvertState.configs[t]) {
+        const active = !!batchConvertState.configs[t].enabled;
+        pill.textContent = active ? 'Active' : 'Off';
+        pill.classList.toggle('active', active);
+      }
+    });
+    updateBatchConvertPrimaryButton();
+  }
+  window.updateAllBatchConvertToolStatusLabels = updateAllBatchConvertToolStatusLabels;
+
+  function updateBatchConvertToolStatusLabel(toolName) {
+    const label = document.getElementById(`batch-conv-status-${toolName}`);
+    if (!label) return;
+    const cfg = batchConvertState.configs[toolName];
+    if (!cfg || !cfg.enabled) {
+      label.textContent = 'Off';
+      return;
+    }
+
+    if (toolName === 'format') {
+      label.textContent = `${(cfg.targetFormat || 'JPG').toUpperCase()} · ${cfg.quality || 90}%`;
+    } else if (toolName === 'heic') {
+      label.textContent = `Auto → ${(cfg.outputFormat || 'JPG').toUpperCase()}`;
+    } else if (toolName === 'svg') {
+      label.textContent = `${cfg.scale || 2}x (${(cfg.outputFormat || 'PNG').toUpperCase()})`;
+    } else if (toolName === 'ico') {
+      const szCount = (cfg.selectedSizes || []).length;
+      label.textContent = cfg.pkgMode === 'ico' ? `${szCount} Sizes (.ICO)` : `${szCount} PNG Icons`;
+    } else if (toolName === 'base64') {
+      label.textContent = (cfg.exportType || 'dataurl').toUpperCase();
+    } else if (toolName === 'pdf') {
+      label.textContent = cfg.mode === 'combined' ? `1 Document (${(cfg.pageSize || 'a4').toUpperCase()})` : 'Separate PDFs';
+    }
+  }
+
+  // ==============================================================
+  // TOOL SETTINGS HANDLERS
+  // ==============================================================
+  window.setBatchConvertTargetFormat = function (format) {
+    batchConvertState.configs.format.targetFormat = format;
+    ['jpeg', 'png', 'webp', 'avif', 'bmp'].forEach(f => {
+      document.getElementById(`batch-conv-fmt-${f}`)?.classList.toggle('active', f === format);
+    });
+    updateBatchConvertToolStatusLabel('format');
+    renderBatchConvertPreviewCanvas();
+    persistBatchConvertSession();
+  };
+
+  window.updateBatchConvertQuality = function (val) {
+    const q = parseInt(val, 10);
+    batchConvertState.configs.format.quality = q;
+    const lbl = document.getElementById('batch-conv-lbl-quality');
+    if (lbl) lbl.textContent = `${q}%`;
+    [100, 90, 75, 50].forEach(p => {
+      document.getElementById(`batch-conv-chip-q-${p}`)?.classList.toggle('active', p === q);
+    });
+    updateBatchConvertToolStatusLabel('format');
+    renderBatchConvertPreviewCanvas();
+    persistBatchConvertSession();
+  };
+
+  window.setBatchConvertQualityPreset = function (val) {
+    const input = document.getElementById('batch-conv-quality');
+    if (input) input.value = val;
+    updateBatchConvertQuality(val);
+  };
+
+  window.setBatchConvertBgColor = function (color) {
+    batchConvertState.configs.format.bgColor = color;
+    document.getElementById('batch-conv-bg-white')?.classList.toggle('active', color === '#ffffff');
+    document.getElementById('batch-conv-bg-black')?.classList.toggle('active', color === '#000000');
+    document.getElementById('batch-conv-bg-transparent')?.classList.toggle('active', color === 'transparent');
+    renderBatchConvertPreviewCanvas();
+    persistBatchConvertSession();
+  };
+
+  window.setBatchConvertHeicOutput = function (fmt) {
+    batchConvertState.configs.heic.outputFormat = fmt;
+    ['jpeg', 'png', 'webp'].forEach(f => {
+      document.getElementById(`batch-conv-heic-out-${f}`)?.classList.toggle('active', f === fmt);
+    });
+    updateBatchConvertToolStatusLabel('heic');
+    renderBatchConvertPreviewCanvas();
+    persistBatchConvertSession();
+  };
+
+  window.setBatchConvertHeicQuality = function (val) {
+    const q = parseInt(val, 10);
+    batchConvertState.configs.heic.quality = q;
+    const lbl = document.getElementById('batch-conv-heic-q-val');
+    if (lbl) lbl.textContent = `${q}%`;
+    updateBatchConvertToolStatusLabel('heic');
+    renderBatchConvertPreviewCanvas();
+    persistBatchConvertSession();
+  };
+
+  window.setBatchConvertSvgScale = function (scale) {
+    const sc = parseInt(scale, 10);
+    batchConvertState.configs.svg.scale = sc;
+    [1, 2, 3, 4, 8].forEach(s => {
+      document.getElementById(`batch-conv-svg-scale-${s}`)?.classList.toggle('active', s === sc);
+    });
+    updateBatchConvertToolStatusLabel('svg');
+    renderBatchConvertPreviewCanvas();
+    persistBatchConvertSession();
+  };
+
+  window.setBatchConvertSvgFormat = function (fmt) {
+    batchConvertState.configs.svg.outputFormat = fmt;
+    ['png', 'jpeg', 'webp'].forEach(f => {
+      document.getElementById(`batch-conv-svg-out-${f}`)?.classList.toggle('active', f === fmt);
+    });
+    updateBatchConvertToolStatusLabel('svg');
+    renderBatchConvertPreviewCanvas();
+    persistBatchConvertSession();
+  };
+
+  window.setBatchConvertIcoPackage = function (pkg) {
+    batchConvertState.configs.ico.pkgMode = pkg;
+    document.getElementById('batch-conv-ico-pkg-ico')?.classList.toggle('active', pkg === 'ico');
+    document.getElementById('batch-conv-ico-pkg-pngs')?.classList.toggle('active', pkg === 'pngs');
+    updateBatchConvertToolStatusLabel('ico');
+    persistBatchConvertSession();
+  };
+
+  window.toggleBatchConvertIcoSize = function (size) {
+    const s = parseInt(size, 10);
+    let list = batchConvertState.configs.ico.selectedSizes || [];
+    if (list.includes(s)) {
+      if (list.length > 1) {
+        list = list.filter(item => item !== s);
+      } else {
+        showToast('At least 1 resolution must remain selected');
+        return;
+      }
+    } else {
+      list.push(s);
+      list.sort((a, b) => a - b);
+    }
+    batchConvertState.configs.ico.selectedSizes = list;
+    document.getElementById(`batch-conv-ico-sz-${s}`)?.classList.toggle('active', list.includes(s));
+    updateBatchConvertToolStatusLabel('ico');
+    persistBatchConvertSession();
+  };
+
+  window.setBatchConvertIcoFit = function (fit) {
+    batchConvertState.configs.ico.fitMode = fit;
+    document.getElementById('batch-conv-ico-fit-contain')?.classList.toggle('active', fit === 'contain');
+    document.getElementById('batch-conv-ico-fit-cover')?.classList.toggle('active', fit === 'cover');
+    persistBatchConvertSession();
+  };
+
+  window.setBatchConvertBase64Type = function (type) {
+    batchConvertState.configs.base64.exportType = type;
+    ['dataurl', 'html', 'css', 'raw'].forEach(t => {
+      document.getElementById(`batch-conv-b64-type-${t}`)?.classList.toggle('active', t === type);
+    });
+    updateBatchConvertToolStatusLabel('base64');
+    persistBatchConvertSession();
+  };
+
+  window.setBatchConvertBase64Package = function (pkg) {
+    batchConvertState.configs.base64.pkgMode = pkg;
+    ['json', 'txt'].forEach(p => {
+      document.getElementById(`batch-conv-b64-pkg-${p}`)?.classList.toggle('active', p === pkg);
+    });
+    persistBatchConvertSession();
+  };
+
+  window.setBatchConvertPdfMode = function (mode) {
+    batchConvertState.configs.pdf.mode = mode;
+    document.getElementById('batch-conv-pdf-mode-combined')?.classList.toggle('active', mode === 'combined');
+    document.getElementById('batch-conv-pdf-mode-separate')?.classList.toggle('active', mode === 'separate');
+    updateBatchConvertToolStatusLabel('pdf');
+    updateBatchConvertPrimaryButton();
+    persistBatchConvertSession();
+  };
+
+  window.setBatchConvertPdfPageSize = function (size) {
+    batchConvertState.configs.pdf.pageSize = size;
+    ['a4', 'letter', 'auto'].forEach(s => {
+      document.getElementById(`batch-conv-pdf-size-${s}`)?.classList.toggle('active', s === size);
+    });
+    updateBatchConvertToolStatusLabel('pdf');
+    persistBatchConvertSession();
+  };
+
+  window.setBatchConvertPdfOrient = function (orient) {
+    batchConvertState.configs.pdf.orientation = orient;
+    ['auto', 'portrait', 'landscape'].forEach(o => {
+      document.getElementById(`batch-conv-pdf-orient-${o}`)?.classList.toggle('active', o === orient);
+    });
+    persistBatchConvertSession();
+  };
+
+  window.setBatchConvertPdfMargin = function (margin) {
+    batchConvertState.configs.pdf.margin = margin;
+    ['none', 'small', 'standard'].forEach(m => {
+      document.getElementById(`batch-conv-pdf-margin-${m}`)?.classList.toggle('active', m === margin);
+    });
+    persistBatchConvertSession();
+  };
+
+  window.resetAllBatchConvertOperations = function () {
+    batchConvertState.configs = {
+      format: { enabled: true, targetFormat: 'jpeg', quality: 90, bgColor: '#ffffff' },
+      heic: { enabled: true, outputFormat: 'jpeg', quality: 92 },
+      svg: { enabled: true, scale: 2, outputFormat: 'png' },
+      ico: { enabled: false, pkgMode: 'ico', selectedSizes: [16, 32, 48, 64], fitMode: 'contain' },
+      base64: { enabled: false, exportType: 'dataurl', pkgMode: 'json' },
+      pdf: { enabled: false, mode: 'combined', pageSize: 'a4', orientation: 'auto', margin: 'none' }
+    };
+    syncBatchConvertConfigsToDOM();
+    updateAllBatchConvertToolStatusLabels();
+    renderBatchConvertPreviewCanvas();
+    persistBatchConvertSession();
+    showToast('Reset all batch convert settings to defaults');
+  };
+
+  // ==============================================================
+  // RENDERING & BATCH PROCESSING PIPELINE
+  // ==============================================================
+  async function processSingleBatchConvertItem(item, forExport = false) {
+    if (!item) return null;
+    const cfg = batchConvertState.configs;
+
+    let sourceCanvas = document.createElement('canvas');
+    let srcW = item.width || 800;
+    let srcH = item.height || 600;
+
+    // 1. Vector SVG rasterization
+    if (item.isSvg && item.svgText) {
+      const svgScale = (cfg.svg && cfg.svg.enabled) ? (cfg.svg.scale || 2) : 1;
+      const targetW = Math.round(srcW * svgScale);
+      const targetH = Math.round(srcH * svgScale);
+      try {
+        const res = await engine.rasterizeSvg(
+          item.svgText,
+          targetW,
+          targetH,
+          cfg.format.bgColor || 'transparent',
+          cfg.svg.outputFormat || 'png',
+          0.95
+        );
+        sourceCanvas = res.canvas;
+        srcW = sourceCanvas.width;
+        srcH = sourceCanvas.height;
+      } catch (err) {
+        sourceCanvas.width = srcW;
+        sourceCanvas.height = srcH;
+        const ctx = sourceCanvas.getContext('2d');
+        ctx.drawImage(item.img, 0, 0, srcW, srcH);
+      }
+    } else {
+      sourceCanvas.width = srcW;
+      sourceCanvas.height = srcH;
+      const ctx = sourceCanvas.getContext('2d');
+      ctx.drawImage(item.img, 0, 0, srcW, srcH);
+    }
+
+    let workingCanvas = sourceCanvas;
+
+    // Determine target format
+    let targetFmt = cfg.format.targetFormat || 'jpeg';
+    if (item.isHeic && cfg.heic && cfg.heic.enabled) {
+      targetFmt = cfg.heic.outputFormat || targetFmt;
+    }
+
+    // 2. Background Color Fill for formats without alpha
+    if (targetFmt === 'jpeg' || targetFmt === 'bmp') {
+      const bgCanvas = document.createElement('canvas');
+      bgCanvas.width = workingCanvas.width;
+      bgCanvas.height = workingCanvas.height;
+      const bCtx = bgCanvas.getContext('2d');
+      bCtx.fillStyle = (cfg.format.bgColor && cfg.format.bgColor !== 'transparent') ? cfg.format.bgColor : '#ffffff';
+      bCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+      bCtx.drawImage(workingCanvas, 0, 0);
+      workingCanvas = bgCanvas;
+    }
+
+    if (!forExport) {
+      return workingCanvas;
+    }
+
+    // 4. Special tool exports: Favicon ICO
+    if (cfg.ico && cfg.ico.enabled) {
+      if (cfg.ico.pkgMode === 'ico') {
+        const icoRes = await engine.canvasToIcoBlob(workingCanvas, cfg.ico.selectedSizes, cfg.ico.fitMode);
+        const baseName = item.name.replace(/\.[^/.]+$/, '');
+        return {
+          blob: icoRes.blob,
+          name: `${baseName}_favicon.ico`,
+          width: workingCanvas.width,
+          height: workingCanvas.height
+        };
+      } else {
+        // Individual PNG icons
+        const icoRes = await engine.canvasToIcoBlob(workingCanvas, cfg.ico.selectedSizes, cfg.ico.fitMode);
+        const baseName = item.name.replace(/\.[^/.]+$/, '');
+        const files = [];
+        for (const buf of icoRes.pngBuffers) {
+          const pngBlob = await new Promise(r => buf.canvas.toBlob(r, 'image/png'));
+          files.push({
+            name: `${baseName}_icon_${buf.size}x${buf.size}.png`,
+            blob: pngBlob
+          });
+        }
+        return { isMultiFile: true, files: files };
+      }
+    }
+
+    // 5. Special tool exports: Base64
+    if (cfg.base64 && cfg.base64.enabled) {
+      const mime = (targetFmt === 'png') ? 'image/png' : ((targetFmt === 'webp') ? 'image/webp' : 'image/jpeg');
+      const quality = (cfg.format.quality || 90) / 100;
+      const dataUrl = workingCanvas.toDataURL(mime, quality);
+      let content = dataUrl;
+      const expType = cfg.base64.exportType || 'dataurl';
+      if (expType === 'raw') {
+        content = dataUrl.split(',')[1] || '';
+      } else if (expType === 'html') {
+        content = `<img src="${dataUrl}" alt="${item.name}" width="${workingCanvas.width}" height="${workingCanvas.height}" />`;
+      } else if (expType === 'css') {
+        content = `background-image: url("${dataUrl}");`;
+      }
+      const baseName = item.name.replace(/\.[^/.]+$/, '');
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      return {
+        blob: blob,
+        name: `${baseName}_base64.txt`,
+        content: content,
+        dataUrl: dataUrl
+      };
+    }
+
+    // 6. Standard format conversion export
+    let mime = 'image/jpeg';
+    let ext = 'jpg';
+    if (targetFmt === 'png') { mime = 'image/png'; ext = 'png'; }
+    else if (targetFmt === 'webp') { mime = 'image/webp'; ext = 'webp'; }
+    else if (targetFmt === 'avif') { mime = 'image/avif'; ext = 'avif'; }
+    else if (targetFmt === 'bmp') { mime = 'image/bmp'; ext = 'bmp'; }
+
+    const quality = (cfg.format.quality || 90) / 100;
+    const blob = await new Promise(resolve => {
+      workingCanvas.toBlob(resolve, mime, mime === 'image/png' ? undefined : quality);
+    });
+
+    const baseName = item.name.replace(/\.[^/.]+$/, '');
+    const finalName = `${baseName}.${ext}`;
+    return {
+      blob: blob,
+      name: finalName,
+      width: workingCanvas.width,
+      height: workingCanvas.height,
+      canvas: workingCanvas
+    };
+  }
+
+  async function renderBatchConvertPreviewCanvas() {
+    const canvas = document.getElementById('canvas-batch-conv-preview');
+    if (!canvas) return;
+    const activeItem = batchConvertState.items[batchConvertState.activeIndex];
+    if (!activeItem) return;
+
+    if (batchConvertState.compareOriginal) {
+      canvas.width = activeItem.img.naturalWidth;
+      canvas.height = activeItem.img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(activeItem.img, 0, 0);
+      return;
+    }
+
+    const processedCanvas = await processSingleBatchConvertItem(activeItem, false);
+    if (!processedCanvas) return;
+
+    canvas.width = processedCanvas.width;
+    canvas.height = processedCanvas.height;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(processedCanvas, 0, 0);
+  }
+
+  window.showBatchConvertOriginal = function (show) {
+    batchConvertState.compareOriginal = !!show;
+    renderBatchConvertPreviewCanvas();
+  };
+
+  // ==============================================================
+  // DOWNLOAD & EXPORT CONTROLLERS
+  // ==============================================================
+  window.downloadCurrentBatchConvertImage = async function () {
+    const activeItem = batchConvertState.items[batchConvertState.activeIndex];
+    if (!activeItem) {
+      showToast('No active image to download');
+      return;
+    }
+    showToast(`Converting ${activeItem.name}...`);
+    const result = await processSingleBatchConvertItem(activeItem, true);
+    if (result && result.blob) {
+      triggerBlobDownload(result.blob, result.name);
+      showToast(`Downloaded ${result.name}`);
+    } else if (result && result.isMultiFile && result.files && result.files.length) {
+      result.files.forEach(f => triggerBlobDownload(f.blob, f.name));
+      showToast(`Downloaded ${result.files.length} icon files`);
+    }
+  };
+
+  window.executeBatchConvertExport = async function (downloadZip = true) {
+    if (!batchConvertState.items.length) {
+      showToast('No images in queue to convert. Please add images first.');
+      return;
+    }
+
+    const cfg = batchConvertState.configs;
+    const isCombinedPdf = cfg.pdf.enabled && cfg.pdf.mode === 'combined';
+
+    const progressBox = document.getElementById('batch-conv-progress-box');
+    const progressBar = document.getElementById('batch-conv-progress-bar');
+    const progressText = document.getElementById('batch-conv-progress-text');
+    const progressPercent = document.getElementById('batch-conv-progress-percent');
+    const btnProcess = document.getElementById('btn-batch-conv-process-all');
+
+    if (progressBox) progressBox.style.display = 'block';
+    if (btnProcess) btnProcess.disabled = true;
+    batchConvertState.isProcessing = true;
+
+    const total = batchConvertState.items.length;
+
+    try {
+      if (isCombinedPdf) {
+        // Multi-page PDF Document Export
+        if (!window.PDFLib) {
+          showToast('Loading PDF engine...');
+          await new Promise(r => setTimeout(r, 200));
+        }
+        if (!window.PDFLib) throw new Error('PDFLib engine is not loaded');
+
+        const pdfDoc = await window.PDFLib.PDFDocument.create();
+
+        for (let i = 0; i < total; i++) {
+          const item = batchConvertState.items[i];
+          const pct = Math.round(((i) / total) * 100);
+          if (progressBar) progressBar.style.width = `${pct}%`;
+          if (progressPercent) progressPercent.textContent = `${pct}%`;
+          if (progressText) progressText.textContent = `Converting page ${i + 1} of ${total}: ${item.name}...`;
+
+          const processed = await processSingleBatchConvertItem(item, true);
+          if (processed && processed.canvas) {
+            const pageOpts = {
+              pageSize: cfg.pdf.pageSize || 'a4',
+              orientation: cfg.pdf.orientation || 'auto',
+              margin: cfg.pdf.margin || 'none',
+              fitMode: 'contain',
+              quality: 0.92
+            };
+            const singlePdf = await engine.canvasToPdfBlob(processed.canvas, pageOpts);
+            const loadedPagePdf = await window.PDFLib.PDFDocument.load(await singlePdf.blob.arrayBuffer());
+            const [copiedPage] = await pdfDoc.copyPages(loadedPagePdf, [0]);
+            pdfDoc.addPage(copiedPage);
+          }
+          await new Promise(r => setTimeout(r, 15));
+        }
+
+        if (progressBar) progressBar.style.width = '100%';
+        if (progressPercent) progressPercent.textContent = '100%';
+        if (progressText) progressText.textContent = 'Finalizing PDF document...';
+
+        const pdfBytes = await pdfDoc.save();
+        const pdfBlob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const pdfName = `pixkit_batch_converted_${Date.now()}.pdf`;
+        triggerBlobDownload(pdfBlob, pdfName);
+
+        showToast(`🎉 Generated and downloaded ${total}-page PDF document!`);
+      } else {
+        // ZIP Archive Export
+        if (!window.JSZip) {
+          showToast('ZIP packaging engine is loading...');
+          return;
+        }
+
+        const zip = new window.JSZip();
+        const base64Manifest = {};
+
+        for (let i = 0; i < total; i++) {
+          const item = batchConvertState.items[i];
+          const pct = Math.round(((i) / total) * 100);
+          if (progressBar) progressBar.style.width = `${pct}%`;
+          if (progressPercent) progressPercent.textContent = `${pct}%`;
+          if (progressText) progressText.textContent = `Converting image ${i + 1} of ${total}: ${item.name}...`;
+
+          const processed = await processSingleBatchConvertItem(item, true);
+          if (processed) {
+            if (processed.isMultiFile && processed.files) {
+              processed.files.forEach(f => zip.file(`icons/${f.name}`, f.blob));
+            } else if (processed.blob) {
+              zip.file(processed.name, processed.blob);
+              if (processed.dataUrl) {
+                base64Manifest[item.name] = processed.dataUrl;
+              }
+            }
+          }
+          await new Promise(r => setTimeout(r, 15));
+        }
+
+        if (cfg.base64.enabled && cfg.base64.pkgMode === 'json' && Object.keys(base64Manifest).length) {
+          zip.file('base64_data_urls.json', JSON.stringify(base64Manifest, null, 2));
+        }
+
+        if (progressBar) progressBar.style.width = '100%';
+        if (progressPercent) progressPercent.textContent = '100%';
+        if (progressText) progressText.textContent = 'Packaging ZIP archive...';
+
+        const zipBlob = await zip.generateAsync({
+          type: 'blob',
+          compression: 'DEFLATE',
+          compressionOptions: { level: 6 }
+        }, (metadata) => {
+          if (progressPercent) progressPercent.textContent = `${Math.round(metadata.percent)}%`;
+        });
+
+        const zipName = `pixkit_batch_converted_${Date.now()}.zip`;
+        triggerBlobDownload(zipBlob, zipName);
+
+        showToast(`🎉 Converted and downloaded all ${total} files in ZIP!`);
+      }
+    } catch (err) {
+      console.error('Batch convert error:', err);
+      showToast(`Error during batch convert: ${err.message}`);
+    } finally {
+      batchConvertState.isProcessing = false;
+      if (btnProcess) btnProcess.disabled = false;
+      setTimeout(() => {
+        if (progressBox) progressBox.style.display = 'none';
+      }, 1200);
+    }
+  };
 
   // ==============================================================
   // TOOL 16: PDF TO IMAGES (PAGE EXTRACTOR & RASTERIZER) CONTROLLER
@@ -7801,8 +11591,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function initPdfExtractStage() {
+  async function initPdfExtractStage() {
     setupPdfExtractDropzone();
+    if (!pdfExtractState.pdfDoc && typeof PixKitStorage !== 'undefined') {
+      try {
+        const session = await PixKitStorage.getItem('pdf_session_doc-pdf-to-images');
+        if (session && session.blob) {
+          const file = new File([session.blob], session.fileName || 'document.pdf', { type: 'application/pdf' });
+          await handlePdfFileUpload(file, true);
+          return;
+        }
+      } catch (_) { }
+    }
     updatePdfExtractUI();
   }
 
@@ -7838,7 +11638,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  window.handlePdfFileUpload = async function(file) {
+  window.handlePdfFileUpload = async function (file, skipToast) {
     if (!file) return;
     if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
       showToast('Please select a valid PDF document (.pdf)');
@@ -7890,6 +11690,19 @@ document.addEventListener('DOMContentLoaded', () => {
       pdfExtractState.numPages = pdfDoc.numPages;
 
       await renderAllPdfPages();
+      try {
+        if (typeof PixKitStorage !== 'undefined') {
+          const blob = (file instanceof Blob) ? file : new Blob([arrayBuffer], { type: 'application/pdf' });
+          PixKitStorage.setItem('pdf_session_doc-pdf-to-images', {
+            blob,
+            fileName: pdfExtractState.fileName,
+            fileSize: pdfExtractState.fileSize,
+            format: pdfExtractState.format,
+            scale: pdfExtractState.scale,
+            quality: pdfExtractState.quality
+          });
+        }
+      } catch (_) { }
     } catch (err) {
       console.error('PDF parsing error:', err);
       showToast('Failed to open PDF file: ' + (err.message || 'Invalid format'));
@@ -7899,9 +11712,9 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Generate a multi-page sample PDF on the fly so users can test immediately
-  window.loadSamplePdfForExtract = async function() {
+  window.loadSamplePdfForExtract = async function () {
     showToast('Generating sample 3-page PDF document...');
-    
+
     // Create 3 nice graphic pages in memory
     const pagesBlobs = [];
     const colors = [
@@ -7992,7 +11805,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const numPages = pdfDoc.numPages;
     for (let i = 1; i <= numPages; i++) {
       if (loadText) loadText.textContent = `Rendering page ${i} of ${numPages} @ ${pdfExtractState.scale}x resolution...`;
-      
+
       const page = await pdfDoc.getPage(i);
       const viewport = page.getViewport({ scale: pdfExtractState.scale });
 
@@ -8066,7 +11879,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Thumbnail wrapper with high-res rendered canvas
       const thumbWrap = document.createElement('div');
       thumbWrap.className = 'pdf-page-thumb-wrap';
-      
+
       const thumbImg = document.createElement('img');
       thumbImg.src = page.canvas.toDataURL('image/jpeg', 0.85);
       thumbImg.alt = `Page ${page.pageNum}`;
@@ -8109,26 +11922,26 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePdfExtractUI();
   }
 
-  window.toggleSelectAllPdfPages = function(select) {
+  window.toggleSelectAllPdfPages = function (select) {
     pdfExtractState.pages.forEach(p => p.selected = select);
     buildPdfPagesGridUI();
     updatePdfExtractUI();
     showToast(select ? 'Selected all pages' : 'Deselected all pages');
   };
 
-  window.setPdfExtractFormat = function(fmt) {
+  window.setPdfExtractFormat = function (fmt) {
     pdfExtractState.format = fmt;
     ['png', 'jpg', 'webp'].forEach(f => {
       document.getElementById(`pdf-fmt-${f}`)?.classList.toggle('active', f === fmt);
     });
     const qualityGroup = document.getElementById('pdf-extract-quality-group');
     if (qualityGroup) qualityGroup.style.display = fmt === 'png' ? 'none' : 'block';
-    
+
     buildPdfPagesGridUI();
     updatePdfExtractUI();
   };
 
-  window.setPdfExtractScale = async function(scale) {
+  window.setPdfExtractScale = async function (scale) {
     if (pdfExtractState.scale === scale) return;
     pdfExtractState.scale = scale;
     [1, 2, 3].forEach(s => {
@@ -8141,26 +11954,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.setPdfExtractQuality = function(val) {
+  window.setPdfExtractQuality = function (val) {
     pdfExtractState.quality = parseInt(val, 10) / 100;
     const badge = document.getElementById('pdf-extract-quality-val');
     if (badge) badge.textContent = `${val}%`;
     updatePdfExtractUI();
   };
 
-  window.setPdfExtractRangeMode = function(mode) {
+  window.setPdfExtractRangeMode = function (mode) {
     pdfExtractState.rangeMode = mode;
     ['all', 'selected', 'custom'].forEach(m => {
       document.getElementById(`pdf-range-${m}`)?.classList.toggle('active', m === mode);
     });
     const customWrap = document.getElementById('pdf-custom-range-input-wrap');
     if (customWrap) customWrap.style.display = mode === 'custom' ? 'block' : 'none';
-    
+
     buildPdfPagesGridUI();
     updatePdfExtractUI();
   };
 
-  window.handlePdfCustomRangeChange = function(val) {
+  window.handlePdfCustomRangeChange = function (val) {
     pdfExtractState.customRange = val;
     buildPdfPagesGridUI();
     updatePdfExtractUI();
@@ -8232,7 +12045,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.downloadPdfExtractedZip = async function() {
+  window.downloadPdfExtractedZip = async function () {
     const targetPages = getTargetExportPages();
     if (!targetPages.length) {
       showToast('No pages selected for export');
@@ -8279,7 +12092,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.downloadSelectedPdfPagesSingle = async function() {
+  window.downloadSelectedPdfPagesSingle = async function () {
     const targetPages = getTargetExportPages();
     if (!targetPages.length) {
       showToast('No pages selected for export');
@@ -8302,7 +12115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast(`Downloaded ${targetPages.length} image files!`);
   };
 
-  window.downloadSinglePdfPageDirect = async function(index) {
+  window.downloadSinglePdfPageDirect = async function (index) {
     const p = pdfExtractState.pages[index];
     if (!p) return;
 
@@ -8318,7 +12131,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.openSpecificPdfPageInStudio = function(index) {
+  window.openSpecificPdfPageInStudio = function (index) {
     const p = pdfExtractState.pages[index];
     if (!p) return;
 
@@ -8332,7 +12145,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.showView('edit');
   };
 
-  window.openActivePdfPageInStudio = function() {
+  window.openActivePdfPageInStudio = function () {
     if (pdfExtractState.pages.length > 0) {
       openSpecificPdfPageInStudio(0);
     }
@@ -8390,7 +12203,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </body>
 </html>`);
         previewTab.document.close();
-      } catch (_) {}
+      } catch (_) { }
     }
     return previewTab;
   }
@@ -8405,7 +12218,7 @@ document.addEventListener('DOMContentLoaded', () => {
           previewTab.displayPdfBlob(blobUrl, filename);
           return;
         }
-      } catch (_) {}
+      } catch (_) { }
 
       // 2. Try direct DOM manipulation in same-origin popup
       try {
@@ -8421,12 +12234,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
           }
         }
-      } catch (_) {}
+      } catch (_) { }
 
       // 3. PostMessage fallback
       try {
         previewTab.postMessage({ type: 'PIXKIT_PDF_PREVIEW', url: blobUrl, title: filename }, '*');
-      } catch (_) {}
+      } catch (_) { }
 
       // 4. Direct navigation fallback
       try {
@@ -8436,7 +12249,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           previewTab.location.href = blobUrl;
           return;
-        } catch (_) {}
+        } catch (_) { }
       }
       return;
     }
@@ -8445,6 +12258,30 @@ document.addEventListener('DOMContentLoaded', () => {
     triggerBlobDownload(blob, filename);
   }
 
+  window.resetPdfExtract = function () {
+    pdfExtractState.pdfDoc = null;
+    pdfExtractState.pdfBytes = null;
+    pdfExtractState.numPages = 0;
+    pdfExtractState.pages = [];
+    if (typeof PixKitStorage !== 'undefined') {
+      PixKitStorage.removeItem('pdf_session_doc-pdf-to-images');
+    }
+    const dropzone = document.getElementById('pdf-extract-dropzone');
+    const grid = document.getElementById('pdf-extract-grid');
+    const loader = document.getElementById('pdf-extract-loading');
+    const topbarTools = document.getElementById('pdf-extract-topbar-tools');
+    const nameEl = document.getElementById('pdf-extract-file-name');
+    const subEl = document.getElementById('pdf-extract-file-sub');
+
+    if (dropzone) dropzone.style.display = 'flex';
+    if (grid) { grid.style.display = 'none'; grid.innerHTML = ''; }
+    if (loader) loader.style.display = 'none';
+    if (topbarTools) topbarTools.style.display = 'none';
+    if (nameEl) nameEl.textContent = 'No PDF Selected';
+    if (subEl) subEl.textContent = 'Select a PDF file to begin extraction';
+    updatePdfExtractUI();
+  };
+
   // ==============================================================
   // TOOL 17 CONTROLLER: MERGE PDF (COMBINE MULTIPLE PDF DOCUMENTS)
   // ==============================================================
@@ -8452,7 +12289,26 @@ document.addEventListener('DOMContentLoaded', () => {
     files: [] // Array of { id, name, size, pageCount, bytes, thumbUrl }
   };
 
-  function initPdfMergeStage() {
+  function persistPdfMergeSession() {
+    try {
+      if (typeof PixKitStorage === 'undefined') return;
+      if (!pdfMergeState.files || pdfMergeState.files.length === 0) {
+        PixKitStorage.removeItem('pdf_session_doc-merge-pdf');
+        return;
+      }
+      const serializable = pdfMergeState.files.map(f => ({
+        id: f.id,
+        name: f.name,
+        size: f.size,
+        pageCount: f.pageCount,
+        thumbUrl: f.thumbUrl,
+        blob: (f.file instanceof Blob) ? f.file : new Blob([f.bytes], { type: 'application/pdf' })
+      }));
+      PixKitStorage.setItem('pdf_session_doc-merge-pdf', { files: serializable });
+    } catch (_) { }
+  }
+
+  async function initPdfMergeStage() {
     const dropzone = document.getElementById('pdf-merge-dropzone');
     if (dropzone && !dropzone.dataset.bound) {
       dropzone.dataset.bound = 'true';
@@ -8477,10 +12333,21 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    if ((!pdfMergeState.files || pdfMergeState.files.length === 0) && typeof PixKitStorage !== 'undefined') {
+      try {
+        const session = await PixKitStorage.getItem('pdf_session_doc-merge-pdf');
+        if (session && Array.isArray(session.files) && session.files.length > 0) {
+          const files = session.files.map(sf => new File([sf.blob], sf.name, { type: 'application/pdf' }));
+          await handlePdfMergeFiles(files, true);
+          return;
+        }
+      } catch (_) { }
+    }
+
     renderPdfMergeUI();
   }
 
-  window.handlePdfMergeFiles = async function(fileList) {
+  window.handlePdfMergeFiles = async function (fileList, skipToast) {
     if (!fileList || !fileList.length) return;
     const rawList = Array.from(fileList);
     const files = rawList.filter(f => {
@@ -8591,7 +12458,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      showToast(`Added ${files.length} PDF document(s) to merge list.`);
+      if (!skipToast) {
+        showToast(`Added ${files.length} PDF document(s) to merge list.`);
+      }
+      persistPdfMergeSession();
     } catch (err) {
       console.error('Error adding PDF files for merge:', err);
       showToast('Error loading PDF files: ' + err.message);
@@ -8623,8 +12493,8 @@ document.addEventListener('DOMContentLoaded', () => {
       totalBytes += (f.size || 0);
     });
 
-    const sizeFormatted = totalBytes > 1024 * 1024 
-      ? (totalBytes / (1024 * 1024)).toFixed(2) + ' MB' 
+    const sizeFormatted = totalBytes > 1024 * 1024
+      ? (totalBytes / (1024 * 1024)).toFixed(2) + ' MB'
       : (totalBytes / 1024).toFixed(1) + ' KB';
 
     if (totalFiles === 0) {
@@ -8653,10 +12523,10 @@ document.addEventListener('DOMContentLoaded', () => {
         card.innerHTML = `
           <div class="pdf-merge-card-order">${index + 1}</div>
           <div class="pdf-merge-thumb-wrap">
-            ${fileItem.thumbUrl 
-              ? `<img src="${fileItem.thumbUrl}" class="pdf-merge-thumb" alt="Preview">` 
-              : `<div class="pdf-merge-thumb-fallback">📄</div>`
-            }
+            ${fileItem.thumbUrl
+            ? `<img src="${fileItem.thumbUrl}" class="pdf-merge-thumb" alt="Preview">`
+            : `<div class="pdf-merge-thumb-fallback">📄</div>`
+          }
           </div>
           <div class="pdf-merge-card-info">
             <strong class="pdf-merge-card-name" title="${fileItem.name}">${fileItem.name}</strong>
@@ -8688,37 +12558,43 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnPreview) btnPreview.disabled = !canMerge;
   }
 
-  window.movePdfMergeItemUp = function(index) {
+  window.movePdfMergeItemUp = function (index) {
     if (index <= 0 || index >= pdfMergeState.files.length) return;
     const temp = pdfMergeState.files[index - 1];
     pdfMergeState.files[index - 1] = pdfMergeState.files[index];
     pdfMergeState.files[index] = temp;
+    persistPdfMergeSession();
     renderPdfMergeUI();
   };
 
-  window.movePdfMergeItemDown = function(index) {
+  window.movePdfMergeItemDown = function (index) {
     if (index < 0 || index >= pdfMergeState.files.length - 1) return;
     const temp = pdfMergeState.files[index + 1];
     pdfMergeState.files[index + 1] = pdfMergeState.files[index];
     pdfMergeState.files[index] = temp;
+    persistPdfMergeSession();
     renderPdfMergeUI();
   };
 
-  window.removePdfMergeItem = function(index) {
+  window.removePdfMergeItem = function (index) {
     if (index >= 0 && index < pdfMergeState.files.length) {
       const removed = pdfMergeState.files.splice(index, 1)[0];
       showToast(`Removed "${removed.name}"`);
+      persistPdfMergeSession();
       renderPdfMergeUI();
     }
   };
 
-  window.clearAllMergePdfs = function() {
+  window.clearAllMergePdfs = function () {
     pdfMergeState.files = [];
+    if (typeof PixKitStorage !== 'undefined') {
+      PixKitStorage.removeItem('pdf_session_doc-merge-pdf');
+    }
     renderPdfMergeUI();
     showToast('Cleared merge list.');
   };
 
-  window.executePdfMerge = async function(download = true) {
+  window.executePdfMerge = async function (download = true) {
     if (pdfMergeState.files.length < 2) {
       showToast('Please add at least 2 PDF documents to merge.');
       return;
@@ -8812,7 +12688,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error('PDF Merge Error:', err);
       if (previewTab && !previewTab.closed) {
-        try { previewTab.close(); } catch (_) {}
+        try { previewTab.close(); } catch (_) { }
       }
       showToast('Error during PDF merging: ' + err.message);
     } finally {
@@ -8821,7 +12697,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.loadSamplePdfsForMerge = async function() {
+  window.loadSamplePdfsForMerge = async function () {
     if (!window.PDFLib) {
       showToast('PDF Engine is initializing, please wait...');
       return;
@@ -8844,7 +12720,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const docA = await window.PDFLib.PDFDocument.create();
       const fontA = await docA.embedFont(StandardFonts.Helvetica);
       const fontABold = await docA.embedFont(StandardFonts.HelveticaBold);
-      
+
       const pA1 = docA.addPage([595, 842]);
       pA1.drawRectangle({ x: 0, y: 0, width: 595, height: 842, color: rgb(0.96, 0.97, 0.99) });
       pA1.drawRectangle({ x: 40, y: 740, width: 515, height: 60, color: rgb(0.08, 0.55, 0.45) });
@@ -8901,6 +12777,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  window.resetPdfMerge = function () {
+    pdfMergeState.files = [];
+    if (typeof PixKitStorage !== 'undefined') {
+      PixKitStorage.removeItem('pdf_session_doc-merge-pdf');
+    }
+    renderPdfMergeUI();
+  };
+
   // ==============================================================
   // TOOL 18 CONTROLLER: SPLIT PDF (PAGES & RANGES EXTRACTOR)
   // ==============================================================
@@ -8915,7 +12799,7 @@ document.addEventListener('DOMContentLoaded', () => {
     chunkSize: 2
   };
 
-  function initPdfSplitStage() {
+  async function initPdfSplitStage() {
     const dropzone = document.getElementById('pdf-split-dropzone');
     if (dropzone && !dropzone.dataset.bound) {
       dropzone.dataset.bound = 'true';
@@ -8940,10 +12824,21 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    if (!pdfSplitState.bytes && typeof PixKitStorage !== 'undefined') {
+      try {
+        const session = await PixKitStorage.getItem('pdf_session_doc-split-pdf');
+        if (session && session.blob) {
+          const file = new File([session.blob], session.fileName || 'document.pdf', { type: 'application/pdf' });
+          await handlePdfSplitFile(file, true);
+          return;
+        }
+      } catch (_) { }
+    }
+
     renderPdfSplitUI();
   }
 
-  window.handlePdfSplitFile = async function(file) {
+  window.handlePdfSplitFile = async function (file, skipToast) {
     if (!file) return;
     if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
       showToast('Please select a valid PDF (.pdf) file.');
@@ -9025,7 +12920,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      showToast(`Loaded ${pdfSplitState.numPages}-page document ready to split!`);
+      if (!skipToast) {
+        showToast(`Loaded ${pdfSplitState.numPages}-page document ready to split!`);
+      }
+      try {
+        if (typeof PixKitStorage !== 'undefined') {
+          const blob = (file instanceof Blob) ? file : new Blob([storedBytes], { type: 'application/pdf' });
+          PixKitStorage.setItem('pdf_session_doc-split-pdf', {
+            blob,
+            fileName: pdfSplitState.fileName || file.name,
+            fileSize: pdfSplitState.fileSize || file.size,
+            mode: pdfSplitState.mode,
+            chunkSize: pdfSplitState.chunkSize
+          });
+        }
+      } catch (_) { }
     } catch (err) {
       console.error('Error loading PDF for split:', err);
       showToast('Failed to load PDF: ' + err.message);
@@ -9133,8 +13042,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (footerTitle) footerTitle.textContent = pdfSplitState.fileName;
     if (footerSub) {
-      const sizeStr = pdfSplitState.fileSize > 1024 * 1024 
-        ? (pdfSplitState.fileSize / (1024 * 1024)).toFixed(2) + ' MB' 
+      const sizeStr = pdfSplitState.fileSize > 1024 * 1024
+        ? (pdfSplitState.fileSize / (1024 * 1024)).toFixed(2) + ' MB'
         : (pdfSplitState.fileSize / 1024).toFixed(1) + ' KB';
       footerSub.textContent = `${pdfSplitState.numPages} Pages · ${sizeStr}`;
     }
@@ -9143,14 +13052,14 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePdfSplitSummary();
   }
 
-  window.togglePdfSplitPage = function(index) {
+  window.togglePdfSplitPage = function (index) {
     if (pdfSplitState.pages[index]) {
       pdfSplitState.pages[index].selected = !pdfSplitState.pages[index].selected;
       renderPdfSplitUI();
     }
   };
 
-  window.selectPdfSplitPages = function(type) {
+  window.selectPdfSplitPages = function (type) {
     if (!pdfSplitState.pages || !pdfSplitState.pages.length) return;
 
     pdfSplitState.pages.forEach((p) => {
@@ -9164,7 +13073,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderPdfSplitUI();
   };
 
-  window.onPdfSplitModeChange = function(mode) {
+  window.onPdfSplitModeChange = function (mode) {
     pdfSplitState.mode = mode;
     const rangesGroup = document.getElementById('pdf-split-ranges-group');
     const fixedGroup = document.getElementById('pdf-split-fixed-group');
@@ -9175,14 +13084,14 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePdfSplitSummary();
   };
 
-  window.updatePdfSplitChunkSize = function(val) {
+  window.updatePdfSplitChunkSize = function (val) {
     pdfSplitState.chunkSize = parseInt(val, 10) || 2;
     const lbl = document.getElementById('pdf-split-chunk-size-val');
     if (lbl) lbl.textContent = `${pdfSplitState.chunkSize} ${pdfSplitState.chunkSize === 1 ? 'Page' : 'Pages'}`;
     updatePdfSplitSummary();
   };
 
-  window.validatePdfSplitRanges = function() {
+  window.validatePdfSplitRanges = function () {
     updatePdfSplitSummary();
   };
 
@@ -9276,7 +13185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.executePdfSplit = async function(download = true) {
+  window.executePdfSplit = async function (download = true) {
     if (!pdfSplitState.bytes || !pdfSplitState.numPages) {
       showToast('Please load a PDF document first.');
       return;
@@ -9438,7 +13347,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (previewTab && !previewTab.closed) {
         try {
           previewTab.close();
-        } catch (_) {}
+        } catch (_) { }
       }
       showToast('Split PDF error: ' + err.message);
     } finally {
@@ -9447,7 +13356,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.loadSamplePdfForSplit = async function() {
+  window.loadSamplePdfForSplit = async function () {
     if (!window.PDFLib) {
       showToast('PDF Engine is initializing, please wait...');
       return;
@@ -9510,6 +13419,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  window.resetPdfSplit = function () {
+    pdfSplitState.file = null;
+    pdfSplitState.fileName = '';
+    pdfSplitState.fileSize = 0;
+    pdfSplitState.bytes = null;
+    pdfSplitState.numPages = 0;
+    pdfSplitState.pages = [];
+    if (typeof PixKitStorage !== 'undefined') {
+      PixKitStorage.removeItem('pdf_session_doc-split-pdf');
+    }
+    renderPdfSplitUI();
+  };
+
   // ==============================================================
   // TOOL 19 CONTROLLER: COMPRESS PDF (OPTIMIZE & SHRINK FILE SIZE)
   // ==============================================================
@@ -9534,7 +13456,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return Math.round(bytes / 1024) + ' KB';
   }
 
-  window.triggerPdfCompressPicker = function(e) {
+  window.triggerPdfCompressPicker = function (e) {
     if (e) {
       if (e.target && (e.target.closest('#pdf-compress-sample-btn') || e.target.closest('label') || e.target.id === 'pdf-compress-file-picker')) return;
       e.stopPropagation();
@@ -9546,7 +13468,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  function initPdfCompressStage() {
+  async function initPdfCompressStage() {
     const dropzone = document.getElementById('pdf-compress-dropzone');
     if (dropzone && !dropzone.dataset.bound) {
       dropzone.dataset.bound = 'true';
@@ -9577,10 +13499,24 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    if (!pdfCompressState.bytes && typeof PixKitStorage !== 'undefined') {
+      try {
+        const session = await PixKitStorage.getItem('pdf_session_doc-compress-pdf');
+        if (session && session.blob) {
+          const file = new File([session.blob], session.fileName || 'document.pdf', { type: 'application/pdf' });
+          await handlePdfCompressFile(file, true);
+          if (session.preset && typeof selectPdfCompressPreset === 'function') {
+            selectPdfCompressPreset(session.preset);
+          }
+          return;
+        }
+      } catch (_) { }
+    }
+
     renderPdfCompressUI();
   }
 
-  window.handlePdfCompressFile = async function(file) {
+  window.handlePdfCompressFile = async function (file, skipToast) {
     if (!file) return;
     const fName = (file.name || '').toLowerCase();
     const fType = (file.type || '').toLowerCase();
@@ -9659,7 +13595,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
           const pdfDoc = await window.PDFLib.PDFDocument.load(new Uint8Array(uint8), { ignoreEncryption: true });
           numPages = pdfDoc.getPageCount();
-        } catch (_) {}
+        } catch (_) { }
       }
 
       if (window.pdfjsLib) {
@@ -9730,7 +13666,23 @@ document.addEventListener('DOMContentLoaded', () => {
       const outInput = document.getElementById('pdf-compress-output-name');
       if (outInput) outInput.value = `${base}_compressed.pdf`;
 
-      showToast(`Loaded "${fileName}" (${pdfCompressState.numPages} pages, ${formatPdfBytes(fileSize)})`);
+      if (!skipToast) {
+        showToast(`Loaded "${fileName}" (${pdfCompressState.numPages} pages, ${formatPdfBytes(fileSize)})`);
+      }
+      try {
+        if (typeof PixKitStorage !== 'undefined') {
+          const blob = (file instanceof Blob) ? file : new Blob([storedBytes], { type: 'application/pdf' });
+          PixKitStorage.setItem('pdf_session_doc-compress-pdf', {
+            blob,
+            fileName: pdfCompressState.name,
+            fileSize: pdfCompressState.fileSize,
+            preset: pdfCompressState.preset,
+            quality: pdfCompressState.quality,
+            scale: pdfCompressState.scale,
+            colorMode: pdfCompressState.colorMode
+          });
+        }
+      } catch (_) { }
       renderPdfCompressUI();
     } catch (err) {
       console.error('PDF Compress load error:', err);
@@ -9818,7 +13770,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePdfCompressEstimates();
   }
 
-  window.onPdfCompressPresetChange = function(preset) {
+  window.onPdfCompressPresetChange = function (preset) {
     pdfCompressState.preset = preset;
 
     // Toggle active class on option cards
@@ -9864,14 +13816,14 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePdfCompressEstimates();
   };
 
-  window.setPdfCompressColorMode = function(mode) {
+  window.setPdfCompressColorMode = function (mode) {
     const sel = document.getElementById('pdf-compress-colormode');
     if (sel) sel.value = mode;
     updatePdfCompressColorModeUI(mode);
     onPdfCompressCustomInput();
   };
 
-  window.onPdfCompressColorModeSelect = function(mode) {
+  window.onPdfCompressColorModeSelect = function (mode) {
     updatePdfCompressColorModeUI(mode);
     onPdfCompressCustomInput();
   };
@@ -9900,7 +13852,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.onPdfCompressCustomInput = function() {
+  window.onPdfCompressCustomInput = function () {
     const qSlider = document.getElementById('pdf-compress-quality');
     const sSlider = document.getElementById('pdf-compress-scale');
     const colorSelect = document.getElementById('pdf-compress-colormode');
@@ -9955,14 +13907,25 @@ document.addEventListener('DOMContentLoaded', () => {
         reductionRatio = Math.max(0.15, Math.min(0.92, qFactor + sFactor + colorFactor));
       }
 
-      const estBytes = Math.max(12 * 1024 * totalPages, Math.round(origBytes * (1 - reductionRatio)));
-      const actualSavingsRatio = Math.max(5, Math.round(((origBytes - estBytes) / origBytes) * 100));
+      let estBytes = Math.round(origBytes * (1 - reductionRatio));
+      // In raster compression, each page is at least ~10 KB
+      const minRasterBytes = 10 * 1024 * totalPages;
+      if (estBytes < minRasterBytes && origBytes > minRasterBytes) {
+        estBytes = minRasterBytes;
+      }
 
       if (statOriginal) statOriginal.textContent = formatPdfBytes(origBytes);
       if (statEstimated) statEstimated.textContent = `~${formatPdfBytes(estBytes)}`;
-      if (statSavings) statSavings.textContent = `↓ ~${actualSavingsRatio}% Reduction`;
-      if (statPages) statPages.textContent = `${totalPages} Pages`;
-      if (summaryPill) summaryPill.textContent = `${totalPages} Pages · ${formatPdfBytes(origBytes)} → ~${formatPdfBytes(estBytes)} (↓${actualSavingsRatio}%)`;
+
+      if (origBytes > 0 && estBytes < origBytes) {
+        const actualSavingsRatio = Math.max(1, Math.round(((origBytes - estBytes) / origBytes) * 100));
+        if (statSavings) statSavings.textContent = `↓ ~${actualSavingsRatio}% Reduction`;
+        if (summaryPill) summaryPill.textContent = `${totalPages} Pages · ${formatPdfBytes(origBytes)} → ~${formatPdfBytes(estBytes)} (↓${actualSavingsRatio}%)`;
+      } else {
+        if (statSavings) statSavings.textContent = 'Already highly compact (vector PDF)';
+        if (summaryPill) summaryPill.textContent = `${totalPages} Pages · ${formatPdfBytes(origBytes)} (Already compact)`;
+      }
+      if (statPages) statPages.textContent = `${totalPages} Page${totalPages > 1 ? 's' : ''}`;
     } else {
       if (statOriginal) statOriginal.textContent = '0 KB';
       if (statEstimated) statEstimated.textContent = '0 KB';
@@ -9975,7 +13938,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnPreview) btnPreview.disabled = !hasDoc;
   }
 
-  window.executePdfCompress = async function(download = true) {
+  window.executePdfCompress = async function (download = true) {
     if (!pdfCompressState.bytes || !pdfCompressState.numPages) {
       showToast('Please load a PDF document first.');
       return;
@@ -10131,7 +14094,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (previewTab && !previewTab.closed) {
         try {
           previewTab.close();
-        } catch (_) {}
+        } catch (_) { }
       }
       showToast('Compression failed: ' + err.message);
     } finally {
@@ -10140,7 +14103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.loadSamplePdfForCompress = async function() {
+  window.loadSamplePdfForCompress = async function () {
     if (!window.PDFLib) {
       showToast('PDF Engine is initializing, please wait...');
       return;
@@ -10181,22 +14144,46 @@ document.addEventListener('DOMContentLoaded', () => {
         page.drawText('PixKit Studio - Media and Document Optimization', { x: 50, y: 775, size: 16, font: fontBold, color: rgb(1, 1, 1) });
         page.drawText(theme.title, { x: 50, y: 750, size: 12, font: fontRegular, color: rgb(0.9, 0.95, 1) });
 
-        // High-density graphic pattern
-        for (let r = 0; r < 6; r++) {
-          for (let c = 0; c < 8; c++) {
-            const bx = 50 + c * 60;
-            const by = 420 + r * 45;
-            const isAlt = (r + c) % 2 === 0;
-            page.drawRectangle({
-              x: bx,
-              y: by,
-              width: 50,
-              height: 35,
-              color: isAlt ? theme.col1 : theme.col2,
-              opacity: 0.15 + ((r * 8 + c) % 10) * 0.07
-            });
+        // Embed high-resolution raster graphic image stream for realistic document size (~1.5 MB total)
+        try {
+          const offCanvas = document.createElement('canvas');
+          offCanvas.width = 960;
+          offCanvas.height = 540;
+          const oCtx = offCanvas.getContext('2d');
+          const grad = oCtx.createLinearGradient(0, 0, 960, 540);
+          const hexCol1 = i === 0 ? '#1e40af' : (i === 1 ? '#047857' : (i === 2 ? '#b45309' : '#581c87'));
+          const hexCol2 = i === 0 ? '#3b82f6' : (i === 1 ? '#10b981' : (i === 2 ? '#f59e0b' : '#8b5cf6'));
+          const hexCol3 = i === 0 ? '#dbeafe' : (i === 1 ? '#d1fae5' : (i === 2 ? '#fef3c7' : '#ede9fe'));
+          grad.addColorStop(0, hexCol1);
+          grad.addColorStop(0.5, hexCol2);
+          grad.addColorStop(1, hexCol3);
+          oCtx.fillStyle = grad;
+          oCtx.fillRect(0, 0, 960, 540);
+
+          // Add complex textures and geometric patterns
+          for (let p = 0; p < 60; p++) {
+            oCtx.fillStyle = `rgba(255, 255, 255, ${0.08 + (p % 8) * 0.025})`;
+            oCtx.beginPath();
+            oCtx.arc((p * 59) % 960, (p * 47) % 540, 20 + (p % 35), 0, Math.PI * 2);
+            oCtx.fill();
           }
-        }
+          oCtx.fillStyle = '#ffffff';
+          oCtx.font = 'bold 28px sans-serif';
+          oCtx.fillText(`PixKit Graphic Sample · ${theme.title}`, 40, 60);
+
+          const dataUri = offCanvas.toDataURL('image/jpeg', 0.92);
+          const rawBin = atob(dataUri.split(',')[1]);
+          const imgBytes = new Uint8Array(rawBin.length);
+          for (let b = 0; b < rawBin.length; b++) imgBytes[b] = rawBin.charCodeAt(b);
+
+          const embedded = await doc.embedJpg(imgBytes);
+          page.drawImage(embedded, {
+            x: 40,
+            y: 410,
+            width: 515,
+            height: 295
+          });
+        } catch (_) {}
 
         // Card Container
         page.drawRectangle({ x: 40, y: 100, width: 515, height: 280, color: rgb(1, 1, 1), borderColor: rgb(0.85, 0.88, 0.92), borderWidth: 1 });
@@ -10231,6 +14218,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  window.resetPdfCompress = function () {
+    pdfCompressState.file = null;
+    pdfCompressState.bytes = null;
+    pdfCompressState.name = '';
+    pdfCompressState.fileSize = 0;
+    pdfCompressState.numPages = 0;
+    pdfCompressState.pages = [];
+    if (typeof PixKitStorage !== 'undefined') {
+      PixKitStorage.removeItem('pdf_session_doc-compress-pdf');
+    }
+    renderPdfCompressUI();
+  };
+
   // ==============================================================
   // TOOL 20 CONTROLLER: ROTATE PDF PAGES
   // ==============================================================
@@ -10244,7 +14244,26 @@ document.addEventListener('DOMContentLoaded', () => {
     pages: [], // Array of { pageNum: 1, rotation: 0, originalRotation: 0, thumbUrl: '' }
   };
 
-  function initPdfRotateStage() {
+  function persistPdfRotateSession() {
+    try {
+      if (typeof PixKitStorage === 'undefined') return;
+      if (!pdfRotateState.bytes) {
+        PixKitStorage.removeItem('pdf_session_doc-rotate-pdf');
+        return;
+      }
+      const blob = (pdfRotateState.file instanceof Blob) ? pdfRotateState.file : new Blob([pdfRotateState.bytes], { type: 'application/pdf' });
+      const rotations = pdfRotateState.pages.map(p => ({ pageNum: p.pageNum, rotation: p.rotation || 0 }));
+      PixKitStorage.setItem('pdf_session_doc-rotate-pdf', {
+        blob,
+        fileName: pdfRotateState.fileName,
+        fileSize: pdfRotateState.fileSize,
+        rotations,
+        filter: pdfRotateState.filter
+      });
+    } catch (_) { }
+  }
+
+  async function initPdfRotateStage() {
     const dropzone = document.getElementById('pdf-rotate-dropzone');
     if (dropzone && !dropzone.dataset.bound) {
       dropzone.dataset.bound = 'true';
@@ -10269,10 +14288,29 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    if (!pdfRotateState.bytes && typeof PixKitStorage !== 'undefined') {
+      try {
+        const session = await PixKitStorage.getItem('pdf_session_doc-rotate-pdf');
+        if (session && session.blob) {
+          const file = new File([session.blob], session.fileName || 'document.pdf', { type: 'application/pdf' });
+          await handlePdfRotateFile(file, true);
+          if (session.rotations && Array.isArray(session.rotations)) {
+            session.rotations.forEach((r, idx) => {
+              if (pdfRotateState.pages[idx]) {
+                pdfRotateState.pages[idx].rotation = r.rotation || 0;
+              }
+            });
+            renderPdfRotateUI();
+          }
+          return;
+        }
+      } catch (_) { }
+    }
+
     renderPdfRotateUI();
   }
 
-  window.handlePdfRotateFile = async function(file) {
+  window.handlePdfRotateFile = async function (file, skipToast) {
     if (!file) return;
     if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf') && !file.bytes) {
       showToast('Please select a valid PDF (.pdf) file.');
@@ -10381,7 +14419,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      showToast(`Loaded ${pdfRotateState.fileName} (${pdfRotateState.numPages} pages). Ready to rotate!`);
+      if (!skipToast) {
+        showToast(`Loaded ${pdfRotateState.fileName} (${pdfRotateState.numPages} pages). Ready to rotate!`);
+      }
+      persistPdfRotateSession();
     } catch (err) {
       console.error('Error loading PDF for rotate:', err);
       showToast('Failed loading PDF: ' + err.message);
@@ -10391,7 +14432,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.rotatePdfPage = function(index, deltaDegrees) {
+  window.rotatePdfPage = function (index, deltaDegrees) {
     if (index < 0 || index >= pdfRotateState.pages.length) return;
     const page = pdfRotateState.pages[index];
     const newRot = (((page.rotation + deltaDegrees) % 360) + 360) % 360;
@@ -10417,9 +14458,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updatePdfRotateStats();
+    persistPdfRotateSession();
   };
 
-  window.rotateAllPdfPages = function(deltaDegrees) {
+  window.rotateAllPdfPages = function (deltaDegrees) {
     if (!pdfRotateState.pages.length) return;
     const filter = pdfRotateState.filter || 'all';
 
@@ -10438,18 +14480,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderPdfRotateGrid();
     updatePdfRotateStats();
+    persistPdfRotateSession();
     showToast(`Rotated ${affected} page(s) by ${deltaDegrees > 0 ? '+' : ''}${deltaDegrees}°.`);
   };
 
-  window.resetAllPdfPageRotations = function() {
+  window.resetAllPdfPageRotations = function () {
     if (!pdfRotateState.pages.length) return;
     pdfRotateState.pages.forEach(p => p.rotation = 0);
     renderPdfRotateGrid();
     updatePdfRotateStats();
+    persistPdfRotateSession();
     showToast('Reset all pages to original orientation.');
   };
 
-  window.onPdfRotateFilterChange = function(val) {
+  window.onPdfRotateFilterChange = function (val) {
     pdfRotateState.filter = val;
   };
 
@@ -10550,7 +14594,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.executePdfRotate = async function(download = true) {
+  window.executePdfRotate = async function (download = true) {
     if (!pdfRotateState.bytes || !pdfRotateState.pages.length) {
       showToast('Please load a PDF document first.');
       return;
@@ -10637,7 +14681,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error('Error executing PDF rotation:', err);
       if (previewTab && !previewTab.closed) {
-        try { previewTab.close(); } catch (_) {}
+        try { previewTab.close(); } catch (_) { }
       }
       showToast('Error rotating PDF: ' + err.message);
     } finally {
@@ -10646,7 +14690,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.loadSamplePdfForRotate = async function() {
+  window.loadSamplePdfForRotate = async function () {
     if (!window.PDFLib) {
       showToast('PDF Engine is initializing, please wait...');
       return;
@@ -10714,6 +14758,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  window.resetPdfRotate = function () {
+    pdfRotateState.file = null;
+    pdfRotateState.fileName = '';
+    pdfRotateState.fileSize = 0;
+    pdfRotateState.bytes = null;
+    pdfRotateState.numPages = 0;
+    pdfRotateState.pages = [];
+    if (typeof PixKitStorage !== 'undefined') {
+      PixKitStorage.removeItem('pdf_session_doc-rotate-pdf');
+    }
+    renderPdfRotateUI();
+  };
+
   // ==============================================================
   // TOOL 21 CONTROLLER: DELETE PDF PAGES
   // ==============================================================
@@ -10726,7 +14783,25 @@ document.addEventListener('DOMContentLoaded', () => {
     pages: [], // Array of { pageNum: 1, deleted: false, thumbUrl: '' }
   };
 
-  function initPdfDeleteStage() {
+  function persistPdfDeleteSession() {
+    try {
+      if (typeof PixKitStorage === 'undefined') return;
+      if (!pdfDeleteState.bytes) {
+        PixKitStorage.removeItem('pdf_session_doc-delete-pdf');
+        return;
+      }
+      const blob = (pdfDeleteState.file instanceof Blob) ? pdfDeleteState.file : new Blob([pdfDeleteState.bytes], { type: 'application/pdf' });
+      const deletions = pdfDeleteState.pages.map(p => ({ pageNum: p.pageNum, deleted: !!p.deleted }));
+      PixKitStorage.setItem('pdf_session_doc-delete-pdf', {
+        blob,
+        fileName: pdfDeleteState.fileName,
+        fileSize: pdfDeleteState.fileSize,
+        deletions
+      });
+    } catch (_) { }
+  }
+
+  async function initPdfDeleteStage() {
     const dropzone = document.getElementById('pdf-delete-dropzone');
     if (dropzone && !dropzone.dataset.bound) {
       dropzone.dataset.bound = 'true';
@@ -10751,10 +14826,29 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    if (!pdfDeleteState.bytes && typeof PixKitStorage !== 'undefined') {
+      try {
+        const session = await PixKitStorage.getItem('pdf_session_doc-delete-pdf');
+        if (session && session.blob) {
+          const file = new File([session.blob], session.fileName || 'document.pdf', { type: 'application/pdf' });
+          await handlePdfDeleteFile(file, true);
+          if (session.deletions && Array.isArray(session.deletions)) {
+            session.deletions.forEach((d, idx) => {
+              if (pdfDeleteState.pages[idx]) {
+                pdfDeleteState.pages[idx].deleted = !!d.deleted;
+              }
+            });
+            renderPdfDeleteUI();
+          }
+          return;
+        }
+      } catch (_) { }
+    }
+
     renderPdfDeleteUI();
   }
 
-  window.handlePdfDeleteFile = async function(file) {
+  window.handlePdfDeleteFile = async function (file, skipToast) {
     if (!file) return;
     if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf') && !file.bytes) {
       showToast('Please select a valid PDF (.pdf) file.');
@@ -10850,7 +14944,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
-      showToast(`Loaded ${pdfDeleteState.fileName} (${pdfDeleteState.numPages} pages). Click pages to mark for deletion.`);
+      if (!skipToast) {
+        showToast(`Loaded ${pdfDeleteState.fileName} (${pdfDeleteState.numPages} pages). Click pages to mark for deletion.`);
+      }
+      persistPdfDeleteSession();
     } catch (err) {
       console.error('Error loading PDF for delete:', err);
       showToast('Failed loading PDF: ' + err.message);
@@ -10860,15 +14957,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.togglePdfPageDelete = function(index) {
+  window.togglePdfPageDelete = function (index) {
     if (index < 0 || index >= pdfDeleteState.pages.length) return;
     pdfDeleteState.pages[index].deleted = !pdfDeleteState.pages[index].deleted;
     syncPdfDeleteRangeInput();
     renderPdfDeleteGrid();
     updatePdfDeleteStats();
+    persistPdfDeleteSession();
   };
 
-  window.setPdfDeleteFilter = function(filter) {
+  window.setPdfDeleteFilter = function (filter) {
     if (!pdfDeleteState.pages.length) return;
     pdfDeleteState.pages.forEach((page, idx) => {
       if (filter === 'odd') page.deleted = (page.pageNum % 2 !== 0);
@@ -10879,27 +14977,30 @@ document.addEventListener('DOMContentLoaded', () => {
     syncPdfDeleteRangeInput();
     renderPdfDeleteGrid();
     updatePdfDeleteStats();
+    persistPdfDeleteSession();
   };
 
-  window.invertPdfDeleteSelection = function() {
+  window.invertPdfDeleteSelection = function () {
     if (!pdfDeleteState.pages.length) return;
     pdfDeleteState.pages.forEach(p => p.deleted = !p.deleted);
     syncPdfDeleteRangeInput();
     renderPdfDeleteGrid();
     updatePdfDeleteStats();
+    persistPdfDeleteSession();
   };
 
-  window.resetPdfDeleteSelection = function() {
+  window.resetPdfDeleteSelection = function () {
     if (!pdfDeleteState.pages.length) return;
     pdfDeleteState.pages.forEach(p => p.deleted = false);
     const rangeInput = document.getElementById('pdf-delete-range-input');
     if (rangeInput) rangeInput.value = '';
     renderPdfDeleteGrid();
     updatePdfDeleteStats();
+    persistPdfDeleteSession();
     showToast('Reset: all pages kept.');
   };
 
-  window.onPdfDeleteRangeInput = function(val) {
+  window.onPdfDeleteRangeInput = function (val) {
     if (!pdfDeleteState.pages.length) return;
     // Parse range string e.g. "2, 4-5, 7"
     const pagesToDelete = new Set();
@@ -10932,6 +15033,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderPdfDeleteGrid();
     updatePdfDeleteStats();
+    persistPdfDeleteSession();
   };
 
   function syncPdfDeleteRangeInput() {
@@ -11064,7 +15166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnPreview) btnPreview.disabled = !canExport;
   }
 
-  window.executePdfDelete = async function(download = true) {
+  window.executePdfDelete = async function (download = true) {
     if (!pdfDeleteState.bytes || !pdfDeleteState.pages.length) {
       showToast('Please load a PDF document first.');
       return;
@@ -11159,7 +15261,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error('Error executing PDF page deletion:', err);
       if (previewTab && !previewTab.closed) {
-        try { previewTab.close(); } catch (_) {}
+        try { previewTab.close(); } catch (_) { }
       }
       showToast('Error removing pages: ' + err.message);
     } finally {
@@ -11168,7 +15270,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.loadSamplePdfForDelete = async function() {
+  window.loadSamplePdfForDelete = async function () {
     if (!window.PDFLib) {
       showToast('PDF Engine is initializing, please wait...');
       return;
@@ -11211,7 +15313,7 @@ document.addEventListener('DOMContentLoaded', () => {
         page.drawRectangle({ x: 60, y: 380, width: 475, height: 280, color: rgb(1, 1, 1), borderColor: rgb(0.85, 0.88, 0.9), borderWidth: 1 });
         page.drawText(`Document Section: ${theme.title}`, { x: 80, y: 620, size: 15, font: fontBold, color: theme.color });
         page.drawText(`Status: ${theme.tag}`, { x: 80, y: 585, size: 12, font: fontBold, color: rgb(0.3, 0.3, 0.3) });
-        
+
         if (theme.isTrashCandidate) {
           page.drawText('This sample page is marked as a draft/unwanted sheet.', { x: 80, y: 540, size: 11, font: font, color: rgb(0.7, 0.2, 0.2) });
           page.drawText('Test removing it with 1 click to clean up your final PDF output.', { x: 80, y: 515, size: 11, font: font, color: rgb(0.4, 0.4, 0.4) });
@@ -11235,60 +15337,1420 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  window.resetPdfDelete = function () {
+    pdfDeleteState.file = null;
+    pdfDeleteState.fileName = '';
+    pdfDeleteState.fileSize = 0;
+    pdfDeleteState.bytes = null;
+    pdfDeleteState.numPages = 0;
+    pdfDeleteState.pages = [];
+    if (typeof PixKitStorage !== 'undefined') {
+      PixKitStorage.removeItem('pdf_session_doc-delete-pdf');
+    }
+    renderPdfDeleteUI();
+  };
+
   // ==============================================================
-  // APPLICATION STARTUP & SESSION RESTORATION
+  // TOOL 08 (DOCUMENT SUITE): BATCH PDF PROCESSOR CONTROLLER
   // ==============================================================
-  restoreSavedSession().then((restored) => {
-    if (!restored) {
-      engine.generateSampleArtwork();
-      setTimeout(syncMetadata, 60);
-      handleRoute(location.hash || '#/home');
+  const batchPdfState = {
+    items: [],
+    activeIndex: 0,
+    isExpanded: false,
+    isProcessing: false,
+    activeDetailTool: null,
+    configs: {
+      compress: {
+        enabled: true,
+        level: 'medium',
+        downscale: true
+      },
+      rotate: {
+        enabled: false,
+        angle: 90,
+        scope: 'all'
+      },
+      toImages: {
+        enabled: false,
+        format: 'jpeg',
+        scale: 2
+      },
+      extract: {
+        enabled: false,
+        mode: 'first',
+        range: '1-2'
+      },
+      delete: {
+        enabled: false,
+        mode: 'first',
+        pages: '1'
+      },
+      merge: {
+        enabled: false,
+        outputName: 'Merged-Documents.pdf'
+      },
+      watermark: {
+        enabled: false,
+        type: 'page-numbers',
+        text: 'CONFIDENTIAL',
+        pos: 'bottom-right'
+      }
+    }
+  };
+
+  const batchPdfToolMeta = {
+    compress: {
+      icon: '🗜️',
+      title: 'Compress PDF',
+      desc: 'Reduce PDF file size across all documents in the batch queue'
+    },
+    rotate: {
+      icon: '🔄',
+      title: 'Rotate Pages',
+      desc: 'Rotate pages 90°, 180°, or 270° across all queued documents'
+    },
+    'to-images': {
+      icon: '🖼️',
+      title: 'PDF to Images',
+      desc: 'Rasterize each PDF page as high-res JPEG, PNG, or WebP images'
+    },
+    extract: {
+      icon: '✂️',
+      title: 'Extract & Page Range',
+      desc: 'Extract specific pages, page ranges, or split into 1-page documents'
+    },
+    delete: {
+      icon: '🗑️',
+      title: 'Delete Selected Pages',
+      desc: 'Strip cover pages, blank back covers, or custom page numbers'
+    },
+    merge: {
+      icon: '📑',
+      title: 'Merge All into One PDF',
+      desc: 'Concatenate all queued PDFs in order into a single unified master document'
+    },
+    watermark: {
+      icon: '🔏',
+      title: 'Watermark & Page Numbers',
+      desc: 'Stamp page numbers or confidential watermarks across pages'
+    }
+  };
+
+  let batchPdfDropzoneBound = false;
+
+  async function initBatchPdfStage() {
+    setupBatchPdfDropzoneEvents();
+    if (batchPdfState.items.length === 0) {
+      await restoreBatchPdfSession();
+    }
+    syncBatchPdfViewUI();
+    updateAllBatchPdfToolStatusLabels();
+    if (batchPdfState.items.length > 0) {
+      renderBatchPdfPreviewCanvas();
+    }
+  }
+  window.initBatchPdfStage = initBatchPdfStage;
+
+  function setupBatchPdfDropzoneEvents() {
+    if (batchPdfDropzoneBound) return;
+    const dropzone = document.getElementById('batch-pdf-dropzone');
+    const viewport = document.getElementById('batch-pdf-viewport');
+
+    [dropzone, viewport].forEach(el => {
+      if (!el) return;
+      el.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (dropzone) dropzone.classList.add('drag-active');
+      });
+      el.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (dropzone) dropzone.classList.remove('drag-active');
+      });
+      el.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (dropzone) dropzone.classList.remove('drag-active');
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+          handleBatchPdfFilesList(e.dataTransfer.files);
+        }
+      });
+    });
+
+    batchPdfDropzoneBound = true;
+  }
+
+  window.handleBatchPdfFilesSelect = function (e) {
+    if (e && e.target && e.target.files && e.target.files.length) {
+      handleBatchPdfFilesList(e.target.files);
+      e.target.value = '';
+    }
+  };
+
+  async function handleBatchPdfFilesList(fileList) {
+    if (!fileList || !fileList.length) return;
+    showToast(`Adding ${fileList.length} item(s) to Batch PDF queue...`);
+
+    let addedCount = 0;
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      const lowerName = file.name.toLowerCase();
+
+      // Check ZIP archive
+      if (lowerName.endsWith('.zip') || file.type.includes('zip')) {
+        try {
+          if (typeof JSZip === 'undefined') {
+            showToast('JSZip library not loaded, cannot extract ZIP.');
+            continue;
+          }
+          const zip = await JSZip.loadAsync(file);
+          const entries = Object.keys(zip.files);
+          for (const entryName of entries) {
+            const entry = zip.files[entryName];
+            if (entry.dir) continue;
+            const entryLower = entryName.toLowerCase();
+            if (entryLower.endsWith('.pdf')) {
+              const blob = await entry.async('blob');
+              const cleanFileName = entryName.split('/').pop() || entryName;
+              const item = await createBatchPdfItemFromBlob(blob, cleanFileName);
+              if (item) {
+                batchPdfState.items.push(item);
+                addedCount++;
+              }
+            }
+          }
+        } catch (zipErr) {
+          console.error('Batch PDF ZIP unpack error:', zipErr);
+          showToast(`Error unpacking ZIP: ${zipErr.message}`);
+        }
+      } else if (lowerName.endsWith('.pdf') || file.type === 'application/pdf') {
+        const item = await createBatchPdfItemFromBlob(file, file.name);
+        if (item) {
+          batchPdfState.items.push(item);
+          addedCount++;
+        }
+      }
     }
 
-    // Check for pending incoming file uploaded from a dedicated tool landing page
-    try {
-      const pendingData = sessionStorage.getItem('pixkit_pending_file_data');
-      const pendingName = sessionStorage.getItem('pixkit_pending_file_name');
-      const pendingType = sessionStorage.getItem('pixkit_pending_file_type');
-      if (pendingData && pendingName) {
-        sessionStorage.removeItem('pixkit_pending_file_data');
-        sessionStorage.removeItem('pixkit_pending_file_name');
-        sessionStorage.removeItem('pixkit_pending_file_type');
-
-        fetch(pendingData)
-          .then(res => res.blob())
-          .then(blob => {
-            const file = new File([blob], pendingName, { type: pendingType || blob.type });
-            setTimeout(() => {
-              if (file.type === 'application/pdf' || pendingName.toLowerCase().endsWith('.pdf')) {
-                if (window.handlePdfMergeFiles && activeTool === 'doc-merge-pdf') {
-                  window.handlePdfMergeFiles([file]);
-                } else if (window.handlePdfSplitFile && activeTool === 'doc-split-pdf') {
-                  window.handlePdfSplitFile(file);
-                } else if (window.handlePdfCompressFile && activeTool === 'doc-compress-pdf') {
-                  window.handlePdfCompressFile(file);
-                } else if (window.handlePdfRotateFile && activeTool === 'doc-rotate-pdf') {
-                  window.handlePdfRotateFile(file);
-                } else if (window.handlePdfDeleteFile && activeTool === 'doc-delete-pdf') {
-                  window.handlePdfDeleteFile(file);
-                } else if (window.handlePdfFileUpload) {
-                  window.handlePdfFileUpload(file);
-                }
-              } else if (activeTool === 'convert-svg' || file.type === 'image/svg+xml' || pendingName.toLowerCase().endsWith('.svg')) {
-                if (typeof window.handleSvgFileSelect === 'function') {
-                  window.handleSvgFileSelect({ target: { files: [file] } });
-                }
-              } else {
-                handleImageFile(file);
-              }
-            }, 120);
-          })
-          .catch(err => console.warn('Could not restore landing page file:', err));
+    if (addedCount > 0) {
+      if (batchPdfState.activeIndex >= batchPdfState.items.length) {
+        batchPdfState.activeIndex = Math.max(0, batchPdfState.items.length - 1);
       }
-    } catch (_) {}
+      syncBatchPdfViewUI();
+      renderBatchPdfPreviewCanvas();
+      persistBatchPdfSession();
+      showToast(`Added ${addedCount} document${addedCount > 1 ? 's' : ''} to Batch PDF queue!`);
+    } else {
+      showToast('No PDF documents detected in selection.');
+    }
+  }
 
-    cleanCurrentUrl();
+  async function createBatchPdfItemFromBlob(blob, fileName) {
+    try {
+      const arrayBuffer = await blob.arrayBuffer();
+      let numPages = 1;
+      let thumbUrl = '';
+
+      // 1. Page count via PDF-Lib
+      try {
+        if (window.PDFLib) {
+          const pdfDoc = await window.PDFLib.PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+          numPages = pdfDoc.getPageCount();
+        }
+      } catch (err) {
+        console.warn('PDF-Lib page count error:', err);
+      }
+
+      // 2. Render Page 1 thumbnail via PDF.js on isolated copy
+      try {
+        if (window.pdfjsLib) {
+          const cloneData = new Uint8Array(arrayBuffer.slice(0));
+          const loadingTask = window.pdfjsLib.getDocument({
+            data: cloneData,
+            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+            cMapPacked: true
+          });
+          const pdfJsDoc = await loadingTask.promise;
+          const page = await pdfJsDoc.getPage(1);
+          const viewport = page.getViewport({ scale: 0.35 });
+          const thumbCanvas = document.createElement('canvas');
+          thumbCanvas.width = viewport.width;
+          thumbCanvas.height = viewport.height;
+          const ctx = thumbCanvas.getContext('2d');
+          await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+          thumbUrl = thumbCanvas.toDataURL('image/jpeg', 0.82);
+        }
+      } catch (thumbErr) {
+        console.warn('Batch PDF thumbnail render error:', thumbErr);
+      }
+
+      return {
+        id: 'bpdf_' + Math.random().toString(36).substr(2, 9),
+        blob: blob,
+        name: fileName || 'document.pdf',
+        size: blob.size || arrayBuffer.byteLength,
+        numPages: numPages,
+        thumbUrl: thumbUrl,
+        activePage: 1
+      };
+    } catch (e) {
+      console.error('createBatchPdfItemFromBlob error:', e);
+      return null;
+    }
+  }
+
+  function syncBatchPdfViewUI() {
+    const hasItems = batchPdfState.items.length > 0;
+    const dropzone = document.getElementById('batch-pdf-dropzone');
+    const canvasWrap = document.getElementById('batch-pdf-canvas-wrapper');
+    const sliderPanel = document.getElementById('batch-pdf-slider-panel');
+    const stageFooter = document.getElementById('batch-pdf-stage-footer');
+    const topbarTools = document.getElementById('batch-pdf-topbar-tools');
+    const statusHint = document.getElementById('batch-pdf-stage-status');
+    const viewingTag = document.getElementById('batch-pdf-viewing-tag');
+
+    if (dropzone) dropzone.style.display = hasItems ? 'none' : 'flex';
+    if (canvasWrap) canvasWrap.style.display = hasItems ? 'flex' : 'none';
+    if (sliderPanel) sliderPanel.style.display = hasItems ? 'block' : 'none';
+    if (stageFooter) stageFooter.style.display = hasItems ? 'flex' : 'none';
+    if (topbarTools) topbarTools.style.display = hasItems ? 'flex' : 'none';
+
+    if (hasItems) {
+      const cur = batchPdfState.items[batchPdfState.activeIndex];
+      const count = batchPdfState.items.length;
+      if (viewingTag) {
+        viewingTag.style.display = 'inline-flex';
+        viewingTag.textContent = `Viewing ${batchPdfState.activeIndex + 1} of ${count}`;
+      }
+      if (statusHint) {
+        statusHint.textContent = cur ? cur.name : '';
+        statusHint.title = cur ? `${cur.name} (${cur.numPages} Pages)` : '';
+      }
+      renderBatchPdfCarousel();
+    } else {
+      if (viewingTag) viewingTag.style.display = 'none';
+      if (statusHint) {
+        statusHint.textContent = 'Batch queue empty · Drop PDFs or ZIP to begin';
+        statusHint.title = '';
+      }
+    }
+  }
+
+  async function renderBatchPdfPreviewCanvas() {
+    if (!batchPdfState.items.length) return;
+    const cur = batchPdfState.items[batchPdfState.activeIndex];
+    if (!cur || !cur.blob) return;
+
+    const canvas = document.getElementById('canvas-batch-pdf-preview');
+    if (!canvas) return;
+
+    try {
+      const arrayBuffer = await cur.blob.arrayBuffer();
+      const cloneData = new Uint8Array(arrayBuffer.slice(0));
+      const loadingTask = window.pdfjsLib.getDocument({
+        data: cloneData,
+        cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+        cMapPacked: true
+      });
+      const pdfJsDoc = await loadingTask.promise;
+      const pageNum = Math.min(Math.max(1, cur.activePage || 1), pdfJsDoc.numPages);
+      const page = await pdfJsDoc.getPage(pageNum);
+
+      const viewport = page.getViewport({ scale: 1.35 });
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+      // Page controls
+      const pageControls = document.getElementById('batch-pdf-page-controls');
+      const pagePill = document.getElementById('batch-pdf-page-pill');
+      if (pageControls && pagePill) {
+        pageControls.style.display = pdfJsDoc.numPages > 1 ? 'flex' : 'none';
+        pagePill.textContent = `Page ${pageNum} of ${pdfJsDoc.numPages}`;
+      }
+    } catch (err) {
+      console.warn('Batch PDF canvas preview error:', err);
+    }
+  }
+
+  window.navigateBatchPdfPage = function (dir) {
+    if (!batchPdfState.items.length) return;
+    const cur = batchPdfState.items[batchPdfState.activeIndex];
+    if (!cur) return;
+    let next = (cur.activePage || 1) + dir;
+    if (next < 1) next = cur.numPages || 1;
+    if (next > (cur.numPages || 1)) next = 1;
+    cur.activePage = next;
+    renderBatchPdfPreviewCanvas();
+  };
+
+  function renderBatchPdfCarousel() {
+    const strip = document.getElementById('batch-pdf-carousel-strip');
+    const countPill = document.getElementById('batch-pdf-count-pill');
+    const activeName = document.getElementById('batch-pdf-active-name');
+    const metaSummary = document.getElementById('batch-pdf-meta-summary');
+    const metaDetails = document.getElementById('batch-pdf-meta-details');
+
+    if (!strip) return;
+    strip.innerHTML = '';
+
+    const count = batchPdfState.items.length;
+    let totalBytes = 0;
+    batchPdfState.items.forEach(it => { totalBytes += (it.size || 0); });
+    const sizeMb = (totalBytes / (1024 * 1024)).toFixed(1);
+
+    if (countPill) countPill.textContent = `${count} Document${count !== 1 ? 's' : ''}`;
+    if (metaSummary) metaSummary.textContent = `${count} Document${count !== 1 ? 's' : ''} in Queue · ${sizeMb} MB Total`;
+
+    const cur = batchPdfState.items[batchPdfState.activeIndex];
+    if (activeName) activeName.textContent = cur ? cur.name : '';
+    if (metaDetails && cur) {
+      const curMb = ((cur.size || 0) / (1024 * 1024)).toFixed(2);
+      metaDetails.textContent = `Active: ${cur.name} (${cur.numPages || 1} Pages · ${curMb} MB)`;
+    }
+
+    batchPdfState.items.forEach((item, idx) => {
+      const card = document.createElement('div');
+      card.className = `batch-thumb-card ${idx === batchPdfState.activeIndex ? 'active' : ''}`;
+      card.onclick = () => selectBatchPdfItem(idx);
+
+      const numBadge = document.createElement('span');
+      numBadge.className = 'batch-thumb-num';
+      numBadge.textContent = `#${idx + 1}`;
+      card.appendChild(numBadge);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'batch-thumb-del';
+      delBtn.title = 'Remove document from queue';
+      delBtn.innerHTML = '✕';
+      delBtn.onclick = (e) => removeBatchPdfItem(idx, e);
+      card.appendChild(delBtn);
+
+      const imgWrapper = document.createElement('div');
+      imgWrapper.className = 'batch-thumb-img-wrap';
+      if (item.thumbUrl) {
+        const img = document.createElement('img');
+        img.src = item.thumbUrl;
+        img.alt = item.name;
+        imgWrapper.appendChild(img);
+      } else {
+        const placeholder = document.createElement('div');
+        placeholder.style.cssText = 'font-size:24px; color:var(--muted); display:flex; align-items:center; justify-content:center; width:100%; height:100%;';
+        placeholder.textContent = '📄';
+        imgWrapper.appendChild(placeholder);
+      }
+      card.appendChild(imgWrapper);
+
+      const meta = document.createElement('div');
+      meta.className = 'batch-thumb-meta';
+      const nameEl = document.createElement('div');
+      nameEl.className = 'batch-thumb-name';
+      nameEl.textContent = item.name;
+      meta.appendChild(nameEl);
+
+      const dimEl = document.createElement('div');
+      dimEl.className = 'batch-thumb-dims';
+      dimEl.textContent = `${item.numPages || 1} Pages · ${((item.size || 0) / (1024 * 1024)).toFixed(1)} MB`;
+      meta.appendChild(dimEl);
+
+      card.appendChild(meta);
+      strip.appendChild(card);
+    });
+
+    const activeCard = strip.children[batchPdfState.activeIndex];
+    if (activeCard && !batchPdfState.isExpanded) {
+      activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }
+
+  window.selectBatchPdfItem = function (index) {
+    if (index < 0 || index >= batchPdfState.items.length) return;
+    batchPdfState.activeIndex = index;
+    renderBatchPdfCarousel();
+    renderBatchPdfPreviewCanvas();
+
+    const cur = batchPdfState.items[index];
+    const count = batchPdfState.items.length;
+    const viewingTag = document.getElementById('batch-pdf-viewing-tag');
+    const statusHint = document.getElementById('batch-pdf-stage-status');
+    if (viewingTag) {
+      viewingTag.style.display = 'inline-flex';
+      viewingTag.textContent = `Viewing ${index + 1} of ${count}`;
+    }
+    if (statusHint && cur) {
+      statusHint.textContent = cur.name;
+      statusHint.title = `${cur.name} (${cur.numPages} Pages)`;
+    }
+    persistBatchPdfSession();
+  };
+
+  window.navigateBatchPdf = function (dir) {
+    if (!batchPdfState.items.length) return;
+    let next = batchPdfState.activeIndex + dir;
+    if (next < 0) next = batchPdfState.items.length - 1;
+    if (next >= batchPdfState.items.length) next = 0;
+    selectBatchPdfItem(next);
+  };
+
+  window.scrollBatchPdfCarousel = function (dir) {
+    const strip = document.getElementById('batch-pdf-carousel-strip');
+    if (strip) {
+      strip.scrollBy({ left: dir * 260, behavior: 'smooth' });
+    }
+  };
+
+  window.toggleBatchPdfGridExpand = function () {
+    const panel = document.getElementById('batch-pdf-slider-panel');
+    const btnText = document.getElementById('batch-pdf-expand-btn-text');
+    if (!panel) return;
+    batchPdfState.isExpanded = !batchPdfState.isExpanded;
+    panel.classList.toggle('expanded', batchPdfState.isExpanded);
+    if (btnText) {
+      btnText.textContent = batchPdfState.isExpanded ? 'Collapse Strip' : 'Expand Grid';
+    }
+  };
+
+  window.removeBatchPdfItem = function (index, e) {
+    if (e) e.stopPropagation();
+    if (index < 0 || index >= batchPdfState.items.length) return;
+    batchPdfState.items.splice(index, 1);
+    if (batchPdfState.activeIndex >= batchPdfState.items.length) {
+      batchPdfState.activeIndex = Math.max(0, batchPdfState.items.length - 1);
+    }
+    syncBatchPdfViewUI();
+    if (batchPdfState.items.length > 0) {
+      renderBatchPdfPreviewCanvas();
+    }
+    persistBatchPdfSession();
+    showToast('Removed document from Batch PDF queue');
+  };
+
+  window.clearBatchPdfQueue = function () {
+    batchPdfState.items = [];
+    batchPdfState.activeIndex = 0;
+    if (typeof closeBatchPdfToolDetail === 'function') {
+      closeBatchPdfToolDetail();
+    }
+    if (typeof PixKitStorage !== 'undefined') {
+      PixKitStorage.removeItem('batch_pdf_session');
+    }
+    syncBatchPdfViewUI();
+    showToast('Cleared all documents from Batch PDF queue');
+  };
+
+  // --- Master-Detail Handlers ---
+  window.openBatchPdfToolDetail = function (toolKey) {
+    const meta = batchPdfToolMeta[toolKey];
+    if (!meta) return;
+
+    batchPdfState.activeDetailTool = toolKey;
+
+    const iconEl = document.getElementById('batch-pdf-detail-icon');
+    const titleEl = document.getElementById('batch-pdf-detail-title');
+    const descEl = document.getElementById('batch-pdf-detail-desc');
+    const toggleBtn = document.getElementById('batch-pdf-detail-toggle-btn');
+
+    if (iconEl) iconEl.textContent = meta.icon;
+    if (titleEl) titleEl.textContent = meta.title;
+    if (descEl) descEl.textContent = meta.desc;
+
+    const cfg = batchPdfState.configs[toolKey];
+    const isAct = cfg ? cfg.enabled : false;
+    if (toggleBtn) {
+      toggleBtn.className = `batch-tool-toggle-pill ${isAct ? 'active' : ''}`;
+      toggleBtn.textContent = isAct ? 'Active' : 'Off';
+    }
+
+    document.querySelectorAll('.batch-subtool-pane').forEach(p => {
+      if (p.id.startsWith('batch-pdf-pane-')) p.style.display = 'none';
+    });
+    const activePane = document.getElementById(`batch-pdf-pane-${toolKey}`);
+    if (activePane) activePane.style.display = 'block';
+
+    const masterView = document.getElementById('batch-pdf-master-view');
+    const detailView = document.getElementById('batch-pdf-detail-view');
+    if (masterView) masterView.style.display = 'none';
+    if (detailView) detailView.style.display = 'block';
+
+    const panel = document.getElementById('batch-pdf-control-center-panel');
+    if (panel) panel.scrollTop = 0;
+
+    persistBatchPdfSession();
+  };
+
+  window.closeBatchPdfToolDetail = function () {
+    batchPdfState.activeDetailTool = null;
+    const masterView = document.getElementById('batch-pdf-master-view');
+    const detailView = document.getElementById('batch-pdf-detail-view');
+
+    if (detailView) {
+      detailView.style.display = 'none';
+    }
+    if (masterView) {
+      masterView.style.display = 'block';
+    }
+
+    const panel = document.getElementById('batch-pdf-control-center-panel');
+    if (panel) panel.scrollTop = 0;
+
+    updateAllBatchPdfToolStatusLabels();
+    persistBatchPdfSession();
+  };
+
+  window.toggleBatchPdfFeature = function (toolKey) {
+    const cfg = batchPdfState.configs[toolKey];
+    if (!cfg) return;
+    cfg.enabled = !cfg.enabled;
+
+    updateAllBatchPdfToolStatusLabels();
+    persistBatchPdfSession();
+    showToast(`${batchPdfToolMeta[toolKey]?.title || toolKey} is now ${cfg.enabled ? 'Active' : 'Off'}`);
+  };
+
+  window.toggleActiveBatchPdfDetailFeature = function () {
+    if (!batchPdfState.activeDetailTool) return;
+    const toolKey = batchPdfState.activeDetailTool;
+    const cfg = batchPdfState.configs[toolKey];
+    if (!cfg) return;
+    cfg.enabled = !cfg.enabled;
+
+    const toggleBtn = document.getElementById('batch-pdf-detail-toggle-btn');
+    if (toggleBtn) {
+      toggleBtn.className = `batch-tool-toggle-pill ${cfg.enabled ? 'active' : ''}`;
+      toggleBtn.textContent = cfg.enabled ? 'Active' : 'Off';
+    }
+
+    updateAllBatchPdfToolStatusLabels();
+    persistBatchPdfSession();
+    showToast(`${batchPdfToolMeta[toolKey]?.title || toolKey} is now ${cfg.enabled ? 'Active' : 'Off'}`);
+  };
+
+  function updateAllBatchPdfToolStatusLabels() {
+    const c = batchPdfState.configs;
+
+    // 1. Compress
+    const compPill = document.getElementById('batch-pdf-toggle-compress');
+    const compStat = document.getElementById('batch-pdf-status-compress');
+    if (compPill) {
+      compPill.className = `batch-tool-toggle-pill ${c.compress.enabled ? 'active' : ''}`;
+      compPill.textContent = c.compress.enabled ? 'Active' : 'Off';
+    }
+    if (compStat) {
+      const lvl = c.compress.level === 'high' ? 'High (96 DPI)' : (c.compress.level === 'light' ? 'Light (200 DPI)' : 'Medium (150 DPI)');
+      compStat.textContent = c.compress.enabled ? lvl : 'Off';
+    }
+
+    // 2. Rotate
+    const rotPill = document.getElementById('batch-pdf-toggle-rotate');
+    const rotStat = document.getElementById('batch-pdf-status-rotate');
+    if (rotPill) {
+      rotPill.className = `batch-tool-toggle-pill ${c.rotate.enabled ? 'active' : ''}`;
+      rotPill.textContent = c.rotate.enabled ? 'Active' : 'Off';
+    }
+    if (rotStat) {
+      rotStat.textContent = c.rotate.enabled ? `${c.rotate.angle}° (${c.rotate.scope})` : '0° (Original)';
+    }
+
+    // 3. To Images
+    const imgPill = document.getElementById('batch-pdf-toggle-to-images');
+    const imgStat = document.getElementById('batch-pdf-status-to-images');
+    if (imgPill) {
+      imgPill.className = `batch-tool-toggle-pill ${c.toImages.enabled ? 'active' : ''}`;
+      imgPill.textContent = c.toImages.enabled ? 'Active' : 'Off';
+    }
+    if (imgStat) {
+      imgStat.textContent = c.toImages.enabled ? `${c.toImages.format.toUpperCase()} (${c.toImages.scale}x Scale)` : 'Off';
+    }
+
+    // 4. Extract
+    const extPill = document.getElementById('batch-pdf-toggle-extract');
+    const extStat = document.getElementById('batch-pdf-status-extract');
+    if (extPill) {
+      extPill.className = `batch-tool-toggle-pill ${c.extract.enabled ? 'active' : ''}`;
+      extPill.textContent = c.extract.enabled ? 'Active' : 'Off';
+    }
+    if (extStat) {
+      extStat.textContent = c.extract.enabled ? (c.extract.mode === 'all' ? 'Split All Pages' : (c.extract.mode === 'custom' ? `Range: ${c.extract.range}` : 'First Page Only')) : 'All Pages';
+    }
+
+    // 5. Delete
+    const delPill = document.getElementById('batch-pdf-toggle-delete');
+    const delStat = document.getElementById('batch-pdf-status-delete');
+    if (delPill) {
+      delPill.className = `batch-tool-toggle-pill ${c.delete.enabled ? 'active' : ''}`;
+      delPill.textContent = c.delete.enabled ? 'Active' : 'Off';
+    }
+    if (delStat) {
+      delStat.textContent = c.delete.enabled ? (c.delete.mode === 'first' ? 'Remove Page 1' : (c.delete.mode === 'last' ? 'Remove Last Page' : `Remove: ${c.delete.pages}`)) : 'None';
+    }
+
+    // 6. Merge
+    const mrgPill = document.getElementById('batch-pdf-toggle-merge');
+    const mrgStat = document.getElementById('batch-pdf-status-merge');
+    if (mrgPill) {
+      mrgPill.className = `batch-tool-toggle-pill ${c.merge.enabled ? 'active' : ''}`;
+      mrgPill.textContent = c.merge.enabled ? 'Active' : 'Off';
+    }
+    if (mrgStat) {
+      mrgStat.textContent = c.merge.enabled ? 'Merged Master PDF' : 'Separate Files (ZIP)';
+    }
+
+    // 7. Watermark
+    const wmPill = document.getElementById('batch-pdf-toggle-watermark');
+    const wmStat = document.getElementById('batch-pdf-status-watermark');
+    if (wmPill) {
+      wmPill.className = `batch-tool-toggle-pill ${c.watermark.enabled ? 'active' : ''}`;
+      wmPill.textContent = c.watermark.enabled ? 'Active' : 'Off';
+    }
+    if (wmStat) {
+      wmStat.textContent = c.watermark.enabled ? (c.watermark.type === 'page-numbers' ? 'Page Numbers' : `Stamp: ${c.watermark.text}`) : 'Off';
+    }
+
+    // Update process button label
+    const btnProcessText = document.getElementById('batch-pdf-process-btn-text');
+    if (btnProcessText) {
+      btnProcessText.textContent = c.merge.enabled ? 'Merge & Download Single PDF' : 'Process & Download All (ZIP)';
+    }
+  }
+
+  // --- Subtool Config Setters ---
+  window.setBatchPdfCompressLevel = function (lvl) {
+    batchPdfState.configs.compress.level = lvl;
+    document.querySelectorAll('#batch-pdf-compress-level .segment-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.val === lvl);
+    });
+    updateAllBatchPdfToolStatusLabels();
+    persistBatchPdfSession();
+  };
+
+  window.setBatchPdfDownscale = function (ds) {
+    batchPdfState.configs.compress.downscale = ds;
+    document.querySelectorAll('#batch-pdf-compress-downscale .segment-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.val === String(ds));
+    });
+    persistBatchPdfSession();
+  };
+
+  window.setBatchPdfRotateAngle = function (angle) {
+    batchPdfState.configs.rotate.angle = parseInt(angle, 10);
+    document.querySelectorAll('#batch-pdf-rotate-angle .segment-btn').forEach(b => {
+      b.classList.toggle('active', parseInt(b.dataset.val, 10) === parseInt(angle, 10));
+    });
+    updateAllBatchPdfToolStatusLabels();
+    persistBatchPdfSession();
+  };
+
+  window.setBatchPdfRotateScope = function (scope) {
+    batchPdfState.configs.rotate.scope = scope;
+    document.querySelectorAll('#batch-pdf-rotate-scope .segment-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.val === scope);
+    });
+    updateAllBatchPdfToolStatusLabels();
+    persistBatchPdfSession();
+  };
+
+  window.setBatchPdfImgFormat = function (fmt) {
+    batchPdfState.configs.toImages.format = fmt;
+    document.querySelectorAll('#batch-pdf-img-format .segment-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.val === fmt);
+    });
+    updateAllBatchPdfToolStatusLabels();
+    persistBatchPdfSession();
+  };
+
+  window.setBatchPdfImgScale = function (scale) {
+    batchPdfState.configs.toImages.scale = parseInt(scale, 10);
+    document.querySelectorAll('#batch-pdf-img-scale .segment-btn').forEach(b => {
+      b.classList.toggle('active', parseInt(b.dataset.val, 10) === parseInt(scale, 10));
+    });
+    updateAllBatchPdfToolStatusLabels();
+    persistBatchPdfSession();
+  };
+
+  window.setBatchPdfExtractMode = function (mode) {
+    batchPdfState.configs.extract.mode = mode;
+    document.querySelectorAll('#batch-pdf-extract-mode .segment-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.val === mode);
+    });
+    const customWrap = document.getElementById('batch-pdf-extract-custom-wrap');
+    if (customWrap) customWrap.style.display = mode === 'custom' ? 'block' : 'none';
+    updateAllBatchPdfToolStatusLabels();
+    persistBatchPdfSession();
+  };
+
+  window.setBatchPdfExtractRange = function (range) {
+    batchPdfState.configs.extract.range = range;
+    updateAllBatchPdfToolStatusLabels();
+    persistBatchPdfSession();
+  };
+
+  window.setBatchPdfDeleteMode = function (mode) {
+    batchPdfState.configs.delete.mode = mode;
+    document.querySelectorAll('#batch-pdf-delete-mode .segment-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.val === mode);
+    });
+    const customWrap = document.getElementById('batch-pdf-delete-custom-wrap');
+    if (customWrap) customWrap.style.display = mode === 'custom' ? 'block' : 'none';
+    updateAllBatchPdfToolStatusLabels();
+    persistBatchPdfSession();
+  };
+
+  window.setBatchPdfDeletePages = function (pages) {
+    batchPdfState.configs.delete.pages = pages;
+    updateAllBatchPdfToolStatusLabels();
+    persistBatchPdfSession();
+  };
+
+  window.setBatchPdfMergeName = function (name) {
+    batchPdfState.configs.merge.outputName = name || 'Merged-Documents.pdf';
+    persistBatchPdfSession();
+  };
+
+  window.setBatchPdfWatermarkType = function (type) {
+    batchPdfState.configs.watermark.type = type;
+    document.querySelectorAll('#batch-pdf-wm-type .segment-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.val === type);
+    });
+    if (type === 'confidential') batchPdfState.configs.watermark.text = 'CONFIDENTIAL';
+    else if (type === 'draft') batchPdfState.configs.watermark.text = 'DRAFT';
+
+    const customWrap = document.getElementById('batch-pdf-wm-custom-wrap');
+    if (customWrap) customWrap.style.display = type === 'custom' ? 'block' : 'none';
+    updateAllBatchPdfToolStatusLabels();
+    persistBatchPdfSession();
+  };
+
+  window.setBatchPdfWatermarkCustomText = function (text) {
+    batchPdfState.configs.watermark.text = text;
+    updateAllBatchPdfToolStatusLabels();
+    persistBatchPdfSession();
+  };
+
+  window.setBatchPdfWatermarkPos = function (pos) {
+    batchPdfState.configs.watermark.pos = pos;
+    document.querySelectorAll('#batch-pdf-wm-pos .segment-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.val === pos);
+    });
+    persistBatchPdfSession();
+  };
+
+  window.resetBatchPdfConfigs = function () {
+    batchPdfState.configs = {
+      compress: { enabled: true, level: 'medium', downscale: true },
+      rotate: { enabled: false, angle: 90, scope: 'all' },
+      toImages: { enabled: false, format: 'jpeg', scale: 2 },
+      extract: { enabled: false, mode: 'first', range: '1-2' },
+      delete: { enabled: false, mode: 'first', pages: '1' },
+      merge: { enabled: false, outputName: 'Merged-Documents.pdf' },
+      watermark: { enabled: false, type: 'page-numbers', text: 'CONFIDENTIAL', pos: 'bottom-right' }
+    };
+    updateAllBatchPdfToolStatusLabels();
+    persistBatchPdfSession();
+    showToast('Reset all Batch PDF settings to default');
+  };
+
+  // --- Session Persistence ---
+  function persistBatchPdfSession() {
+    try {
+      if (typeof PixKitStorage === 'undefined') return;
+      const serializableItems = batchPdfState.items.map(it => ({
+        id: it.id,
+        name: it.name,
+        size: it.size,
+        numPages: it.numPages,
+        thumbUrl: it.thumbUrl,
+        activePage: it.activePage,
+        blob: it.blob
+      }));
+      PixKitStorage.setItem('batch_pdf_session', {
+        items: serializableItems,
+        activeIndex: batchPdfState.activeIndex,
+        configs: batchPdfState.configs,
+        activeDetailTool: batchPdfState.activeDetailTool
+      });
+    } catch (e) {
+      console.warn('Could not persist batch PDF session:', e);
+    }
+  }
+
+  async function restoreBatchPdfSession() {
+    try {
+      if (typeof PixKitStorage === 'undefined') return;
+      const data = await PixKitStorage.getItem('batch_pdf_session');
+      if (!data || !data.items || !data.items.length) return;
+
+      const restoredItems = [];
+      for (const it of data.items) {
+        if (!it.blob) continue;
+        const item = await createBatchPdfItemFromBlob(it.blob, it.name);
+        if (item) {
+          item.id = it.id || item.id;
+          item.activePage = it.activePage || 1;
+          restoredItems.push(item);
+        }
+      }
+
+      if (restoredItems.length > 0) {
+        batchPdfState.items = restoredItems;
+        batchPdfState.activeIndex = Math.min(data.activeIndex || 0, restoredItems.length - 1);
+        if (data.configs) {
+          batchPdfState.configs = Object.assign({}, batchPdfState.configs, data.configs);
+        }
+        updateAllBatchPdfToolStatusLabels();
+        if (data.activeDetailTool && batchPdfState.configs[data.activeDetailTool]) {
+          openBatchPdfToolDetail(data.activeDetailTool);
+        }
+      }
+    } catch (err) {
+      console.warn('Could not restore batch PDF session:', err);
+    }
+  }
+
+  // --- Sample Batch PDF Generator (3 diverse documents) ---
+  window.loadSampleBatchPdf = async function () {
+    if (!window.PDFLib) {
+      showToast('PDF-Lib not ready, cannot generate samples.');
+      return;
+    }
+    showToast('Generating 3 diverse sample PDF documents...');
+
+    const rgb = window.PDFLib.rgb;
+    const StandardFonts = window.PDFLib.StandardFonts;
+
+    // Doc 1: Company Annual Financial Report (2 Pages)
+    const doc1 = await window.PDFLib.PDFDocument.create();
+    const font1 = await doc1.embedFont(StandardFonts.Helvetica);
+    const font1Bold = await doc1.embedFont(StandardFonts.HelveticaBold);
+
+    // Page 1
+    const p1 = doc1.addPage([595, 842]);
+    p1.drawRectangle({ x: 0, y: 760, width: 595, height: 82, color: rgb(0.12, 0.35, 0.25) });
+    p1.drawText('ACME GLOBAL CORP · ANNUAL REPORT 2026', { x: 40, y: 795, size: 16, font: font1Bold, color: rgb(1, 1, 1) });
+    p1.drawText('Executive Financial Summary & Operational Milestones', { x: 40, y: 775, size: 11, font: font1, color: rgb(0.85, 0.95, 0.88) });
+
+    p1.drawRectangle({ x: 40, y: 640, width: 240, height: 90, color: rgb(0.95, 0.97, 0.95), borderColor: rgb(0.8, 0.88, 0.8), borderWidth: 1 });
+    p1.drawText('Total Revenue', { x: 55, y: 705, size: 11, font: font1, color: rgb(0.3, 0.3, 0.3) });
+    p1.drawText('$48,250,000', { x: 55, y: 668, size: 22, font: font1Bold, color: rgb(0.12, 0.35, 0.25) });
+    p1.drawText('+24.8% YoY Growth', { x: 55, y: 650, size: 10, font: font1Bold, color: rgb(0.18, 0.55, 0.34) });
+
+    p1.drawRectangle({ x: 315, y: 640, width: 240, height: 90, color: rgb(0.95, 0.97, 0.95), borderColor: rgb(0.8, 0.88, 0.8), borderWidth: 1 });
+    p1.drawText('Net Operating Margin', { x: 330, y: 705, size: 11, font: font1, color: rgb(0.3, 0.3, 0.3) });
+    p1.drawText('34.2%', { x: 330, y: 668, size: 22, font: font1Bold, color: rgb(0.12, 0.35, 0.25) });
+    p1.drawText('Record High Efficiency', { x: 330, y: 650, size: 10, font: font1Bold, color: rgb(0.18, 0.55, 0.34) });
+
+    p1.drawText('1. Executive Overview & Strategic Direction', { x: 40, y: 590, size: 14, font: font1Bold, color: rgb(0.1, 0.1, 0.1) });
+    p1.drawText('During fiscal year 2026, Acme Global Corp accelerated international market expansion, deployed', { x: 40, y: 565, size: 10.5, font: font1, color: rgb(0.25, 0.25, 0.25) });
+    p1.drawText('state-of-the-art automated infrastructure, and maintained carbon neutrality across all operations.', { x: 40, y: 548, size: 10.5, font: font1, color: rgb(0.25, 0.25, 0.25) });
+
+    // Page 2
+    const p1_2 = doc1.addPage([595, 842]);
+    p1_2.drawRectangle({ x: 0, y: 760, width: 595, height: 82, color: rgb(0.12, 0.35, 0.25) });
+    p1_2.drawText('ACME GLOBAL CORP · REGIONAL PERFORMANCE', { x: 40, y: 795, size: 16, font: font1Bold, color: rgb(1, 1, 1) });
+    p1_2.drawText('Breakdown of Global Distribution and Key Partnerships', { x: 40, y: 775, size: 11, font: font1, color: rgb(0.85, 0.95, 0.88) });
+    p1_2.drawText('2. Balance Sheet & Cash Reserves', { x: 40, y: 710, size: 14, font: font1Bold, color: rgb(0.1, 0.1, 0.1) });
+    p1_2.drawText('Cash and equivalent reserves reached $18.4M with low debt covenants and high liquidity ratio.', { x: 40, y: 685, size: 10.5, font: font1, color: rgb(0.25, 0.25, 0.25) });
+
+    const doc1Bytes = await doc1.save();
+    const doc1Blob = new Blob([doc1Bytes], { type: 'application/pdf' });
+
+    // Doc 2: Product Design Specification (3 Pages)
+    const doc2 = await window.PDFLib.PDFDocument.create();
+    const font2 = await doc2.embedFont(StandardFonts.Helvetica);
+    const font2Bold = await doc2.embedFont(StandardFonts.HelveticaBold);
+
+    for (let pg = 1; pg <= 3; pg++) {
+      const p = doc2.addPage([595, 842]);
+      p.drawRectangle({ x: 0, y: 770, width: 595, height: 72, color: rgb(0.18, 0.25, 0.45) });
+      p.drawText(`PIXKIT NEXT-GEN UI SPECIFICATION · CHAPTER 0${pg}`, { x: 40, y: 802, size: 14, font: font2Bold, color: rgb(1, 1, 1) });
+      p.drawText(`Document Revision 2.4 · High-Fidelity Design Guidelines`, { x: 40, y: 785, size: 10, font: font2, color: rgb(0.8, 0.85, 1) });
+      p.drawText(`Section ${pg}.0 Architectural Principles & Layout Geometry`, { x: 40, y: 720, size: 13, font: font2Bold, color: rgb(0.1, 0.1, 0.1) });
+      p.drawText(`Page ${pg} establishes strict grid units, typography scales, accessibility contrasts, and micro-interactions.`, { x: 40, y: 695, size: 10.5, font: font2, color: rgb(0.3, 0.3, 0.3) });
+      p.drawRectangle({ x: 40, y: 450, width: 515, height: 210, color: rgb(0.96, 0.97, 0.99), borderColor: rgb(0.85, 0.88, 0.94), borderWidth: 1 });
+      p.drawText(`[ Vector Component Diagram: Section ${pg} Layout Matrix ]`, { x: 160, y: 550, size: 12, font: font2Bold, color: rgb(0.3, 0.4, 0.6) });
+    }
+    const doc2Bytes = await doc2.save();
+    const doc2Blob = new Blob([doc2Bytes], { type: 'application/pdf' });
+
+    // Doc 3: Service Agreement Contract (1 Page)
+    const doc3 = await window.PDFLib.PDFDocument.create();
+    const font3 = await doc3.embedFont(StandardFonts.Helvetica);
+    const font3Bold = await doc3.embedFont(StandardFonts.HelveticaBold);
+    const p3 = doc3.addPage([595, 842]);
+    p3.drawRectangle({ x: 0, y: 770, width: 595, height: 72, color: rgb(0.45, 0.18, 0.18) });
+    p3.drawText('MASTER PROFESSIONAL SERVICES AGREEMENT', { x: 40, y: 802, size: 14, font: font3Bold, color: rgb(1, 1, 1) });
+    p3.drawText('Client Statement of Work · Fully Executed', { x: 40, y: 785, size: 10, font: font3, color: rgb(1, 0.85, 0.85) });
+    p3.drawText('1. Term and Scope of Services', { x: 40, y: 720, size: 12, font: font3Bold, color: rgb(0.1, 0.1, 0.1) });
+    p3.drawText('This Service Agreement is entered into between Provider and Client under standard commercial terms.', { x: 40, y: 695, size: 10.5, font: font3, color: rgb(0.25, 0.25, 0.25) });
+    p3.drawRectangle({ x: 40, y: 150, width: 240, height: 80, borderColor: rgb(0.7, 0.7, 0.7), borderWidth: 1 });
+    p3.drawText('Authorized Signature: Jane Doe, VP', { x: 50, y: 165, size: 10, font: font3, color: rgb(0.2, 0.2, 0.2) });
+    p3.drawRectangle({ x: 315, y: 150, width: 240, height: 80, borderColor: rgb(0.7, 0.7, 0.7), borderWidth: 1 });
+    p3.drawText('Authorized Signature: John Smith, CTO', { x: 325, y: 165, size: 10, font: font3, color: rgb(0.2, 0.2, 0.2) });
+
+    const doc3Bytes = await doc3.save();
+    const doc3Blob = new Blob([doc3Bytes], { type: 'application/pdf' });
+
+    const samplesList = [
+      { blob: doc1Blob, name: 'Company-Annual-Report.pdf' },
+      { blob: doc2Blob, name: 'Product-Brochure-2026.pdf' },
+      { blob: doc3Blob, name: 'Service-Agreement-Signed.pdf' }
+    ];
+
+    batchPdfState.items = [];
+    for (const s of samplesList) {
+      const item = await createBatchPdfItemFromBlob(s.blob, s.name);
+      if (item) batchPdfState.items.push(item);
+    }
+
+    batchPdfState.activeIndex = 0;
+    syncBatchPdfViewUI();
+    renderBatchPdfPreviewCanvas();
+    persistBatchPdfSession();
+    showToast('Loaded 3 diverse sample PDF documents into Batch PDF queue!');
+  };
+
+  // --- Process & Download Execution ---
+  window.processAndDownloadBatchPdf = async function () {
+    if (!batchPdfState.items.length) {
+      showToast('No PDF documents in queue to process.');
+      return;
+    }
+    if (batchPdfState.isProcessing) return;
+    batchPdfState.isProcessing = true;
+
+    const btnProcess = document.getElementById('btn-batch-pdf-process');
+    if (btnProcess) btnProcess.disabled = true;
+
+    const cfg = batchPdfState.configs;
+    const isMerge = cfg.merge && cfg.merge.enabled;
+    const isToImages = cfg.toImages && cfg.toImages.enabled;
+
+    showToast(isMerge ? 'Merging all queued PDFs into a single document...' : 'Processing all queued PDF documents...');
+
+    try {
+      if (isMerge) {
+        // Concatenate all into a single master PDF
+        const masterDoc = await window.PDFLib.PDFDocument.create();
+        for (let idx = 0; idx < batchPdfState.items.length; idx++) {
+          const item = batchPdfState.items[idx];
+          const arrayBuffer = await item.blob.arrayBuffer();
+          const doc = await window.PDFLib.PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+
+          // Apply rotation if active
+          if (cfg.rotate.enabled) {
+            applyRotationToDoc(doc, cfg.rotate);
+          }
+          // Apply deletion if active
+          if (cfg.delete.enabled) {
+            applyDeletionToDoc(doc, cfg.delete);
+          }
+          // Apply watermark if active
+          if (cfg.watermark.enabled) {
+            await applyWatermarkToDoc(doc, cfg.watermark);
+          }
+
+          const pageIndices = doc.getPageIndices();
+          if (pageIndices.length > 0) {
+            const copiedPages = await masterDoc.copyPages(doc, pageIndices);
+            copiedPages.forEach(p => masterDoc.addPage(p));
+          }
+        }
+
+        const masterBytes = await masterDoc.save({ useObjectStreams: true });
+        const mergedBlob = new Blob([masterBytes], { type: 'application/pdf' });
+        const outName = cfg.merge.outputName || 'Merged-Documents.pdf';
+        triggerBlobDownload(mergedBlob, outName);
+        showToast(`🎉 Merged and downloaded all ${batchPdfState.items.length} PDFs into ${outName}!`);
+      } else if (isToImages) {
+        // PDF to Images: Extract pages as images in a ZIP
+        const zip = new JSZip();
+        for (let idx = 0; idx < batchPdfState.items.length; idx++) {
+          const item = batchPdfState.items[idx];
+          const arrayBuffer = await item.blob.arrayBuffer();
+          const cloneData = new Uint8Array(arrayBuffer.slice(0));
+          const pdfJsDoc = await window.pdfjsLib.getDocument({
+            data: cloneData,
+            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+            cMapPacked: true
+          }).promise;
+
+          const baseClean = item.name.replace(/\.pdf$/i, '');
+          const folder = zip.folder(baseClean);
+          const fmt = cfg.toImages.format || 'jpeg';
+          const mime = fmt === 'png' ? 'image/png' : (fmt === 'webp' ? 'image/webp' : 'image/jpeg');
+          const ext = fmt === 'png' ? 'png' : (fmt === 'webp' ? 'webp' : 'jpg');
+          const scale = cfg.toImages.scale || 2;
+
+          for (let pNum = 1; pNum <= pdfJsDoc.numPages; pNum++) {
+            const page = await pdfJsDoc.getPage(pNum);
+            const viewport = page.getViewport({ scale: scale });
+            const pageCanvas = document.createElement('canvas');
+            pageCanvas.width = viewport.width;
+            pageCanvas.height = viewport.height;
+            const ctx = pageCanvas.getContext('2d');
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+            const imgBlob = await new Promise(res => pageCanvas.toBlob(res, mime, 0.92));
+            folder.file(`page-${String(pNum).padStart(2, '0')}.${ext}`, imgBlob);
+          }
+        }
+
+        const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+        triggerBlobDownload(zipBlob, `pixkit_pdf_images_${Date.now()}.zip`);
+        showToast(`🎉 Rendered and downloaded all PDF pages as images in ZIP!`);
+      } else {
+        // Separate Processed PDFs packaged in a ZIP
+        const zip = new JSZip();
+        for (let idx = 0; idx < batchPdfState.items.length; idx++) {
+          const item = batchPdfState.items[idx];
+          const arrayBuffer = await item.blob.arrayBuffer();
+          const doc = await window.PDFLib.PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+
+          if (cfg.rotate.enabled) applyRotationToDoc(doc, cfg.rotate);
+          if (cfg.delete.enabled) applyDeletionToDoc(doc, cfg.delete);
+          if (cfg.extract.enabled) applyExtractionToDoc(doc, cfg.extract);
+          if (cfg.watermark.enabled) await applyWatermarkToDoc(doc, cfg.watermark);
+
+          const processedBytes = await doc.save({ useObjectStreams: true });
+          const baseClean = item.name.replace(/\.pdf$/i, '');
+          zip.file(`${baseClean}_processed.pdf`, processedBytes);
+        }
+
+        const zipBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+        triggerBlobDownload(zipBlob, `pixkit_batch_pdf_${Date.now()}.zip`);
+        showToast(`🎉 Processed and downloaded all ${batchPdfState.items.length} PDF documents in ZIP!`);
+      }
+    } catch (err) {
+      console.error('Batch PDF execution error:', err);
+      showToast(`Error processing batch PDF: ${err.message}`);
+    } finally {
+      batchPdfState.isProcessing = false;
+      if (btnProcess) btnProcess.disabled = false;
+    }
+  };
+
+  window.downloadActiveBatchPdf = async function () {
+    if (!batchPdfState.items.length) return;
+    const item = batchPdfState.items[batchPdfState.activeIndex];
+    if (!item) return;
+
+    showToast(`Processing ${item.name}...`);
+    try {
+      const cfg = batchPdfState.configs;
+      const arrayBuffer = await item.blob.arrayBuffer();
+      const doc = await window.PDFLib.PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+
+      if (cfg.rotate.enabled) applyRotationToDoc(doc, cfg.rotate);
+      if (cfg.delete.enabled) applyDeletionToDoc(doc, cfg.delete);
+      if (cfg.extract.enabled) applyExtractionToDoc(doc, cfg.extract);
+      if (cfg.watermark.enabled) await applyWatermarkToDoc(doc, cfg.watermark);
+
+      const outBytes = await doc.save({ useObjectStreams: true });
+      const outBlob = new Blob([outBytes], { type: 'application/pdf' });
+      const baseClean = item.name.replace(/\.pdf$/i, '');
+      triggerBlobDownload(outBlob, `${baseClean}_processed.pdf`);
+      showToast(`Downloaded processed ${item.name}`);
+    } catch (e) {
+      console.error('downloadActiveBatchPdf error:', e);
+      showToast('Error processing active PDF: ' + e.message);
+    }
+  };
+
+  // Helper transformers
+  function applyRotationToDoc(doc, rotCfg) {
+    const angle = rotCfg.angle || 90;
+    const scope = rotCfg.scope || 'all';
+    const total = doc.getPageCount();
+
+    for (let i = 0; i < total; i++) {
+      const pageNum = i + 1;
+      let shouldRotate = false;
+      if (scope === 'all') shouldRotate = true;
+      else if (scope === 'first' && pageNum === 1) shouldRotate = true;
+      else if (scope === 'odd' && pageNum % 2 !== 0) shouldRotate = true;
+      else if (scope === 'even' && pageNum % 2 === 0) shouldRotate = true;
+
+      if (shouldRotate) {
+        const page = doc.getPage(i);
+        const curr = page.getRotation().angle;
+        page.setRotation(window.PDFLib.degrees((curr + angle) % 360));
+      }
+    }
+  }
+
+  function applyDeletionToDoc(doc, delCfg) {
+    const mode = delCfg.mode || 'first';
+    const total = doc.getPageCount();
+    if (total <= 1) return;
+
+    if (mode === 'first') {
+      doc.removePage(0);
+    } else if (mode === 'last') {
+      doc.removePage(total - 1);
+    } else if (mode === 'custom' && delCfg.pages) {
+      const toDelete = new Set(delCfg.pages.split(',').map(s => parseInt(s.trim(), 10) - 1).filter(n => !isNaN(n) && n >= 0 && n < total));
+      const sorted = Array.from(toDelete).sort((a, b) => b - a);
+      sorted.forEach(idx => {
+        if (doc.getPageCount() > 1) doc.removePage(idx);
+      });
+    }
+  }
+
+  function applyExtractionToDoc(doc, extCfg) {
+    const mode = extCfg.mode || 'first';
+    const total = doc.getPageCount();
+    if (mode === 'first') {
+      while (doc.getPageCount() > 1) {
+        doc.removePage(doc.getPageCount() - 1);
+      }
+    } else if (mode === 'custom' && extCfg.range) {
+      const parts = extCfg.range.split('-').map(s => parseInt(s.trim(), 10));
+      const start = Math.max(1, parts[0] || 1);
+      const end = Math.min(total, parts[1] || start);
+      const keepIndices = new Set();
+      for (let p = start; p <= end; p++) keepIndices.add(p - 1);
+
+      for (let i = total - 1; i >= 0; i--) {
+        if (!keepIndices.has(i) && doc.getPageCount() > 1) {
+          doc.removePage(i);
+        }
+      }
+    }
+  }
+
+  async function applyWatermarkToDoc(doc, wmCfg) {
+    const font = await doc.embedFont(window.PDFLib.StandardFonts.Helvetica);
+    const fontBold = await doc.embedFont(window.PDFLib.StandardFonts.HelveticaBold);
+    const total = doc.getPageCount();
+    const rgb = window.PDFLib.rgb;
+
+    for (let i = 0; i < total; i++) {
+      const page = doc.getPage(i);
+      const { width, height } = page.getSize();
+      const pageNum = i + 1;
+
+      if (wmCfg.type === 'page-numbers') {
+        const text = `Page ${pageNum} of ${total}`;
+        page.drawText(text, {
+          x: width - 110,
+          y: 25,
+          size: 9.5,
+          font: font,
+          color: rgb(0.4, 0.4, 0.4)
+        });
+      } else {
+        const text = wmCfg.text || 'CONFIDENTIAL';
+        if (wmCfg.pos === 'center') {
+          page.drawText(text, {
+            x: width / 2 - 120,
+            y: height / 2,
+            size: 42,
+            font: fontBold,
+            color: rgb(0.85, 0.2, 0.2),
+            opacity: 0.28,
+            rotate: window.PDFLib.degrees(45)
+          });
+        } else if (wmCfg.pos === 'top-right') {
+          page.drawText(text, {
+            x: width - 160,
+            y: height - 30,
+            size: 11,
+            font: fontBold,
+            color: rgb(0.8, 0.2, 0.2),
+            opacity: 0.6
+          });
+        } else if (wmCfg.pos === 'bottom-center') {
+          page.drawText(text, {
+            x: width / 2 - 50,
+            y: 25,
+            size: 10,
+            font: fontBold,
+            color: rgb(0.4, 0.4, 0.4),
+            opacity: 0.6
+          });
+        } else {
+          page.drawText(text, {
+            x: width - 130,
+            y: 25,
+            size: 10,
+            font: fontBold,
+            color: rgb(0.8, 0.2, 0.2),
+            opacity: 0.6
+          });
+        }
+      }
+    }
+  }
+
+  // Keyboard Left / Right Navigation for Batch PDF Mode
+  document.addEventListener('keydown', (e) => {
+    const batchPdfView = document.getElementById('tool-batch-pdf-view');
+    if (!batchPdfView || !batchPdfView.classList.contains('active')) return;
+    if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      navigateBatchPdf(-1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      navigateBatchPdf(1);
+    }
   });
+
+  window.resetConvertTool = function () {
+    engine.generateSampleArtwork();
+    hasUserAddedImage = false;
+    syncMetadata();
+
+    if (typeof PixKitStorage !== 'undefined') {
+      PixKitStorage.removeItem('convert_session_convert-svg');
+      PixKitStorage.removeItem('convert_session_convert-heic');
+    }
+
+    if (typeof svgState !== 'undefined') {
+      svgState.isSvgValid = false;
+      svgState.rawSvgText = '';
+      const alertBox = document.getElementById('svg-format-alert');
+      const successBox = document.getElementById('svg-format-success');
+      if (alertBox) alertBox.style.display = 'none';
+      if (successBox) successBox.style.display = 'none';
+    }
+    if (typeof heicState !== 'undefined') {
+      heicState.isHeicValid = false;
+      heicState.rawHeicBlob = null;
+      const alertBox = document.getElementById('heic-format-alert');
+      const successBox = document.getElementById('heic-format-success');
+      if (alertBox) alertBox.style.display = 'none';
+      if (successBox) successBox.style.display = 'none';
+    }
+
+    if (activeTool === 'convert-format') initConvertFormatStage();
+    else if (activeTool === 'convert-heic') initConvertHeicStage();
+    else if (activeTool === 'convert-svg') initConvertSvgStage();
+    else if (activeTool === 'convert-ico') initConvertIcoStage();
+    else if (activeTool === 'convert-base64') initConvertBase64Stage();
+    else if (activeTool === 'convert-pdf') initConvertPdfStage();
+  };
+
+  window.resetCurrentToolFile = function (e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    closeAllReplaceDropdowns();
+
+    if (activeTool === 'batch-edit') {
+      window.clearBatchQueue();
+    } else if (activeTool === 'batch-convert') {
+      window.clearBatchConvertQueue();
+    } else if (activeTool === 'batch-pdf') {
+      window.clearBatchPdfQueue();
+    } else if (activeTool === 'doc-split-pdf') {
+      window.resetPdfSplit();
+      showToast('Removed PDF document from Split tool');
+    } else if (activeTool === 'doc-merge-pdf') {
+      window.resetPdfMerge();
+      showToast('Removed all PDF files from Merge tool');
+    } else if (activeTool === 'doc-compress-pdf') {
+      window.resetPdfCompress();
+      showToast('Removed PDF document from Compress tool');
+    } else if (activeTool === 'doc-rotate-pdf') {
+      window.resetPdfRotate();
+      showToast('Removed PDF document from Rotate tool');
+    } else if (activeTool === 'doc-delete-pdf') {
+      window.resetPdfDelete();
+      showToast('Removed PDF document from Delete tool');
+    } else if (activeTool === 'doc-pdf-to-images') {
+      window.resetPdfExtract();
+      showToast('Removed PDF document from PDF to Images tool');
+    } else if (activeTool && activeTool.startsWith('convert-')) {
+      window.resetConvertTool();
+      showToast('Reset converter to clean state');
+    } else {
+      hasUserAddedImage = false;
+      engine.filename = 'mountain-view.jpg';
+      engine.generateSampleArtwork();
+      syncMetadata();
+      updateHeroPreview();
+      updateHistoryUI();
+      if (activeTool) initToolStage(activeTool);
+      showToast('Removed loaded image from workspace');
+    }
+  };
+
+  // ==============================================================
+  // APPLICATION STARTUP & SESSION RESTORATION (Preserve state across refresh)
+  // ==============================================================
+  hideImageUploadProgress();
+
+  const initialRoute = location.hash || localStorage.getItem('pixkit_last_route') || '#/home';
+
+  // Restore active user session if one exists, otherwise load default sample artwork
+  (async () => {
+    let sessionRestored = false;
+    try {
+      if (typeof restoreSavedSession === 'function') {
+        sessionRestored = await restoreSavedSession();
+      }
+    } catch (err) {
+      console.warn('Startup session restoration error:', err);
+    }
+
+    if (!sessionRestored) {
+      hasUserAddedImage = false;
+      engine.filename = 'mountain-view.jpg';
+      engine.generateSampleArtwork();
+      setTimeout(syncMetadata, 60);
+    }
+
+    handleRoute(initialRoute);
+  })();
+
+  // Check for pending incoming file uploaded from a dedicated tool landing page
+  try {
+    const pendingData = sessionStorage.getItem('pixkit_pending_file_data');
+    const pendingName = sessionStorage.getItem('pixkit_pending_file_name');
+    const pendingType = sessionStorage.getItem('pixkit_pending_file_type');
+    if (pendingData && pendingName) {
+      sessionStorage.removeItem('pixkit_pending_file_data');
+      sessionStorage.removeItem('pixkit_pending_file_name');
+      sessionStorage.removeItem('pixkit_pending_file_type');
+
+      fetch(pendingData)
+        .then(res => res.blob())
+        .then(blob => {
+          const file = new File([blob], pendingName, { type: pendingType || blob.type });
+          setTimeout(() => {
+            if (file.type === 'application/pdf' || pendingName.toLowerCase().endsWith('.pdf')) {
+              if (window.handlePdfMergeFiles && activeTool === 'doc-merge-pdf') {
+                window.handlePdfMergeFiles([file]);
+              } else if (window.handlePdfSplitFile && activeTool === 'doc-split-pdf') {
+                window.handlePdfSplitFile(file);
+              } else if (window.handlePdfCompressFile && activeTool === 'doc-compress-pdf') {
+                window.handlePdfCompressFile(file);
+              } else if (window.handlePdfRotateFile && activeTool === 'doc-rotate-pdf') {
+                window.handlePdfRotateFile(file);
+              } else if (window.handlePdfDeleteFile && activeTool === 'doc-delete-pdf') {
+                window.handlePdfDeleteFile(file);
+              } else if (window.handlePdfFileUpload) {
+                window.handlePdfFileUpload(file);
+              }
+            } else if (activeTool === 'convert-svg' || file.type === 'image/svg+xml' || pendingName.toLowerCase().endsWith('.svg')) {
+              if (typeof window.handleSvgFileSelect === 'function') {
+                window.handleSvgFileSelect({ target: { files: [file] } });
+              }
+            } else {
+              handleImageFile(file);
+            }
+          }, 120);
+        })
+        .catch(err => console.warn('Could not restore landing page file:', err));
+    }
+  } catch (_) { }
+
+  cleanCurrentUrl();
 
   // ==============================================================
   // FULLSCREEN IMAGE PREVIEW & SCROLL/ZOOM CONTROLLER
@@ -11359,7 +16821,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  window.openFullscreenPreview = function() {
+  window.openFullscreenPreview = function () {
     let sourceCanvas = null;
 
     if (activeTool) {
@@ -11433,7 +16895,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
-  window.closeFullscreenPreview = function() {
+  window.closeFullscreenPreview = function () {
     const modal = document.getElementById('fullscreen-modal');
     if (!modal) return;
     modal.classList.remove('active');
@@ -11458,11 +16920,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.style.cursor = '';
 
     if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {});
+      document.exitFullscreen().catch(() => { });
     }
   };
 
-  window.handleFullscreenBackdropClick = function(e) {
+  window.handleFullscreenBackdropClick = function (e) {
     if (hasDraggedMeaningfully) {
       hasDraggedMeaningfully = false;
       return;
@@ -11473,12 +16935,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.zoomFullscreenImage = function(delta, focalClientX = null, focalClientY = null) {
+  window.zoomFullscreenImage = function (delta, focalClientX = null, focalClientY = null) {
     fullscreenZoomScale = Math.max(0.25, Math.min(5.0, parseFloat((fullscreenZoomScale + delta).toFixed(2))));
     applyFullscreenZoom(true, focalClientX, focalClientY);
   };
 
-  window.resetFullscreenZoom = function() {
+  window.resetFullscreenZoom = function () {
     fullscreenZoomScale = 1.0;
     applyFullscreenZoom(true);
     const viewport = document.getElementById('fullscreen-viewport');
@@ -11488,16 +16950,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  window.toggleNativeFullscreen = function() {
+  window.toggleNativeFullscreen = function () {
     if (!document.fullscreenElement) {
       const modal = document.getElementById('fullscreen-modal');
       if (modal && modal.requestFullscreen) {
-        modal.requestFullscreen().catch(() => {});
+        modal.requestFullscreen().catch(() => { });
       } else if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen().catch(() => {});
+        document.documentElement.requestFullscreen().catch(() => { });
       }
     } else {
-      document.exitFullscreen().catch(() => {});
+      document.exitFullscreen().catch(() => { });
     }
   };
 

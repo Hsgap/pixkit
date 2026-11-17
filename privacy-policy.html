@@ -750,13 +750,18 @@
       <div class="policy-section">
         <div class="policy-section-header">
           <span class="section-num">05</span>
-          <h2>Cookies and Local Storage</h2>
+          <h2>Cookies, Analytics, and Local Storage</h2>
         </div>
-        <p>PixKit does not use tracking cookies or cross-site tracking technologies. We only utilize your browser's standard <strong>LocalStorage</strong> for the following purely functional, on-device preferences:</p>
+        <p>PixKit is built with a strict local-first privacy philosophy:</p>
         <ul>
-          <li><code>pixkit_theme</code>: Saves your preferred visual theme (`dark` or `light`) so it remains comfortable on subsequent visits.</li>
-          <li><strong>Recent Works (Studio)</strong>: Saves your active canvas state locally on your machine so you don't lose work if you accidentally refresh. This data never leaves your device.</li>
-          <li><strong>Service Worker Cache</strong>: Allows PixKit's HTML, CSS, and JavaScript files to load instantly and function offline as a Progressive Web App (PWA).</li>
+          <li><strong>Cookieless Analytics Transparency:</strong> To monitor overall site health and page load performance, we use Google Analytics configured in <strong>100% cookieless mode</strong> (<code>client_storage: 'none'</code> with <code>anonymize_ip: true</code>). In this mode, no tracking cookies (such as <code>_ga</code> or <code>_gid</code>) are stored on your device, and no personal identifiers, cross-site profiles, or file contents are ever recorded or transmitted.</li>
+          <li><strong>Purely Functional LocalStorage:</strong> We only utilize your browser's standard <strong>LocalStorage</strong> for the following essential on-device preferences:
+            <ul>
+              <li><code>pixkit_theme</code>: Remembers your preferred visual theme (dark or light) across visits.</li>
+              <li><strong>Recent Works &amp; State (Studio)</strong>: Keeps your active workspace in local device memory so you do not lose work on accidental refresh. This data never touches any server.</li>
+              <li><strong>Service Worker Cache</strong>: Caches web assets locally so PixKit launches instantly and functions fully offline as a Progressive Web App (PWA).</li>
+            </ul>
+          </li>
         </ul>
       </div>
 
