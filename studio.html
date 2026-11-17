@@ -104,7 +104,7 @@
     } catch (_) {}
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles/main.css?v=8.21">
+  <link rel="stylesheet" href="styles/main.css?v=8.22">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FBFBF8">
 </head>
@@ -178,14 +178,14 @@
             <button class="mobile-dropdown-item" onclick="showView('home'); closeStudioMobileMenu();">
               <i class="fa-solid fa-house"></i> Home
             </button>
-            <button class="mobile-dropdown-item" onclick="showView('edit'); closeStudioMobileMenu();">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> Edit Image (9 Tools)
+            <button class="mobile-dropdown-item" onclick="showView('recent'); closeStudioMobileMenu();">
+              <i class="fa-solid fa-clock-rotate-left"></i> Recent Files
             </button>
-            <button class="mobile-dropdown-item" onclick="showView('convert'); closeStudioMobileMenu();">
-              <i class="fa-solid fa-arrow-right-arrow-left"></i> Convert Formats
+            <button class="mobile-dropdown-item" onclick="showView('settings'); closeStudioMobileMenu();">
+              <i class="fa-solid fa-gear"></i> Settings
             </button>
-            <button class="mobile-dropdown-item" onclick="showView('document'); closeStudioMobileMenu();">
-              <i class="fa-solid fa-file-pdf"></i> PDF Document Suite
+            <button class="mobile-dropdown-item" onclick="openLeaderboardScreen(); closeStudioMobileMenu();">
+              <i class="fa-solid fa-trophy"></i> Top Supporters
             </button>
             <div class="mobile-dropdown-divider"></div>
             <button class="mobile-dropdown-item" onclick="sharePixKitStudio(); closeStudioMobileMenu();">
