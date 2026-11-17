@@ -11878,8 +11878,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (selectedEl) selectedEl.textContent = `${targetPages.length} Page${targetPages.length === 1 ? '' : 's'}`;
     if (formatEl) formatEl.textContent = `${format.toUpperCase()} @ ${scale}x (${scale === 1 ? '150' : scale === 2 ? '300' : '450'} DPI)`;
     if (counterEl) counterEl.textContent = `${targetPages.length} / ${numPages} Selected`;
-    if (hintEl && numPages > 0) {
-      hintEl.textContent = `Extracted ${numPages} pages · Ready for instant export or studio editing`;
+    if (hintEl) {
+      if (numPages > 0) {
+        hintEl.textContent = `Extracted ${numPages} pages · Ready for instant export or studio editing`;
+      } else {
+        hintEl.textContent = 'Upload a PDF to extract pages as crisp images';
+      }
     }
 
     const hasPages = targetPages.length > 0;
@@ -12120,9 +12124,14 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const session = await PixKitStorage.getItem('pdf_session_doc-merge-pdf');
         if (session && Array.isArray(session.files) && session.files.length > 0) {
-          const files = session.files.map(sf => new File([sf.blob], sf.name, { type: 'application/pdf' }));
-          await handlePdfMergeFiles(files, true);
-          return;
+          const hasInvalid = session.files.some(sf => !sf.name || sf.name.toLowerCase().includes('sample') || sf.name === 'mountain-view.jpg');
+          if (hasInvalid) {
+            await PixKitStorage.removeItem('pdf_session_doc-merge-pdf');
+          } else {
+            const files = session.files.map(sf => new File([sf.blob], sf.name, { type: 'application/pdf' }));
+            await handlePdfMergeFiles(files, true);
+            return;
+          }
         }
       } catch (_) { }
     }
@@ -16507,8 +16516,12 @@ document.addEventListener('DOMContentLoaded', () => {
         ['doc-pdf-to-images', 'doc-merge-pdf', 'doc-split-pdf', 'doc-compress-pdf', 'doc-rotate-pdf', 'doc-delete-pdf'].forEach(async (toolKey) => {
           try {
             const s = await PixKitStorage.getItem(`pdf_session_${toolKey}`);
-            if (s && (s.fileName === 'mountain-view.jpg' || (s.fileName && s.fileName.includes('sample')))) {
-              await PixKitStorage.removeItem(`pdf_session_${toolKey}`);
+            if (s) {
+              if (s.fileName === 'mountain-view.jpg' || (s.fileName && s.fileName.toLowerCase().includes('sample'))) {
+                await PixKitStorage.removeItem(`pdf_session_${toolKey}`);
+              } else if (Array.isArray(s.files) && s.files.some(f => !f.name || f.name.toLowerCase().includes('sample') || f.name === 'mountain-view.jpg')) {
+                await PixKitStorage.removeItem(`pdf_session_${toolKey}`);
+              }
             }
           } catch (_) { }
         });
