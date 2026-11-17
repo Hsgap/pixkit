@@ -216,6 +216,15 @@
       --tp-primary: #D7F36A;
     }
 
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
     body {
       background-color: var(--tp-bg);
       color: var(--tp-ink);
@@ -230,6 +239,8 @@
       max-width: 1040px;
       margin: 0 auto;
       padding: 0 20px 80px;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     /* Top Navigation Bar */
@@ -772,6 +783,8 @@
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 14px;
       margin-bottom: 72px;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .related-tool-card {
@@ -785,6 +798,10 @@
       text-decoration: none;
       color: var(--tp-ink);
       transition: all 0.2s ease;
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
     }
 
     .related-tool-card:hover {
@@ -839,6 +856,8 @@
       font-size: 11px;
       color: var(--tp-muted);
       transition: transform 0.2s;
+      flex-shrink: 0;
+      margin-left: auto;
     }
 
     .related-tool-card:hover .related-arrow {
@@ -1181,29 +1200,62 @@
         line-height: 1.5;
       }
 
-      /* 8. Related Tools */
+      /* 8. Related Tools (Fully Responsive & Contained) */
       .related-tools-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: 8px;
         margin-bottom: 36px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
       }
       .related-tool-card {
-        padding: 10px 12px;
+        padding: 11px 14px;
         border-radius: 12px;
         gap: 10px;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       }
       .related-tool-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 13px;
-        border-radius: 8px;
+        width: 34px;
+        height: 34px;
+        font-size: 14px;
+        border-radius: 9px;
+        flex-shrink: 0;
+      }
+      .related-tool-info {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow: hidden;
       }
       .related-tool-info h4 {
-        font-size: 13px;
+        font-size: 13.5px;
+        font-weight: 700;
         margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .related-tool-info p {
         font-size: 11px;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .related-arrow {
+        font-size: 11px;
+        flex-shrink: 0;
+        margin-left: 8px;
+        color: var(--tp-muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
 
       /* 9. Bottom CTA Banner */
@@ -1283,6 +1335,30 @@
       .faq-answer {
         padding: 0 12px 10px;
         font-size: 12px;
+      }
+      .related-tool-card {
+        padding: 10px 12px;
+        gap: 8px;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+      }
+      .related-tool-icon {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+        border-radius: 8px;
+      }
+      .related-tool-info h4 {
+        font-size: 13px;
+      }
+      .related-tool-info p {
+        font-size: 10.5px;
+      }
+      .related-arrow {
+        font-size: 10px;
+        margin-left: 6px;
       }
     }
   </style>

@@ -98,6 +98,15 @@
       --card-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
     }
 
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
     body {
       background-color: var(--tp-bg);
       color: var(--tp-ink);

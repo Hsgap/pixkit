@@ -1829,13 +1829,20 @@
         border-radius: 999px;
       }
       .seo-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: 10px;
         margin-bottom: 32px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
       }
       .seo-tool-card {
         padding: 14px 14px 12px;
         border-radius: 14px;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
         -webkit-tap-highlight-color: transparent;
         transition: transform 0.15s ease, background-color 0.15s ease;
       }
@@ -2048,6 +2055,10 @@
       .seo-tool-card {
         padding: 12px 12px 10px;
         border-radius: 12px;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
       }
       .seo-tool-icon {
         width: 32px;
