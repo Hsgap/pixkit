@@ -1197,8 +1197,14 @@ document.addEventListener('DOMContentLoaded', () => {
   function syncMetadata() {
     const w = engine.activeCanvas.width;
     const h = engine.activeCanvas.height;
-    document.querySelectorAll('.img-meta-name').forEach(el => el.textContent = engine.filename);
-    document.querySelectorAll('.img-meta-dims').forEach(el => el.textContent = `${w} × ${h} px`);
+    document.querySelectorAll('.img-meta-name').forEach(el => {
+      if (el.id && el.id.startsWith('pdf-')) return;
+      el.textContent = engine.filename;
+    });
+    document.querySelectorAll('.img-meta-dims').forEach(el => {
+      if (el.id && el.id.startsWith('pdf-')) return;
+      el.textContent = `${w} × ${h} px`;
+    });
 
     const metaIds = [
       'meta-resize', 'meta-crop', 'meta-rotate', 'meta-compress', 'meta-adjust',
@@ -11431,15 +11437,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function initPdfExtractStage() {
     setupPdfExtractDropzone();
-    if (!pdfExtractState.pdfDoc && typeof PixKitStorage !== 'undefined') {
-      try {
-        const session = await PixKitStorage.getItem('pdf_session_doc-pdf-to-images');
-        if (session && session.blob) {
-          const file = new File([session.blob], session.fileName || 'document.pdf', { type: 'application/pdf' });
-          await handlePdfFileUpload(file, true);
-          return;
-        }
-      } catch (_) { }
+    if (!pdfExtractState.pdfDoc) {
+      if (typeof PixKitStorage !== 'undefined') {
+        try {
+          const session = await PixKitStorage.getItem('pdf_session_doc-pdf-to-images');
+          if (session && session.blob && session.fileName && !session.fileName.includes('sample') && session.fileName !== 'mountain-view.jpg' && session.fileName.toLowerCase().endsWith('.pdf')) {
+            const file = new File([session.blob], session.fileName, { type: 'application/pdf' });
+            await handlePdfFileUpload(file, true);
+            return;
+          } else if (session) {
+            await PixKitStorage.removeItem('pdf_session_doc-pdf-to-images');
+          }
+        } catch (_) { }
+      }
+      window.resetPdfExtract();
+      return;
     }
     updatePdfExtractUI();
   }
@@ -12598,10 +12610,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!pdfSplitState.bytes && typeof PixKitStorage !== 'undefined') {
       try {
         const session = await PixKitStorage.getItem('pdf_session_doc-split-pdf');
-        if (session && session.blob) {
+        if (session && session.blob && session.fileName && !session.fileName.includes('sample') && session.fileName !== 'mountain-view.jpg') {
           const file = new File([session.blob], session.fileName || 'document.pdf', { type: 'application/pdf' });
           await handlePdfSplitFile(file, true);
           return;
+        } else if (session) {
+          await PixKitStorage.removeItem('pdf_session_doc-split-pdf');
         }
       } catch (_) { }
     }
@@ -13273,13 +13287,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!pdfCompressState.bytes && typeof PixKitStorage !== 'undefined') {
       try {
         const session = await PixKitStorage.getItem('pdf_session_doc-compress-pdf');
-        if (session && session.blob) {
+        if (session && session.blob && session.fileName && !session.fileName.includes('sample') && session.fileName !== 'mountain-view.jpg') {
           const file = new File([session.blob], session.fileName || 'document.pdf', { type: 'application/pdf' });
           await handlePdfCompressFile(file, true);
           if (session.preset && typeof selectPdfCompressPreset === 'function') {
             selectPdfCompressPreset(session.preset);
           }
           return;
+        } else if (session) {
+          await PixKitStorage.removeItem('pdf_session_doc-compress-pdf');
         }
       } catch (_) { }
     }
@@ -14062,7 +14078,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!pdfRotateState.bytes && typeof PixKitStorage !== 'undefined') {
       try {
         const session = await PixKitStorage.getItem('pdf_session_doc-rotate-pdf');
-        if (session && session.blob) {
+        if (session && session.blob && session.fileName && !session.fileName.includes('sample') && session.fileName !== 'mountain-view.jpg') {
           const file = new File([session.blob], session.fileName || 'document.pdf', { type: 'application/pdf' });
           await handlePdfRotateFile(file, true);
           if (session.rotations && Array.isArray(session.rotations)) {
@@ -14074,6 +14090,8 @@ document.addEventListener('DOMContentLoaded', () => {
             renderPdfRotateUI();
           }
           return;
+        } else if (session) {
+          await PixKitStorage.removeItem('pdf_session_doc-rotate-pdf');
         }
       } catch (_) { }
     }
@@ -14600,7 +14618,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!pdfDeleteState.bytes && typeof PixKitStorage !== 'undefined') {
       try {
         const session = await PixKitStorage.getItem('pdf_session_doc-delete-pdf');
-        if (session && session.blob) {
+        if (session && session.blob && session.fileName && !session.fileName.includes('sample') && session.fileName !== 'mountain-view.jpg') {
           const file = new File([session.blob], session.fileName || 'document.pdf', { type: 'application/pdf' });
           await handlePdfDeleteFile(file, true);
           if (session.deletions && Array.isArray(session.deletions)) {
@@ -14612,6 +14630,8 @@ document.addEventListener('DOMContentLoaded', () => {
             renderPdfDeleteUI();
           }
           return;
+        } else if (session) {
+          await PixKitStorage.removeItem('pdf_session_doc-delete-pdf');
         }
       } catch (_) { }
     }
@@ -16480,6 +16500,20 @@ document.addEventListener('DOMContentLoaded', () => {
       engine.generateSampleArtwork();
       setTimeout(syncMetadata, 60);
     }
+
+    // Clean up any stale sample sessions stored in IndexedDB for PDF tools
+    try {
+      if (typeof PixKitStorage !== 'undefined') {
+        ['doc-pdf-to-images', 'doc-merge-pdf', 'doc-split-pdf', 'doc-compress-pdf', 'doc-rotate-pdf', 'doc-delete-pdf'].forEach(async (toolKey) => {
+          try {
+            const s = await PixKitStorage.getItem(`pdf_session_${toolKey}`);
+            if (s && (s.fileName === 'mountain-view.jpg' || (s.fileName && s.fileName.includes('sample')))) {
+              await PixKitStorage.removeItem(`pdf_session_${toolKey}`);
+            }
+          } catch (_) { }
+        });
+      }
+    } catch (_) { }
 
     handleRoute(initialRoute);
   })();
