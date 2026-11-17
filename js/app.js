@@ -4143,6 +4143,12 @@ document.addEventListener('DOMContentLoaded', () => {
         window.closePdfSourcesModal();
         return;
       }
+      const pdfPreviewModal = document.getElementById('pdf-preview-modal');
+      if (pdfPreviewModal && pdfPreviewModal.classList.contains('active')) {
+        e.preventDefault();
+        window.closePdfPreviewModal();
+        return;
+      }
       const modal = document.getElementById('shortcuts-modal');
       if (modal && modal.classList.contains('active')) {
         e.preventDefault();
@@ -12006,12 +12012,87 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ==============================================================
-  // SHARED PDF PREVIEW HELPERS (STANDARD NATIVE VIEWER)
+  // SHARED PDF PREVIEW HELPERS (STANDARD NATIVE VIEWER & IN-PAGE MODAL)
   // ==============================================================
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
+  }
+
+  window.openInPagePdfPreview = function (blobUrl, filename, blob) {
+    const modal = document.getElementById('pdf-preview-modal');
+    const titleEl = document.getElementById('modal-pdf-preview-title');
+    const iframe = document.getElementById('pdf-preview-modal-iframe');
+    const dlBtn = document.getElementById('pdf-preview-modal-download-btn');
+    const newTabBtn = document.getElementById('pdf-preview-modal-newtab-btn');
+
+    if (titleEl) titleEl.textContent = filename || 'document.pdf';
+    if (iframe) iframe.src = blobUrl;
+    if (dlBtn) {
+      dlBtn.onclick = () => triggerBlobDownload(blob, filename || 'document.pdf');
+    }
+    if (newTabBtn) {
+      newTabBtn.onclick = () => {
+        const tab = window.open('', '_blank');
+        if (tab) {
+          try {
+            tab.document.open();
+            tab.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(filename || 'document.pdf')}</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>*{margin:0;padding:0;box-sizing:border-box;}html,body{width:100%;height:100%;overflow:hidden;background:#525659;}iframe{width:100vw;height:100vh;border:none;display:block;}</style></head><body><iframe src="${blobUrl}" style="width:100vw;height:100vh;border:none;" allowfullscreen></iframe></body></html>`);
+            tab.document.close();
+          } catch (_) { }
+        }
+      };
+    }
+    if (modal) modal.classList.add('active');
+  };
+
+  window.closePdfPreviewModal = function () {
+    const modal = document.getElementById('pdf-preview-modal');
+    const iframe = document.getElementById('pdf-preview-modal-iframe');
+    if (modal) modal.classList.remove('active');
+    if (iframe) iframe.src = 'about:blank';
+  };
+
+  window.handlePdfPreviewBackdropClick = function (event) {
+    if (event.target && event.target.id === 'pdf-preview-modal') {
+      window.closePdfPreviewModal();
+    }
+  };
+
   function createPreviewPlaceholderTab(toolName = 'PDF') {
     try {
       // Synchronously open a clean tab within user gesture to avoid popup blocking
-      const previewTab = window.open('about:blank', '_blank');
+      const previewTab = window.open('', '_blank');
+      if (previewTab) {
+        try {
+          previewTab.document.open();
+          previewTab.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Generating ${escapeHtml(toolName)} Preview...</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+    .box { text-align: center; padding: 24px; max-width: 380px; }
+    .spinner { width: 42px; height: 42px; border: 3px solid rgba(255,255,255,0.15); border-top-color: #38bdf8; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+    p { font-size: 13px; color: #94a3b8; line-height: 1.4; margin: 0; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="spinner"></div>
+    <h3>Generating ${escapeHtml(toolName)} Preview...</h3>
+    <p>Processing and rendering document streams, please wait...</p>
+  </div>
+</body>
+</html>`);
+          previewTab.document.close();
+        } catch (_) { }
+      }
       return previewTab;
     } catch (_) {
       return null;
@@ -12024,25 +12105,43 @@ document.addEventListener('DOMContentLoaded', () => {
       : new Blob([blob], { type: 'application/pdf' });
     const blobUrl = URL.createObjectURL(pdfBlob);
 
-    // Direct browser default navigation: opens native browser PDF reader
+    let tabSuccess = false;
+
+    // 1. Try embedding directly into pre-opened window (native reader in iframe to prevent forced downloads)
     if (previewTab && !previewTab.closed) {
       try {
-        previewTab.location.href = blobUrl;
-        return;
+        previewTab.document.open();
+        previewTab.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(filename)}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #525659; }
+    iframe, embed { width: 100vw; height: 100vh; border: none; display: block; }
+  </style>
+</head>
+<body>
+  <iframe src="${blobUrl}" style="width:100vw; height:100vh; border:none;" allowfullscreen></iframe>
+</body>
+</html>`);
+        previewTab.document.close();
+        tabSuccess = true;
       } catch (err) {
-        console.warn('Could not navigate pre-opened tab directly:', err);
+        console.warn('Could not write into preview tab:', err);
       }
     }
 
-    // Default standard window.open with the direct Blob URL
-    try {
-      const win = window.open(blobUrl, '_blank');
-      if (win) return;
-    } catch (_) { }
-
-    // Fallback: trigger download directly if popup was blocked
-    triggerBlobDownload(pdfBlob, filename);
-    showToast('Popup was blocked by browser. Downloaded PDF instead.');
+    // 2. If popup was blocked or tab failed to receive iframe, open reliable in-page preview modal!
+    // NEVER trigger download when user requested a preview!
+    if (!tabSuccess) {
+      openInPagePdfPreview(blobUrl, filename, pdfBlob);
+      if (previewTab && !previewTab.closed) {
+        try { previewTab.close(); } catch (_) { }
+      }
+    }
   }
 
   window.resetPdfExtract = function () {
@@ -12067,6 +12166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (nameEl) nameEl.textContent = 'No PDF Selected';
     if (subEl) subEl.textContent = 'Select a PDF file to begin extraction';
     updatePdfExtractUI();
+    showToast('Cleared PDF document from PDF to Images');
   };
 
   // ==============================================================
@@ -12575,6 +12675,7 @@ document.addEventListener('DOMContentLoaded', () => {
       PixKitStorage.removeItem('pdf_session_doc-merge-pdf');
     }
     renderPdfMergeUI();
+    showToast('Removed all PDF files from Merge list');
   };
 
   // ==============================================================
@@ -13224,6 +13325,7 @@ document.addEventListener('DOMContentLoaded', () => {
       PixKitStorage.removeItem('pdf_session_doc-split-pdf');
     }
     renderPdfSplitUI();
+    showToast('Cleared PDF document from Split tool');
   };
 
   // ==============================================================
@@ -14025,6 +14127,7 @@ document.addEventListener('DOMContentLoaded', () => {
       PixKitStorage.removeItem('pdf_session_doc-compress-pdf');
     }
     renderPdfCompressUI();
+    showToast('Cleared PDF document from Compress tool');
   };
 
   // ==============================================================
@@ -14567,6 +14670,7 @@ document.addEventListener('DOMContentLoaded', () => {
       PixKitStorage.removeItem('pdf_session_doc-rotate-pdf');
     }
     renderPdfRotateUI();
+    showToast('Cleared PDF document from Rotate tool');
   };
 
   // ==============================================================
@@ -15153,6 +15257,7 @@ document.addEventListener('DOMContentLoaded', () => {
       PixKitStorage.removeItem('pdf_session_doc-delete-pdf');
     }
     renderPdfDeleteUI();
+    showToast('Cleared PDF document from Delete tool');
   };
 
   // ==============================================================

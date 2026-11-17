@@ -3398,9 +3398,13 @@
                 <span id="pdf-extract-status-hint">Upload a PDF to extract pages as crisp images</span>
               </div>
               <div class="stage-topbar-tools" id="pdf-extract-topbar-tools" style="display:none;">
-                <button class="chip-btn" onclick="toggleSelectAllPdfPages(true)">Select All</button>
-                <button class="chip-btn" onclick="toggleSelectAllPdfPages(false)">Clear</button>
+                <button type="button" class="chip-btn" onclick="toggleSelectAllPdfPages(true)">Select All</button>
+                <button type="button" class="chip-btn" onclick="toggleSelectAllPdfPages(false)">Deselect All</button>
                 <span id="pdf-extract-page-counter" class="badge-pill" style="font-size: 10.5px; background: var(--lime-tint); color: #2d6a4f; border: 1px solid var(--accent-lime-border);">0 Pages</span>
+                <button type="button" class="chip-btn" style="color:#ef4444; border-color:rgba(239, 68, 68, 0.35); display:inline-flex; align-items:center; gap:5px; font-weight:600;" onclick="resetPdfExtract()" title="Remove loaded PDF document">
+                  <i class="fa-solid fa-trash-can" style="font-size:11px;"></i>
+                  <span>Clear All</span>
+                </button>
               </div>
             </div>
 
@@ -3584,7 +3588,10 @@
                 <span id="pdf-merge-status-hint">Combine and reorder multiple PDF documents into one</span>
               </div>
               <div class="stage-topbar-tools" id="pdf-merge-topbar-tools" style="display:none;">
-                <button class="chip-btn" onclick="clearAllMergePdfs()">Clear All</button>
+                <button type="button" class="chip-btn" style="color:#ef4444; border-color:rgba(239, 68, 68, 0.35); display:inline-flex; align-items:center; gap:5px; font-weight:600;" onclick="resetPdfMerge()" title="Remove all loaded PDF documents">
+                  <i class="fa-solid fa-trash-can" style="font-size:11px;"></i>
+                  <span>Clear All</span>
+                </button>
                 <span id="pdf-merge-summary-pill" class="badge-pill" style="font-size: 10.5px; background: var(--lime-tint); color: #2d6a4f; border: 1px solid var(--accent-lime-border);">0 Files · 0 Pages</span>
               </div>
             </div>
@@ -3728,11 +3735,15 @@
               </div>
               <div class="stage-topbar-tools" id="pdf-split-topbar-tools" style="display:none;">
                 <div class="chip-group" style="display:flex; row-gap:8px; column-gap:6px; flex-wrap:wrap;">
-                  <button class="chip-btn" onclick="selectPdfSplitPages('all')">Select All</button>
-                  <button class="chip-btn" onclick="selectPdfSplitPages('none')">None</button>
-                  <button class="chip-btn" onclick="selectPdfSplitPages('odd')">Odd</button>
-                  <button class="chip-btn" onclick="selectPdfSplitPages('even')">Even</button>
-                  <button class="chip-btn" onclick="selectPdfSplitPages('invert')">Invert</button>
+                  <button type="button" class="chip-btn" onclick="selectPdfSplitPages('all')">Select All</button>
+                  <button type="button" class="chip-btn" onclick="selectPdfSplitPages('none')">None</button>
+                  <button type="button" class="chip-btn" onclick="selectPdfSplitPages('odd')">Odd</button>
+                  <button type="button" class="chip-btn" onclick="selectPdfSplitPages('even')">Even</button>
+                  <button type="button" class="chip-btn" onclick="selectPdfSplitPages('invert')">Invert</button>
+                  <button type="button" class="chip-btn" style="color:#ef4444; border-color:rgba(239, 68, 68, 0.35); display:inline-flex; align-items:center; gap:5px; font-weight:600;" onclick="resetPdfSplit()" title="Remove loaded PDF document">
+                    <i class="fa-solid fa-trash-can" style="font-size:11px;"></i>
+                    <span>Clear All</span>
+                  </button>
                 </div>
                 <span id="pdf-split-summary-pill" class="badge-pill" style="font-size: 10.5px; background: var(--lime-tint); color: #2d6a4f; border: 1px solid var(--accent-lime-border);">0 Pages Selected</span>
               </div>
@@ -3906,6 +3917,10 @@
                 <span id="pdf-compress-status-hint">Reduce PDF document size for email sharing and web uploads</span>
               </div>
               <div class="stage-topbar-tools" id="pdf-compress-topbar-tools" style="display:none;">
+                <button type="button" class="chip-btn" style="color:#ef4444; border-color:rgba(239, 68, 68, 0.35); display:inline-flex; align-items:center; gap:5px; font-weight:600;" onclick="resetPdfCompress()" title="Remove loaded PDF document">
+                  <i class="fa-solid fa-trash-can" style="font-size:11px;"></i>
+                  <span>Clear All</span>
+                </button>
                 <span id="pdf-compress-summary-pill" class="badge-pill" style="font-size: 10.5px; background: var(--lime-tint); color: #2d6a4f; border: 1px solid var(--accent-lime-border);">0 Pages · 0 KB</span>
               </div>
             </div>
@@ -4174,10 +4189,14 @@
               </div>
               <div class="stage-topbar-tools" id="pdf-rotate-topbar-tools" style="display:none;">
                 <div class="chip-group" style="display:flex; row-gap:8px; column-gap:6px; flex-wrap:wrap;">
-                  <button class="chip-btn" onclick="rotateAllPdfPages(-90)" title="Rotate all pages counter-clockwise">↺ All Left (-90°)</button>
-                  <button class="chip-btn" onclick="rotateAllPdfPages(90)" title="Rotate all pages clockwise">↻ All Right (+90°)</button>
-                  <button class="chip-btn" onclick="rotateAllPdfPages(180)" title="Flip all pages 180 degrees">Flip 180°</button>
-                  <button class="chip-btn" onclick="resetAllPdfPageRotations()" title="Reset all pages to original orientation">↺ Reset All</button>
+                  <button type="button" class="chip-btn" onclick="rotateAllPdfPages(-90)" title="Rotate all pages counter-clockwise">↺ All Left (-90°)</button>
+                  <button type="button" class="chip-btn" onclick="rotateAllPdfPages(90)" title="Rotate all pages clockwise">↻ All Right (+90°)</button>
+                  <button type="button" class="chip-btn" onclick="rotateAllPdfPages(180)" title="Flip all pages 180 degrees">Flip 180°</button>
+                  <button type="button" class="chip-btn" onclick="resetAllPdfPageRotations()" title="Reset all pages to original orientation">↺ Reset Rotations</button>
+                  <button type="button" class="chip-btn" style="color:#ef4444; border-color:rgba(239, 68, 68, 0.35); display:inline-flex; align-items:center; gap:5px; font-weight:600;" onclick="resetPdfRotate()" title="Remove loaded PDF document">
+                    <i class="fa-solid fa-trash-can" style="font-size:11px;"></i>
+                    <span>Clear All</span>
+                  </button>
                 </div>
                 <span id="pdf-rotate-summary-pill" class="badge-pill" style="font-size: 10.5px; background: var(--lime-tint); color: #2d6a4f; border: 1px solid var(--accent-lime-border);">0 Pages Loaded</span>
               </div>
@@ -4359,10 +4378,14 @@
               </div>
               <div class="stage-topbar-tools" id="pdf-delete-topbar-tools" style="display:none;">
                 <div class="chip-group" style="display:flex; row-gap:8px; column-gap:6px; flex-wrap:wrap;">
-                  <button class="chip-btn" onclick="setPdfDeleteFilter('odd')" title="Mark odd pages for deletion">Delete Odd</button>
-                  <button class="chip-btn" onclick="setPdfDeleteFilter('even')" title="Mark even pages for deletion">Delete Even</button>
-                  <button class="chip-btn" onclick="invertPdfDeleteSelection()" title="Invert kept and deleted pages">Invert</button>
-                  <button class="chip-btn" onclick="resetPdfDeleteSelection()" title="Keep all pages">Keep All</button>
+                  <button type="button" class="chip-btn" onclick="setPdfDeleteFilter('odd')" title="Mark odd pages for deletion">Delete Odd</button>
+                  <button type="button" class="chip-btn" onclick="setPdfDeleteFilter('even')" title="Mark even pages for deletion">Delete Even</button>
+                  <button type="button" class="chip-btn" onclick="invertPdfDeleteSelection()" title="Invert kept and deleted pages">Invert</button>
+                  <button type="button" class="chip-btn" onclick="resetPdfDeleteSelection()" title="Keep all pages">Keep All</button>
+                  <button type="button" class="chip-btn" style="color:#ef4444; border-color:rgba(239, 68, 68, 0.35); display:inline-flex; align-items:center; gap:5px; font-weight:600;" onclick="resetPdfDelete()" title="Remove loaded PDF document">
+                    <i class="fa-solid fa-trash-can" style="font-size:11px;"></i>
+                    <span>Clear All</span>
+                  </button>
                 </div>
                 <span id="pdf-delete-summary-pill" class="badge-pill" style="font-size: 10.5px; background: var(--soft); color: var(--ink); border: 1px solid var(--line);">0 Pages Marked</span>
               </div>
@@ -4576,6 +4599,37 @@
           </div>
           <div class="pdf-sources-footer" id="pdf-sources-footer">
             <!-- Action buttons populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- In-Page PDF Preview Modal Dialog -->
+      <div id="pdf-preview-modal" class="modal-backdrop" onclick="handlePdfPreviewBackdropClick(event)">
+        <div class="modal-dialog pdf-preview-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-pdf-preview-title" style="max-width: 960px; width: 95vw; height: 90vh; display: flex; flex-direction: column; padding: 0; border-radius: var(--radius-md, 12px); overflow: hidden; background: #1e293b; box-shadow: 0 25px 60px rgba(0,0,0,0.4);">
+          <div class="modal-header" style="padding: 12px 18px; background: #0f172a; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: space-between;">
+            <div class="modal-title-group" style="display: flex; align-items: center; gap: 10px;">
+              <span class="modal-icon" style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 8px; background: rgba(215, 243, 106, 0.15); color: #d7f36a; font-size: 15px;">
+                <i class="fa-solid fa-file-pdf"></i>
+              </span>
+              <div>
+                <h3 id="modal-pdf-preview-title" style="font-size: 14.5px; font-weight: 700; color: #f8fafc; margin: 0;">PDF Preview</h3>
+                <small id="modal-pdf-preview-sub" style="font-size: 11.5px; color: #94a3b8;">Document Preview · Native Reader</small>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button type="button" id="pdf-preview-modal-newtab-btn" class="chip-btn" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.15); font-size: 12px; padding: 5px 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 11px;"></i>
+                <span>Open in Tab</span>
+              </button>
+              <button type="button" id="pdf-preview-modal-download-btn" class="chip-btn" style="background: var(--lime, #d7f36a); color: #000; font-weight: 700; border: none; font-size: 12px; padding: 5px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-download" style="font-size: 11px;"></i>
+                <span>Download</span>
+              </button>
+              <button class="modal-close-btn" onclick="closePdfPreviewModal()" title="Close (Esc)" aria-label="Close dialog" style="color: #cbd5e1; background: transparent; border: none; font-size: 18px; cursor: pointer; margin-left: 6px;">✕</button>
+            </div>
+          </div>
+          <div style="flex: 1; width: 100%; height: 100%; background: #525659; position: relative;">
+            <iframe id="pdf-preview-modal-iframe" style="width: 100%; height: 100%; border: none; display: block;" allowfullscreen></iframe>
           </div>
         </div>
       </div>
@@ -5021,7 +5075,7 @@
   <!-- PixKit Remote Connector to admin.pixkit.site -->
   <script src="js/pixkit-remote.js"></script>
   <script src="js/engine.js?v=2.6"></script>
-  <script src="js/app.js?v=8.25"></script>
+  <script src="js/app.js?v=8.26"></script>
   <script src="js/support.js?v=8.19"></script>
   <script src="js/leaderboard.js"></script>
 </body>
