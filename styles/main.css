@@ -6854,6 +6854,14 @@ body.leaderboard-active .leaderboard-screen {
   transform: translateY(-2px);
 }
 
+.leaderboard-back-btn .back-text-desktop {
+  display: inline;
+}
+
+.leaderboard-back-btn .back-text-mobile {
+  display: none;
+}
+
 .leaderboard-esc-kbd {
   font-size: 10px;
   font-family: 'JetBrains Mono', monospace;
@@ -8627,6 +8635,322 @@ body.leaderboard-active .leaderboard-screen {
   .stage-viewport {
     min-height: 280px !important;
     max-height: 55vh !important;
+  }
+
+  /* ==========================================================================
+     Top Supporters Leaderboard Mobile Responsive Optimization
+     ========================================================================== */
+  .leaderboard-screen {
+    -webkit-overflow-scrolling: touch;
+    height: 100vh;
+    height: 100dvh;
+    padding-top: env(safe-area-inset-top, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .leaderboard-container {
+    padding: 0 14px 60px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 1. Top Action Bar: Clean, spacious 2-item header (Back on left, Support Us on right) */
+  .leaderboard-topbar {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 10px 0 !important;
+    margin-bottom: 20px !important;
+    gap: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .leaderboard-esc-kbd {
+    display: none !important;
+  }
+
+  .leaderboard-brand-badge {
+    display: none !important;
+  }
+
+  .leaderboard-back-btn {
+    padding: 7px 12px !important;
+    font-size: 12px !important;
+    gap: 6px !important;
+    border-radius: 999px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .leaderboard-back-btn .back-text-desktop {
+    display: none !important;
+  }
+
+  .leaderboard-back-btn .back-text-mobile {
+    display: inline !important;
+  }
+
+  .leaderboard-support-btn {
+    padding: 7px 14px !important;
+    font-size: 12px !important;
+    gap: 6px !important;
+    border-radius: 999px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  /* 2. Hero Headline */
+  .leaderboard-hero-head {
+    margin-bottom: 20px !important;
+  }
+
+  .leaderboard-heading {
+    font-size: clamp(24px, 6.5vw, 30px) !important;
+    letter-spacing: -0.02em !important;
+    margin: 0 0 6px !important;
+    line-height: 1.2 !important;
+  }
+
+  .leaderboard-tagline {
+    font-size: 12.5px !important;
+    line-height: 1.45 !important;
+    padding: 0 4px !important;
+    max-width: 100% !important;
+  }
+
+  /* 3. Total Collection Stats Card */
+  .total-collection-card {
+    padding: 18px 14px !important;
+    border-radius: 16px !important;
+    margin-bottom: 20px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .collection-badge {
+    font-size: 10px !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  .collection-amount-display {
+    font-size: clamp(30px, 8vw, 38px) !important;
+    line-height: 1.1 !important;
+  }
+
+  .collection-currency-code {
+    font-size: 14px !important;
+  }
+
+  /* 4. Timeframe Controls & Tab Buttons */
+  .leaderboard-controls-row {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-bottom: 18px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .timeframe-tabs-group {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    width: 100% !important;
+    padding: 4px !important;
+    border-radius: 12px !important;
+    gap: 3px !important;
+    box-sizing: border-box !important;
+  }
+
+  .timeframe-btn {
+    padding: 7px 2px !important;
+    font-size: 11px !important;
+    gap: 4px !important;
+    border-radius: 8px !important;
+    justify-content: center !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+  }
+
+  .timeframe-btn svg {
+    width: 11px !important;
+    height: 11px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .leaderboard-meta-tag {
+    font-size: 11px !important;
+    text-align: center !important;
+  }
+
+  /* 5. Ranked Supporter Cards */
+  .supporters-ranked-list {
+    gap: 8px !important;
+    margin-bottom: 24px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .supporter-rank-card {
+    padding: 12px 14px !important;
+    border-radius: 14px !important;
+    gap: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .card-left-group {
+    gap: 10px !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+  }
+
+  .rank-badge-wrap {
+    width: 24px !important;
+    font-size: 14px !important;
+  }
+
+  .rank-1 .rank-badge-wrap { font-size: 18px !important; }
+  .rank-2 .rank-badge-wrap { font-size: 16px !important; }
+  .rank-3 .rank-badge-wrap { font-size: 15px !important; }
+
+  .supporter-avatar-circle {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 13px !important;
+  }
+
+  .supporter-display-name {
+    font-size: 13.5px !important;
+  }
+
+  .supporter-tier-tag {
+    font-size: 9.5px !important;
+    padding: 1.5px 6px !important;
+  }
+
+  .supporter-note-quote {
+    font-size: 11.5px !important;
+    line-height: 1.35 !important;
+    -webkit-line-clamp: 2 !important;
+  }
+
+  .card-right-group {
+    gap: 3px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .supporter-amount-pill {
+    font-size: 13px !important;
+    padding: 5px 10px !important;
+  }
+
+  .supporter-time-ago {
+    font-size: 10px !important;
+  }
+
+  /* 6. Empty State Card */
+  .leaderboard-empty-state {
+    padding: 26px 14px !important;
+    border-radius: 16px !important;
+    margin: 8px 0 20px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .empty-state-icon svg {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .leaderboard-empty-state h4 {
+    font-size: 15px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .leaderboard-empty-state p {
+    font-size: 12px !important;
+    line-height: 1.45 !important;
+    margin-bottom: 14px !important;
+    max-width: 320px !important;
+  }
+
+  .leaderboard-empty-state .leaderboard-support-btn {
+    padding: 8px 18px !important;
+    font-size: 12px !important;
+  }
+
+  /* 7. Join the Board Card */
+  .leaderboard-join-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    text-align: center !important;
+    padding: 18px 14px !important;
+    border-radius: 16px !important;
+    gap: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin-bottom: 24px !important;
+  }
+
+  .join-card-left {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+    text-align: center !important;
+  }
+
+  .join-card-icon svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .join-card-left h3 {
+    font-size: 14.5px !important;
+    margin-bottom: 3px !important;
+  }
+
+  .join-card-left p {
+    font-size: 12px !important;
+    line-height: 1.35 !important;
+  }
+
+  .join-card-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 10px 14px !important;
+    font-size: 12.5px !important;
+    border-radius: 10px !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .leaderboard-container {
+    padding: 0 10px 48px !important;
+  }
+  .timeframe-tabs-group {
+    padding: 2.5px !important;
+    gap: 1.5px !important;
+  }
+  .timeframe-btn {
+    font-size: 10px !important;
+    padding: 6px 1px !important;
+    gap: 1px !important;
+  }
+  .timeframe-btn svg {
+    display: none !important;
+  }
+  .leaderboard-back-btn {
+    padding: 6px 10px !important;
+    font-size: 11.5px !important;
+  }
+  .leaderboard-support-btn {
+    padding: 6px 12px !important;
+    font-size: 11.5px !important;
   }
 }
 
