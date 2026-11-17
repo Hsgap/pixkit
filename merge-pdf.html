@@ -966,18 +966,331 @@
       color: var(--tp-ink);
     }
 
-    @media (max-width: 680px) {
+    /* Complete Mobile View & Responsive UI Optimization (Phone & Tablet) */
+    @media (max-width: 768px) {
+      .landing-shell {
+        padding: 0 14px 60px;
+      }
+
+      /* 1. Header & Navigation (Clean Single-Row App Header) */
       .landing-nav {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 0 18px;
+        margin-bottom: 24px;
+        gap: 10px;
       }
+      .landing-brand {
+        font-size: 18px;
+        gap: 8px;
+      }
+      .landing-brand .brand-mark {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        font-size: 14px;
+      }
+      .landing-nav-links {
+        gap: 8px;
+        align-items: center;
+      }
+      .landing-nav-link {
+        display: none !important;
+      }
+      .landing-launch-btn {
+        padding: 6px 12px;
+        font-size: 11.5px;
+        gap: 5px;
+      }
+      .theme-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+      }
+
+      /* 2. Breadcrumbs */
+      .breadcrumbs {
+        font-size: 11px;
+        gap: 6px;
+        margin-bottom: 16px;
+        overflow-x: auto;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 2px;
+      }
+
+      /* 3. Hero Header */
+      .tool-hero {
+        margin: 0 auto 32px;
+      }
+      .tool-pill-badge {
+        font-size: 9.5px;
+        padding: 4px 10px;
+        margin-bottom: 12px;
+        max-width: 92vw;
+        white-space: normal;
+        line-height: 1.4;
+        text-align: center;
+        letter-spacing: 0.04em;
+      }
+      .tool-title {
+        font-size: clamp(23px, 6.2vw, 30px);
+        line-height: 1.2;
+        margin: 0 0 10px;
+      }
+      .tool-subtitle {
+        font-size: 13px;
+        line-height: 1.48;
+        margin: 0 auto 22px;
+        padding: 0 4px;
+      }
+
+      /* 4. Dropzone Card */
       .dropzone-container {
-        padding: 40px 18px;
+        padding: 26px 14px;
+        border-radius: 16px;
+        margin-bottom: 28px;
       }
+      .dropzone-icon-box {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        border-radius: 14px;
+        margin: 0 auto 10px;
+      }
+      .dropzone-heading {
+        font-size: 17px;
+        margin-bottom: 4px;
+      }
+      .dropzone-subtext {
+        font-size: 12.5px;
+        margin-bottom: 16px;
+      }
+      .cta-choose-btn {
+        width: 100%;
+        max-width: 280px;
+        padding: 11px 16px;
+        font-size: 13.5px;
+        justify-content: center;
+        box-sizing: border-box;
+        border-radius: 11px;
+      }
+      .dropzone-formats {
+        font-size: 11px;
+        gap: 6px 10px;
+        margin-top: 14px;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* 5. Social Share Bar */
+      .tool-share-bar {
+        margin: -14px auto 28px;
+        padding: 6px 8px;
+        gap: 6px;
+        border-radius: 14px;
+        width: 100%;
+        max-width: 320px;
+        box-sizing: border-box;
+        justify-content: center;
+      }
+      .share-bar-label {
+        display: none;
+      }
+      .share-bar-actions {
+        gap: 5px;
+        justify-content: center;
+        width: 100%;
+      }
+      .share-pill {
+        padding: 5px 8px;
+        font-size: 11px;
+        gap: 4px;
+        flex: 1 1 auto;
+        justify-content: center;
+        min-width: 0;
+      }
+
+      /* 6. Value Pillars & Steps (1-Column Mobile Stacking) */
+      .pillars-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-bottom: 36px;
+      }
+      .pillar-card {
+        padding: 16px 14px;
+        border-radius: 14px;
+      }
+      .pillar-icon {
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
+      .pillar-title {
+        font-size: 15px;
+        margin-bottom: 4px;
+      }
+      .pillar-desc {
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .section-title-wrap {
+        margin-bottom: 20px;
+      }
+      .section-eyebrow {
+        font-size: 10.5px;
+        margin-bottom: 4px;
+      }
+      .section-title {
+        font-size: 20px;
+      }
+      .steps-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-bottom: 36px;
+      }
+      .step-card {
+        padding: 16px 14px;
+        border-radius: 14px;
+      }
+      .step-badge {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+      .step-title {
+        font-size: 15px;
+        margin-bottom: 4px;
+      }
+      .step-desc {
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      /* 7. FAQs */
+      .faq-wrapper {
+        margin-bottom: 36px;
+      }
+      .faq-item {
+        border-radius: 10px;
+        margin-bottom: 8px;
+      }
+      .faq-question {
+        padding: 13px 14px;
+        font-size: 13.5px;
+        gap: 8px;
+        line-height: 1.35;
+      }
+      .faq-answer {
+        padding: 0 14px 12px;
+        font-size: 12.5px;
+        line-height: 1.5;
+      }
+
+      /* 8. Related Tools */
+      .related-tools-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-bottom: 36px;
+      }
+      .related-tool-card {
+        padding: 10px 12px;
+        border-radius: 12px;
+        gap: 10px;
+      }
+      .related-tool-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
+        border-radius: 8px;
+      }
+      .related-tool-info h4 {
+        font-size: 13px;
+        margin-bottom: 2px;
+      }
+      .related-tool-info p {
+        font-size: 11px;
+      }
+
+      /* 9. Bottom CTA Banner */
+      .bottom-cta-banner {
+        padding: 24px 14px;
+        border-radius: 16px;
+        margin-bottom: 36px;
+      }
+      .bottom-cta-banner h3 {
+        font-size: 18px;
+        line-height: 1.3;
+        margin-bottom: 6px;
+      }
+      .bottom-cta-banner p {
+        font-size: 12.5px;
+        line-height: 1.45;
+        margin-bottom: 16px;
+      }
+      .bottom-cta-banner .landing-launch-btn {
+        width: 100%;
+        max-width: 260px;
+        justify-content: center;
+        box-sizing: border-box;
+        padding: 10px 16px !important;
+        font-size: 12.5px !important;
+      }
+
+      /* 10. Footer */
       .landing-footer {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
+        text-align: center;
+        gap: 14px;
+        padding-top: 24px;
+      }
+      .landing-footer-copy {
+        align-items: center;
+        font-size: 11.5px;
+        text-align: center;
+      }
+      .landing-footer-artan {
+        justify-content: center;
+        font-size: 11.5px;
+      }
+      .landing-footer-links {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px 12px;
+        font-size: 11.5px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .landing-shell {
+        padding: 0 10px 40px;
+      }
+      .tool-title {
+        font-size: clamp(20px, 5.8vw, 25px);
+      }
+      .tool-subtitle {
+        font-size: 12px;
+      }
+      .dropzone-container {
+        padding: 22px 10px;
+      }
+      .cta-choose-btn {
+        font-size: 12.5px;
+        padding: 10px 12px;
+      }
+      .pillar-card, .step-card {
+        padding: 14px 12px;
+      }
+      .faq-question {
+        padding: 12px 12px;
+        font-size: 13px;
+      }
+      .faq-answer {
+        padding: 0 12px 10px;
+        font-size: 12px;
       }
     }
   </style>
