@@ -181,6 +181,7 @@
     }
 
     html {
+      height: 100%;
       scroll-behavior: smooth;
       scrollbar-gutter: stable;
     }
@@ -238,10 +239,9 @@
 
     #canvas-container {
       position: absolute;
-      top: 0;
-      left: 0;
+      inset: 0;
       width: 100%;
-      height: 100vh;
+      height: 100%;
       z-index: 1;
       pointer-events: none;
       overflow: hidden;
@@ -256,10 +256,9 @@
     /* Ambient Soft Vignette */
     .bg-ambient-vignette {
       position: absolute;
-      top: 0;
-      left: 0;
+      inset: 0;
       width: 100%;
-      height: 100vh;
+      height: 100%;
       pointer-events: none;
       z-index: 2;
       background: radial-gradient(circle at center, transparent 35%, var(--paper) 100%);
@@ -347,6 +346,7 @@
     .hero-stage {
       position: relative;
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -355,9 +355,13 @@
       pointer-events: none;
       padding: 32px 24px;
       text-align: center;
+      overflow: hidden;
+      box-sizing: border-box;
     }
 
     .center-brand-wrap {
+      position: relative;
+      z-index: 5;
       pointer-events: auto;
       display: flex;
       flex-direction: column;
@@ -365,6 +369,7 @@
       cursor: default;
       animation: floatIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
       max-width: 800px;
+      width: 100%;
     }
 
     .center-brand-logo {
@@ -1642,91 +1647,129 @@
 
       /* 2. Hero Stage & Brand Display */
       .hero-stage {
-        padding: 56px 16px 36px;
+        padding: max(44px, env(safe-area-inset-top, 44px)) 16px max(24px, env(safe-area-inset-bottom, 24px));
+        min-height: 100vh;
         min-height: 100dvh;
-        min-height: -webkit-fill-available;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        box-sizing: border-box;
       }
       .center-brand-wrap {
         width: 100%;
         max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
       }
       .center-brand-logo {
-        gap: 14px;
-        padding: 6px 12px;
-        margin-bottom: 8px;
+        gap: 12px;
+        padding: 4px 8px;
+        margin-bottom: 4px;
         -webkit-tap-highlight-color: transparent;
       }
       .center-brand-mark {
         width: clamp(52px, 14vw, 64px);
         height: clamp(52px, 14vw, 64px);
-        border-radius: clamp(15px, 4vw, 18px);
+        border-radius: clamp(14px, 3.8vw, 18px);
       }
       .brand-mark-base,
       .brand-mark-green {
         font-size: clamp(28px, 7.5vw, 34px);
       }
       .center-brand-name {
-        font-size: clamp(44px, 13vw, 68px);
+        font-size: clamp(40px, 11vw, 54px);
         letter-spacing: -0.04em;
+        line-height: 1;
       }
 
       /* 3. Encrypted Text Scrambler */
       .encrypted-text-container {
-        max-width: 330px;
+        max-width: 300px;
         margin-top: 2px;
-        margin-bottom: 18px;
-        padding: 4px 6px;
+        margin-bottom: 12px;
+        padding: 2px 4px;
         -webkit-tap-highlight-color: transparent;
       }
       .encrypted-text {
-        font-size: 12px;
-        line-height: 1.45;
+        font-size: 11.5px;
+        line-height: 1.4;
         white-space: normal;
         word-break: break-word;
+        opacity: 0.85;
       }
 
-      /* 4. Hero Action Buttons */
+      /* 4. Hero Action Buttons (Sleek, Proportional & Compact) */
       .hero-actions-group {
         width: 100%;
-        max-width: 330px;
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 4px;
-        margin-bottom: 18px;
-      }
-      .enter-studio-link,
-      .hero-explore-pill {
-        width: 100%;
+        max-width: 310px;
+        flex-direction: row;
+        align-items: center;
         justify-content: center;
-        padding: 13px 20px;
-        font-size: 13.5px;
-        min-height: 48px;
+        gap: 8px;
+        margin-top: 0;
+        margin-bottom: 12px;
+      }
+      .enter-studio-link {
+        flex: 1;
+        max-width: 155px;
+        min-height: 38px;
+        padding: 9px 14px;
+        font-size: 12px;
+        font-weight: 700;
+        border-radius: 9999px;
+        justify-content: center;
+        white-space: nowrap;
+        box-sizing: border-box;
+      }
+      .hero-explore-pill {
+        flex: 1;
+        max-width: 145px;
+        min-height: 38px;
+        padding: 8px 12px;
+        font-size: 11.5px;
+        font-weight: 600;
+        border-radius: 9999px;
+        justify-content: center;
+        white-space: nowrap;
         box-sizing: border-box;
       }
 
-      /* 5. Quick Tools Chips (Clean 2x2 Grid) */
+      /* 5. Quick Tools Chips (Clean, Compact 2x2 Grid) */
       .hero-quick-tools {
-        border-radius: 20px;
-        padding: 10px 12px;
-        gap: 6px;
+        border-radius: 16px;
+        padding: 6px 10px;
+        gap: 5px;
         width: 100%;
-        max-width: 340px;
-        margin-bottom: 18px;
+        max-width: 290px;
+        margin-bottom: 12px;
+        background: rgba(255, 255, 255, 0.45);
         box-sizing: border-box;
+      }
+      [data-theme="dark"] .hero-quick-tools {
+        background: rgba(26, 28, 22, 0.45);
       }
       .quick-tools-label {
         width: 100%;
         text-align: center;
-        margin-bottom: 4px;
-        font-size: 10.5px;
+        margin-bottom: 2px;
+        font-size: 9px;
+        letter-spacing: 0.08em;
+        opacity: 0.75;
       }
       .hero-tool-chip {
-        flex: 1 1 calc(50% - 6px);
+        flex: 1 1 calc(50% - 5px);
         justify-content: center;
-        padding: 8px 10px;
-        font-size: 12px;
+        padding: 5px 8px;
+        font-size: 11px;
+        gap: 4px;
+        border-radius: 9999px;
         box-sizing: border-box;
         -webkit-tap-highlight-color: transparent;
+      }
+      .hero-tool-chip .chip-icon {
+        font-size: 9.5px;
       }
       .hero-tool-chip:active {
         transform: scale(0.96);
@@ -1734,22 +1777,28 @@
 
       /* 6. Privacy Strip Micro Badges */
       .hero-privacy-strip {
-        gap: 6px;
-        font-size: 11px;
-        max-width: 340px;
+        gap: 5px;
+        font-size: 10px;
+        max-width: 300px;
         justify-content: center;
+        margin-bottom: 0;
       }
       .privacy-dot {
         display: none !important;
       }
       .privacy-item {
         background: var(--soft);
-        padding: 4px 10px;
+        padding: 3px 8px;
         border-radius: 999px;
         border: 1px solid var(--line);
-        font-size: 11px;
+        font-size: 9.5px;
         white-space: nowrap;
       }
+      .privacy-item i {
+        font-size: 9px;
+      }
+
+      /* 7. Complete Tools & SEO Showcase */
 
       /* 7. Complete Tools & SEO Showcase */
       .seo-wrapper {
@@ -1916,36 +1965,65 @@
     /* Small Mobile Displays (<= 480px, e.g. iPhone SE, iPhone Mini, Galaxy S series) */
     @media (max-width: 480px) {
       .hero-stage {
-        padding: 48px 12px 28px;
+        padding: max(36px, env(safe-area-inset-top, 36px)) 10px max(18px, env(safe-area-inset-bottom, 18px));
+        min-height: 100vh;
+        min-height: 100dvh;
       }
       .center-brand-logo {
         gap: 10px;
         padding: 2px 4px;
+        margin-bottom: 3px;
       }
       .center-brand-mark {
         width: 48px;
         height: 48px;
-        border-radius: 14px;
+        border-radius: 13px;
       }
       .brand-mark-base,
       .brand-mark-green {
         font-size: 25px;
       }
       .center-brand-name {
-        font-size: clamp(38px, 11vw, 46px);
+        font-size: clamp(36px, 10vw, 44px);
       }
       .encrypted-text-container {
-        max-width: 290px;
+        max-width: 270px;
+        margin-bottom: 10px;
       }
       .encrypted-text {
+        font-size: 11px;
+      }
+      .hero-actions-group {
+        max-width: 280px;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+      .enter-studio-link {
+        padding: 8px 12px;
         font-size: 11.5px;
+        min-height: 35px;
+      }
+      .hero-explore-pill {
+        padding: 7px 10px;
+        font-size: 11px;
+        min-height: 35px;
       }
       .hero-quick-tools {
-        max-width: 310px;
+        max-width: 270px;
+        padding: 5px 8px;
+        margin-bottom: 10px;
       }
       .hero-tool-chip {
-        font-size: 11.5px;
-        padding: 7px 8px;
+        font-size: 10.5px;
+        padding: 4px 6px;
+      }
+      .hero-privacy-strip {
+        max-width: 270px;
+        gap: 4px;
+      }
+      .privacy-item {
+        font-size: 9px;
+        padding: 2.5px 7px;
       }
       .seo-wrapper {
         padding: 44px 12px 40px;
@@ -1965,14 +2043,6 @@
 </head>
 <body>
 
-  <!-- Canvas Background for 3D Pixel Grid Animation -->
-  <div id="canvas-container">
-    <canvas id="pixelCanvas"></canvas>
-  </div>
-
-  <!-- Ambient Light Vignette -->
-  <div class="bg-ambient-vignette"></div>
-
   <!-- Top Floating Navigation Bar -->
   <header class="top-bar">
     <nav class="topbar-nav" aria-label="Main Navigation">
@@ -1986,7 +2056,15 @@
   </header>
 
   <!-- Center Stage Brand -->
-  <main class="hero-stage">
+  <main class="hero-stage" id="heroStage">
+    <!-- Canvas Background for 3D Pixel Grid Animation -->
+    <div id="canvas-container">
+      <canvas id="pixelCanvas"></canvas>
+    </div>
+
+    <!-- Ambient Light Vignette -->
+    <div class="bg-ambient-vignette"></div>
+
     <div class="center-brand-wrap" id="centerBrand">
       <a href="studio" class="center-brand-logo" id="logoInteractiveWrap" title="Click to Launch PixKit Image Studio" onclick="launchStudioWithSavedWork(event)">
         <!-- Dual Layer Animated Logo Box with Magnetic Cursor Movement -->
@@ -3055,8 +3133,9 @@
         const isMobile = window.innerWidth < 768;
         CUBE_SIZE = isMobile ? 38 : 30;
         dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.75 : 2);
-        width = window.innerWidth;
-        height = window.innerHeight;
+        const heroStage = document.getElementById('heroStage') || document.querySelector('.hero-stage');
+        width = heroStage ? heroStage.offsetWidth : window.innerWidth;
+        height = heroStage ? heroStage.offsetHeight : window.innerHeight;
 
         canvas.width = width * dpr;
         canvas.height = height * dpr;
