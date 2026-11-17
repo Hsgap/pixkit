@@ -4550,7 +4550,6 @@ document.addEventListener('DOMContentLoaded', () => {
       badge.textContent = `${realW} × ${realH} px`;
     }
 
-    syncStudioCropPrecisionInputs();
     bindCropEvents();
   }
 
@@ -4734,8 +4733,6 @@ document.addEventListener('DOMContentLoaded', () => {
         cropBoxState.h = Math.max(0.02, Math.min(1 - cropBoxState.y, y2 - y1));
         initCropOverlay();
       }
-
-      updateStudioCropMagnifier(e.clientX, e.clientY, cropInteractionState ? cropInteractionState.handle : null);
     });
 
     const finishInteraction = () => {
@@ -4746,9 +4743,6 @@ document.addEventListener('DOMContentLoaded', () => {
         cropBoxState = cropInteractionState.origBox || { x: 0.05, y: 0.05, w: 0.9, h: 0.9 };
         initCropOverlay();
       }
-
-      hideStudioCropMagnifier();
-      syncStudioCropPrecisionInputs();
 
       try {
         if (cropInteractionState.pointerId !== undefined) {
@@ -4762,173 +4756,6 @@ document.addEventListener('DOMContentLoaded', () => {
     wrapper.addEventListener('pointerup', finishInteraction);
     wrapper.addEventListener('pointercancel', finishInteraction);
     window.addEventListener('pointerup', finishInteraction);
-  }
-
-  // ============================================================
-  // Studio Pixel-Perfect Magnifier Loupe & Precision Nudge
-  // ============================================================
-  let studioNudgeTarget = 'box';
-
-  window.setStudioNudgeTarget = function (target, btn) {
-    studioNudgeTarget = target;
-    document.querySelectorAll('#studioCropPrecisionCard .target-pill').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    const tag = document.getElementById('studioNudgeTargetTag');
-    if (tag) {
-      const names = { box: 'Entire Box', tl: 'Top-Left Corner', tr: 'Top-Right Corner', bl: 'Bottom-Left Corner', br: 'Bottom-Right Corner' };
-      tag.textContent = `Target: ${names[target] || 'Box'}`;
-    }
-  };
-
-  window.nudgeStudioCrop = function (dxPx, dyPx) {
-    if (!engine || !engine.activeCanvas) return;
-    const imgW = engine.activeCanvas.width;
-    const imgH = engine.activeCanvas.height;
-    if (!imgW || !imgH) return;
-
-    const dxNorm = dxPx / imgW;
-    const dyNorm = dyPx / imgH;
-    const minNormW = 10 / imgW;
-    const minNormH = 10 / imgH;
-
-    let { x, y, w, h } = cropBoxState;
-
-    if (studioNudgeTarget === 'box') {
-      x = Math.max(0, Math.min(1 - w, x + dxNorm));
-      y = Math.max(0, Math.min(1 - h, y + dyNorm));
-    } else if (studioNudgeTarget === 'tl') {
-      const newX = Math.max(0, Math.min(x + w - minNormW, x + dxNorm));
-      const newY = Math.max(0, Math.min(y + h - minNormH, y + dyNorm));
-      w = w + (x - newX);
-      h = h + (y - newY);
-      x = newX;
-      y = newY;
-    } else if (studioNudgeTarget === 'tr') {
-      w = Math.max(minNormW, Math.min(1 - x, w + dxNorm));
-      const newY = Math.max(0, Math.min(y + h - minNormH, y + dyNorm));
-      h = h + (y - newY);
-      y = newY;
-    } else if (studioNudgeTarget === 'bl') {
-      const newX = Math.max(0, Math.min(x + w - minNormW, x + dxNorm));
-      w = w + (x - newX);
-      x = newX;
-      h = Math.max(minNormH, Math.min(1 - y, h + dyNorm));
-    } else if (studioNudgeTarget === 'br') {
-      w = Math.max(minNormW, Math.min(1 - x, w + dxNorm));
-      h = Math.max(minNormH, Math.min(1 - y, h + dyNorm));
-    }
-
-    cropBoxState = { x, y, w, h };
-    initCropOverlay();
-    syncStudioCropPrecisionInputs();
-  };
-
-  function syncStudioCropPrecisionInputs() {
-    if (!engine || !engine.activeCanvas) return;
-    const inX = document.getElementById('studioCropX');
-    const inY = document.getElementById('studioCropY');
-    const inW = document.getElementById('studioCropW');
-    const inH = document.getElementById('studioCropH');
-
-    const imgW = engine.activeCanvas.width;
-    const imgH = engine.activeCanvas.height;
-
-    if (inX) inX.value = Math.round(cropBoxState.x * imgW);
-    if (inY) inY.value = Math.round(cropBoxState.y * imgH);
-    if (inW) inW.value = Math.max(1, Math.round(cropBoxState.w * imgW));
-    if (inH) inH.value = Math.max(1, Math.round(cropBoxState.h * imgH));
-  }
-
-  window.onStudioManualCropChange = function () {
-    if (!engine || !engine.activeCanvas) return;
-    const inX = document.getElementById('studioCropX');
-    const inY = document.getElementById('studioCropY');
-    const inW = document.getElementById('studioCropW');
-    const inH = document.getElementById('studioCropH');
-
-    const imgW = engine.activeCanvas.width;
-    const imgH = engine.activeCanvas.height;
-    if (!inX || !inY || !inW || !inH || !imgW || !imgH) return;
-
-    let pxX = parseInt(inX.value, 10) || 0;
-    let pxY = parseInt(inY.value, 10) || 0;
-    let pxW = parseInt(inW.value, 10) || 10;
-    let pxH = parseInt(inH.value, 10) || 10;
-
-    pxW = Math.max(5, Math.min(imgW, pxW));
-    pxH = Math.max(5, Math.min(imgH, pxH));
-    pxX = Math.max(0, Math.min(imgW - pxW, pxX));
-    pxY = Math.max(0, Math.min(imgH - pxH, pxY));
-
-    cropBoxState = {
-      x: pxX / imgW,
-      y: pxY / imgH,
-      w: pxW / imgW,
-      h: pxH / imgH
-    };
-
-    initCropOverlay();
-    syncStudioCropPrecisionInputs();
-  };
-
-  function updateStudioCropMagnifier(clientX, clientY, handle) {
-    const magnifier = document.getElementById('studioCropMagnifier');
-    const canvas = document.getElementById('studioCropMagnifierCanvas');
-    const coordsLabel = document.getElementById('studioMagnifierCoords');
-    if (!magnifier || !canvas || !engine || !engine.activeCanvas) return;
-
-    const imgW = engine.activeCanvas.width;
-    const imgH = engine.activeCanvas.height;
-
-    let normX = cropBoxState.x;
-    let normY = cropBoxState.y;
-
-    if (handle) {
-      if (handle.includes('r')) normX = cropBoxState.x + cropBoxState.w;
-      else if (handle.includes('l')) normX = cropBoxState.x;
-      else normX = cropBoxState.x + cropBoxState.w / 2;
-
-      if (handle.includes('b')) normY = cropBoxState.y + cropBoxState.h;
-      else if (handle.includes('t')) normY = cropBoxState.y;
-      else normY = cropBoxState.y + cropBoxState.h / 2;
-    } else {
-      normX = cropBoxState.x + cropBoxState.w / 2;
-      normY = cropBoxState.y + cropBoxState.h / 2;
-    }
-
-    const pxX = Math.round(normX * imgW);
-    const pxY = Math.round(normY * imgH);
-
-    if (coordsLabel) {
-      coordsLabel.textContent = `X: ${pxX}, Y: ${pxY} px`;
-    }
-
-    const ctx = canvas.getContext('2d');
-    const magW = canvas.width;
-    const magH = canvas.height;
-    const zoomFactor = 3.5;
-    const sampleW = magW / zoomFactor;
-    const sampleH = magH / zoomFactor;
-    const srcX = pxX - sampleW / 2;
-    const srcY = pxY - sampleH / 2;
-
-    ctx.clearRect(0, 0, magW, magH);
-    ctx.imageSmoothingEnabled = false;
-    try {
-      ctx.drawImage(engine.activeCanvas, srcX, srcY, sampleW, sampleH, 0, 0, magW, magH);
-    } catch (_) {}
-
-    magnifier.style.display = 'block';
-    let targetTop = clientY - 80;
-    if (targetTop < 80) targetTop = clientY + 130;
-    let targetLeft = Math.max(70, Math.min(window.innerWidth - 70, clientX));
-    magnifier.style.left = `${targetLeft}px`;
-    magnifier.style.top = `${targetTop}px`;
-  }
-
-  function hideStudioCropMagnifier() {
-    const magnifier = document.getElementById('studioCropMagnifier');
-    if (magnifier) magnifier.style.display = 'none';
   }
 
   window.setCropRatio = function (ratio, btn) {
