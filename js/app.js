@@ -5147,6 +5147,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (finalEl) finalEl.textContent = '--';
       if (badge) badge.style.display = 'none';
       if (stat) stat.textContent = 'Enter a valid target size (min 1 KB)';
+      compressCalibratedResult = null;
       return;
     }
 
@@ -5346,8 +5347,18 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.downloadCompressedAction = async function () {
+    const input = document.getElementById('compress-target-val');
+    const rawVal = parseFloat(input?.value);
+    if (compressMode === 'target' && (isNaN(rawVal) || rawVal <= 0)) {
+      showToast('Please enter a valid positive target size first.');
+      return;
+    }
     if (!compressCalibratedResult) {
       await recalculateCompression();
+    }
+    if (!compressCalibratedResult || !compressCalibratedResult.blob) {
+      showToast('No valid compressed file to download.');
+      return;
     }
     const format = getCompressFormat();
     const ext = format === 'image/webp' ? 'webp' : 'jpg';
