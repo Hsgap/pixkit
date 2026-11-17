@@ -532,6 +532,7 @@
         <span class="control-label">Screen:</span>
         <select class="sim-select" id="screenSelect" onchange="loadScreen(this.value)">
           <option value="crop.html" selected>🌟 Crop (Zoom &amp; Loupe)</option>
+          <option value="files.html">📁 Recent Files (Warm Aesthetic)</option>
           <option value="home.html">🏠 Home</option>
           <option value="tools.html">▦ Tool Picker (22+)</option>
           <option value="resize.html">📐 Resize</option>
@@ -586,6 +587,10 @@
         <button class="tool-nav-item active" onclick="loadScreen('crop.html', this)">
           <span>🌟 Crop (Zoom &amp; Loupe)</span>
           <span class="tag">NEW</span>
+        </button>
+        <button class="tool-nav-item" onclick="loadScreen('files.html', this)">
+          <span>📁 Recent Files</span>
+          <span class="tag" style="background:var(--lime);color:var(--lime-ink);">WARM UI</span>
         </button>
         <button class="tool-nav-item" onclick="loadScreen('home.html', this)">
           <span>🏠 App Home Hub</span>
