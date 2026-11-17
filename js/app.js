@@ -11990,110 +11990,43 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // ==============================================================
-  // SHARED PDF PREVIEW HELPERS (ROBUST EMBEDDED VIEWER)
+  // SHARED PDF PREVIEW HELPERS (STANDARD NATIVE VIEWER)
   // ==============================================================
   function createPreviewPlaceholderTab(toolName = 'PDF') {
-    const previewTab = window.open('', '_blank');
-    if (previewTab) {
-      try {
-        previewTab.document.open();
-        previewTab.document.write(`<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Generating ${toolName} Preview...</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; height: 100vh; width: 100vw; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-    .loader-box { text-align: center; padding: 32px; }
-    .spinner { width: 44px; height: 44px; border: 3px solid rgba(255,255,255,0.15); border-top-color: #38bdf8; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 18px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-    p { font-size: 13.5px; color: #94a3b8; }
-    #pdf-frame-container { display: none; width: 100vw; height: 100vh; }
-    iframe { width: 100vw; height: 100vh; border: none; display: block; }
-  </style>
-</head>
-<body>
-  <div id="loading-box" class="loader-box">
-    <div class="spinner"></div>
-    <h3>Generating ${toolName} Preview...</h3>
-    <p>Processing and rendering document streams, please wait...</p>
-  </div>
-  <div id="pdf-frame-container"></div>
-  <script>
-    window.displayPdfBlob = function(url, title) {
-      if (title) document.title = title;
-      var loadEl = document.getElementById('loading-box');
-      var container = document.getElementById('pdf-frame-container');
-      if (loadEl) loadEl.style.display = 'none';
-      if (container) {
-        container.style.display = 'block';
-        container.innerHTML = '<iframe src="' + url + '" allowfullscreen></iframe>';
-      }
-    };
-    window.addEventListener('message', function(e) {
-      if (e.data && e.data.type === 'PIXKIT_PDF_PREVIEW') {
-        window.displayPdfBlob(e.data.url, e.data.title);
-      }
-    });
-  <\/script>
-</body>
-</html>`);
-        previewTab.document.close();
-      } catch (_) { }
+    try {
+      // Synchronously open a clean tab within user gesture to avoid popup blocking
+      const previewTab = window.open('about:blank', '_blank');
+      return previewTab;
+    } catch (_) {
+      return null;
     }
-    return previewTab;
   }
 
   function openPdfPreviewTab(previewTab, blob, filename = 'document.pdf') {
-    const blobUrl = URL.createObjectURL(blob);
+    const pdfBlob = (blob instanceof Blob && blob.type === 'application/pdf')
+      ? blob
+      : new Blob([blob], { type: 'application/pdf' });
+    const blobUrl = URL.createObjectURL(pdfBlob);
 
+    // Direct browser default navigation: opens native browser PDF reader
     if (previewTab && !previewTab.closed) {
-      // 1. Try direct function invocation
       try {
-        if (typeof previewTab.displayPdfBlob === 'function') {
-          previewTab.displayPdfBlob(blobUrl, filename);
-          return;
-        }
-      } catch (_) { }
-
-      // 2. Try direct DOM manipulation in same-origin popup
-      try {
-        const doc = previewTab.document;
-        if (doc) {
-          const frame = doc.getElementById('pdf-frame-container');
-          const loader = doc.getElementById('loading-box');
-          if (frame) {
-            if (loader) loader.style.display = 'none';
-            frame.style.display = 'block';
-            frame.innerHTML = `<iframe src="${blobUrl}" style="width:100vw;height:100vh;border:none;" allowfullscreen></iframe>`;
-            doc.title = filename;
-            return;
-          }
-        }
-      } catch (_) { }
-
-      // 3. PostMessage fallback
-      try {
-        previewTab.postMessage({ type: 'PIXKIT_PDF_PREVIEW', url: blobUrl, title: filename }, '*');
-      } catch (_) { }
-
-      // 4. Direct navigation fallback
-      try {
-        previewTab.location.replace(blobUrl);
+        previewTab.location.href = blobUrl;
         return;
-      } catch (_) {
-        try {
-          previewTab.location.href = blobUrl;
-          return;
-        } catch (_) { }
+      } catch (err) {
+        console.warn('Could not navigate pre-opened tab directly:', err);
       }
-      return;
     }
 
-    // Fallback: trigger download directly if tab could not be updated
-    triggerBlobDownload(blob, filename);
+    // Default standard window.open with the direct Blob URL
+    try {
+      const win = window.open(blobUrl, '_blank');
+      if (win) return;
+    } catch (_) { }
+
+    // Fallback: trigger download directly if popup was blocked
+    triggerBlobDownload(pdfBlob, filename);
+    showToast('Popup was blocked by browser. Downloaded PDF instead.');
   }
 
   window.resetPdfExtract = function () {
@@ -15000,8 +14933,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const canExport = total > 0 && remainingCount > 0 && deletedCount > 0;
+    const canPreview = total > 0 && remainingCount > 0;
     if (btnExecute) btnExecute.disabled = !canExport;
-    if (btnPreview) btnPreview.disabled = !canExport;
+    if (btnPreview) btnPreview.disabled = !canPreview;
   }
 
   window.executePdfDelete = async function (download = true) {
@@ -15020,7 +14954,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (keptIndices.length === pdfDeleteState.pages.length) {
+    if (download && keptIndices.length === pdfDeleteState.pages.length) {
       showToast('No pages marked for deletion. Click a page to mark it for removal.');
       return;
     }
@@ -15042,7 +14976,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (grid) grid.style.display = 'none';
     if (loader) {
       loader.style.display = 'flex';
-      if (loadingText) loadingText.textContent = `Removing ${pdfDeleteState.pages.length - keptIndices.length} page(s) from document...`;
+      if (loadingText) loadingText.textContent = download
+        ? `Removing ${pdfDeleteState.pages.length - keptIndices.length} page(s) from document...`
+        : `Generating document preview (${keptIndices.length} pages)...`;
     }
 
     try {
@@ -15094,7 +15030,9 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(`Successfully deleted ${deletedCount} page(s) and saved "${outName}" (${keptIndices.length} pages remaining)!`);
       } else {
         openPdfPreviewTab(previewTab, blob, outName);
-        showToast(`Opened preview (${keptIndices.length} pages remaining) in new tab.`);
+        showToast(deletedCount > 0
+          ? `Opened preview (${keptIndices.length} pages remaining, ${deletedCount} removed) in new tab.`
+          : `Opened PDF preview (${keptIndices.length} pages) in new tab.`);
       }
     } catch (err) {
       console.error('Error executing PDF page deletion:', err);
