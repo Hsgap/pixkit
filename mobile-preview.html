@@ -12,21 +12,21 @@
   
   <style>
     :root {
-      --bg: #090a0c;
-      --panel: #121316;
-      --panel-elevated: #1a1b20;
-      --border: #23252a;
-      --border-focus: #3a3d46;
-      --text: #f3f4f6;
-      --text-muted: #9496a1;
-      --text-subtle: #626571;
+      --bg: #121310;
+      --panel: #1A1C16;
+      --panel-elevated: #22241D;
+      --border: #292B23;
+      --border-focus: #3D4034;
+      --text: #F2F3EC;
+      --text-muted: #9FA197;
+      --text-subtle: #6C7063;
       --lime: #d7f36a;
-      --lime-ink: #101204;
+      --lime-ink: #15170d;
       --lime-glow: rgba(215, 243, 106, 0.18);
       --accent-green: #2ecc71;
       --accent-blue: #38bdf8;
-      --phone-bezel: #1b1c21;
-      --phone-rim: #2d2f36;
+      --phone-bezel: #1D1F18;
+      --phone-rim: #2E3126;
       --radius-sm: 8px;
       --radius-md: 14px;
       --radius-lg: 20px;
@@ -643,7 +643,7 @@
         </div>
 
         <!-- Embedded Webview -->
-        <iframe src="/mobile/crop.html" class="mobile-iframe" id="mobileIframe" title="PixKit Mobile In-Browser View"></iframe>
+        <iframe src="/mobile/crop.html?v=20261120_dark" class="mobile-iframe" id="mobileIframe" title="PixKit Mobile In-Browser View"></iframe>
       </div>
 
       <div class="device-meta-bar">
@@ -769,7 +769,8 @@
 
     function loadScreen(screenFile, btnEl) {
       currentScreen = screenFile;
-      iframe.src = '/mobile/' + screenFile;
+      const bust = (screenFile.includes('?') ? '&' : '?') + 't=' + Date.now();
+      iframe.src = '/mobile/' + screenFile + bust;
       screenBadge.textContent = screenFile;
       if (screenSelect) screenSelect.value = screenFile;
 
@@ -788,7 +789,8 @@
     }
 
     function reloadIframe() {
-      iframe.src = iframe.src;
+      const current = iframe.src.split('?')[0].split('#')[0];
+      iframe.src = current + '?t=' + Date.now();
     }
 
     function openStandalone() {

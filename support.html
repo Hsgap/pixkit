@@ -1940,7 +1940,7 @@
             <div class="contact-email-box">
               <div class="contact-email-label">Official Support Desk</div>
               <div class="contact-email-row">
-                <span class="contact-email-address" id="contactEmailDisplay">support.pixkitstudio@gmail.com</span>
+                <span class="contact-email-address" id="contactEmailDisplay">support@pixkit.site</span>
                 <button type="button" class="contact-copy-email-btn" onclick="copySupportEmail(this)" title="Copy email address">
                   <i class="fa-regular fa-copy"></i> <span>Copy</span>
                 </button>
@@ -2064,7 +2064,7 @@
               <i class="fa-solid fa-chevron-down" style="font-size: 12px; color: var(--muted);"></i>
             </summary>
             <div class="faq-answer">
-              Absolutely! Send your suggestions or feature ideas anytime to <a href="mailto:support.pixkitstudio@gmail.com" style="color: var(--accent-green); font-weight: 700; text-decoration: none;">support.pixkitstudio@gmail.com</a>.
+              Absolutely! Send your suggestions or feature ideas anytime to <a href="mailto:support@pixkit.site?subject=[PixKit%20Web]%20Support%20Request" style="color: var(--accent-green); font-weight: 700; text-decoration: none;">support@pixkit.site</a>.
             </div>
           </details>
 
@@ -2091,7 +2091,7 @@
                 <img src="icons/artan-logo.png" alt="Artàn" class="artan-badge-logo">
               </span>
             </p>
-            <p class="aceternity-contact-email" style="font-size: 13px; margin: 4px 0 8px 0;"><i class="fa-regular fa-envelope" style="color: #D7F36A; margin-right: 6px;"></i><a href="mailto:support.pixkitstudio@gmail.com?subject=PixKit%20Studio%20Support" style="color: var(--muted, #a0a0a5); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#D7F36A'" onmouseout="this.style.color='var(--muted, #a0a0a5)'">support.pixkitstudio@gmail.com</a></p>
+            <p class="aceternity-contact-email" style="font-size: 13px; margin: 4px 0 8px 0;"><i class="fa-regular fa-envelope" style="color: #D7F36A; margin-right: 6px;"></i><a href="mailto:support@pixkit.site?subject=[PixKit%20Web]%20Support%20Request" style="color: var(--muted, #a0a0a5); text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#D7F36A'" onmouseout="this.style.color='var(--muted, #a0a0a5)'">support@pixkit.site</a></p>
             <p class="aceternity-tagline">100% private, in-browser image &amp; document studio with zero server tracking.</p>
 
             <!-- Clean Minimalist Inline Active Users Counter -->
@@ -2134,7 +2134,7 @@
                 <li><a href="privacy-policy">Privacy Policy</a></li>
                 <li><a href="studio" onclick="launchStudioWithSavedWork(event, '#/settings')">Zero-Server Shield</a></li>
                 <li><a href="studio" onclick="launchStudioWithSavedWork(event, '#/settings')">Local Storage Only</a></li>
-                <li><a href="mailto:support.pixkitstudio@gmail.com?subject=PixKit%20Studio%20Inquiry">Contact Us</a></li>
+                <li><a href="mailto:support@pixkit.site?subject=[PixKit%20Web]%20General%20Inquiry">Contact Us</a></li>
               </ul>
             </div>
 
@@ -2145,7 +2145,7 @@
                 <li><a href="studio" onclick="launchStudioWithSavedWork(event)">Launch Studio</a></li>
                 <li><a href="support">Support PixKit</a></li>
                 <li><a href="studio" onclick="launchStudioWithSavedWork(event, '#/settings')">Studio Settings</a></li>
-                <li><a href="mailto:support.pixkitstudio@gmail.com?subject=PixKit%20Studio%20Support"><i class="fa-solid fa-envelope" style="margin-right: 4px;"></i> Contact Support</a></li>
+                <li><a href="mailto:support@pixkit.site?subject=[PixKit%20Web]%20Support%20Request"><i class="fa-solid fa-envelope" style="margin-right: 4px;"></i> Contact Support</a></li>
                 <li><a href="https://github.com/Hsgap/pixkit" target="_blank" rel="noopener"><i class="fa-brands fa-github" style="margin-right: 4px;"></i> GitHub</a></li>
               </ul>
             </div>
@@ -2408,12 +2408,12 @@
     }
 
     function copySupportEmail(btn) {
-      navigator.clipboard.writeText('support.pixkitstudio@gmail.com').then(() => {
+      navigator.clipboard.writeText('support@pixkit.site').then(() => {
         const origHTML = btn.innerHTML;
         btn.innerHTML = '<i class="fa-solid fa-check" style="color: var(--accent-green);"></i> <span>Copied!</span>';
         setTimeout(() => { btn.innerHTML = origHTML; }, 2200);
       }).catch(() => {
-        window.prompt('Copy email:', 'support.pixkitstudio@gmail.com');
+        window.prompt('Copy email:', 'support@pixkit.site');
       });
     }
 
@@ -2467,14 +2467,14 @@
       try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 4000);
-        await fetch('https://formsubmit.co/ajax/support.pixkitstudio@gmail.com', {
+        await fetch('https://formsubmit.co/ajax/support@pixkit.site', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           },
           body: JSON.stringify({
-            _subject: `[PixKit Support] ${topic} from ${sender || 'User'}`,
+            _subject: `[PixKit Web Support] ${topic} from ${sender || 'User'}`,
             topic: topic,
             sender: sender || 'Anonymous User',
             message: message,
@@ -2498,14 +2498,14 @@
 
       if (statusEl) {
         statusEl.style.display = 'block';
-        const gmailWebUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=support.pixkitstudio@gmail.com&su=${encodeURIComponent('[PixKit Support] ' + topic)}&body=${encodeURIComponent('From: ' + (sender || 'User') + '\n\n' + message)}`;
+        const gmailWebUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=support@pixkit.site&su=${encodeURIComponent('[PixKit Web Support] ' + topic)}&body=${encodeURIComponent('From: ' + (sender || 'User') + '\n\n' + message)}`;
         statusEl.innerHTML = `
           <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 12px; padding: 14px 16px; margin-top: 10px;">
             <div style="color: #10B981; font-weight: 800; font-size: 13.5px; display: flex; align-items: center; gap: 7px; margin-bottom: 4px;">
               <i class="fa-solid fa-circle-check" style="font-size: 16px;"></i> Message Delivered to PixKit Studio!
             </div>
             <p style="font-size: 12px; color: var(--ink); margin: 0; line-height: 1.5;">
-              Thank you for reaching out! Your message was delivered directly to our support desk (<strong>support.pixkitstudio@gmail.com</strong>).
+              Thank you for reaching out! Your message was delivered directly to our support desk (<strong>support@pixkit.site</strong>).
             </p>
             <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
               <a href="${gmailWebUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; color: #EA4335; text-decoration: none; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px;">
@@ -2522,7 +2522,7 @@
       const sender = document.getElementById('contactSender').value.trim();
       const message = document.getElementById('contactMessage').value.trim();
 
-      const text = `Topic: ${topic}\nFrom: ${sender || 'PixKit User'}\n\nMessage:\n${message || '(No message written yet)'}\n\nTo: support.pixkitstudio@gmail.com`;
+      const text = `Topic: ${topic}\nFrom: ${sender || 'PixKit User'}\n\nMessage:\n${message || '(No message written yet)'}\n\nTo: support@pixkit.site`;
 
       navigator.clipboard.writeText(text).then(() => {
         const orig = btn.innerHTML;
@@ -2532,7 +2532,7 @@
         const statusEl = document.getElementById('contactFormStatus');
         if (statusEl) {
           statusEl.style.display = 'block';
-          statusEl.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i> Message draft copied to clipboard! You can paste it into any email client and send to <strong>support.pixkitstudio@gmail.com</strong>.`;
+          statusEl.innerHTML = `<i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i> Message draft copied to clipboard! You can paste it into any email client and send to <strong>support@pixkit.site</strong>.`;
         }
       });
     }
