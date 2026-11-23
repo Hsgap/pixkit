@@ -851,9 +851,11 @@ class PixKitEngine {
   }
 
   // 11. Selective Blur, Tilt-Shift & Blur Brush
-  createBlurredLayer(blurType = 'gaussian', blurRadius = 18) {
-    const w = this.activeCanvas.width;
-    const h = this.activeCanvas.height;
+  createBlurredLayer(blurType = 'gaussian', blurRadius = 18, baseCanvas = null) {
+    const src = baseCanvas || this.activeCanvas;
+    if (!src) return null;
+    const w = src.width;
+    const h = src.height;
     const canvas = document.createElement('canvas');
     canvas.width = w;
     canvas.height = h;
@@ -871,7 +873,7 @@ class PixKitEngine {
       smallCanvas.width = smallW;
       smallCanvas.height = smallH;
       const sCtx = smallCanvas.getContext('2d');
-      sCtx.drawImage(this.activeCanvas, 0, 0, smallW, smallH);
+      sCtx.drawImage(src, 0, 0, smallW, smallH);
 
       ctx.imageSmoothingEnabled = false;
       ctx.drawImage(smallCanvas, 0, 0, smallW, smallH, 0, 0, w, h);
@@ -882,12 +884,12 @@ class PixKitEngine {
     if (blurType === 'motion') {
       const steps = 14;
       const maxOffset = rad * 1.5;
-      ctx.drawImage(this.activeCanvas, 0, 0);
+      ctx.drawImage(src, 0, 0);
       ctx.globalAlpha = 1.0 / steps;
       for (let i = 1; i <= steps; i++) {
         const offset = (i / steps) * maxOffset;
-        ctx.drawImage(this.activeCanvas, offset, offset * 0.15);
-        ctx.drawImage(this.activeCanvas, -offset, -offset * 0.15);
+        ctx.drawImage(src, offset, offset * 0.15);
+        ctx.drawImage(src, -offset, -offset * 0.15);
       }
       ctx.globalAlpha = 1.0;
 
@@ -904,14 +906,14 @@ class PixKitEngine {
     if (blurType === 'zoom') {
       const steps = 12;
       const maxScale = 1.0 + (rad / 100) * 0.45;
-      ctx.drawImage(this.activeCanvas, 0, 0);
+      ctx.drawImage(src, 0, 0);
       ctx.globalAlpha = 1.0 / steps;
       for (let i = 1; i <= steps; i++) {
         const scale = 1.0 + (i / steps) * (maxScale - 1.0);
         ctx.save();
         ctx.translate(w / 2, h / 2);
         ctx.scale(scale, scale);
-        ctx.drawImage(this.activeCanvas, -w / 2, -h / 2);
+        ctx.drawImage(src, -w / 2, -h / 2);
         ctx.restore();
       }
       ctx.globalAlpha = 1.0;
@@ -921,7 +923,7 @@ class PixKitEngine {
     // 4. Frosted Glass / Acrylic Grain Blur
     if (blurType === 'frosted') {
       ctx.filter = `blur(${rad}px)`;
-      ctx.drawImage(this.activeCanvas, 0, 0);
+      ctx.drawImage(src, 0, 0);
       ctx.filter = 'none';
 
       // Frosted dispersion noise overlay
@@ -955,11 +957,13 @@ class PixKitEngine {
 
     // 5. Default: Simple Gaussian Optical Blur
     ctx.filter = `blur(${rad}px)`;
-    ctx.drawImage(this.activeCanvas, 0, 0);
+    ctx.drawImage(src, 0, 0);
     return canvas;
   }
 
-  applySelectiveBlur(options = {}) {
+  applySelectiveBlur(options = {}, baseCanvas = null) {
+    const src = baseCanvas || this.activeCanvas;
+    if (!src) return null;
     const {
       mode = 'radial', // 'full', 'radial', 'tiltshift', 'brush'
       blurType = 'gaussian', // 'gaussian', 'pixelate', 'motion', 'zoom', 'frosted'
@@ -972,17 +976,17 @@ class PixKitEngine {
       brushCanvas = null // custom painted mask canvas
     } = options;
 
-    const w = this.activeCanvas.width;
-    const h = this.activeCanvas.height;
+    const w = src.width;
+    const h = src.height;
 
     // Sharp canvas
     const sharpCanvas = document.createElement('canvas');
     sharpCanvas.width = w;
     sharpCanvas.height = h;
-    sharpCanvas.getContext('2d').drawImage(this.activeCanvas, 0, 0);
+    sharpCanvas.getContext('2d').drawImage(src, 0, 0);
 
     // Blurred canvas using selected blur style
-    const blurCanvas = this.createBlurredLayer(blurType, blurRadius);
+    const blurCanvas = this.createBlurredLayer(blurType, blurRadius, src);
 
     if (mode === 'full') {
       return blurCanvas;
