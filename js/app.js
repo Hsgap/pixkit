@@ -6688,7 +6688,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sVal = document.getElementById('batch-adj-saturate-val');
         if (sVal) sVal.textContent = (adj.saturate || 100) + '%';
         const wVal = document.getElementById('batch-adj-warmth-val');
-        if (wVal) wVal.textContent = (adj.warmth || 0) + '%';
+        if (wVal) wVal.textContent = (adj.warmth > 0 ? '+' : '') + (adj.warmth || 0);
       }
 
       // 6. Filters
@@ -7331,11 +7331,14 @@ document.addEventListener('DOMContentLoaded', () => {
       pill.textContent = cfg.enabled ? 'Active' : 'Off';
       pill.classList.toggle('active', cfg.enabled);
     }
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === toolName) {
+      detailPill.textContent = cfg.enabled ? 'Active' : 'Off';
+      detailPill.classList.toggle('active', cfg.enabled);
+    }
     updateBatchToolStatusLabel(toolName);
     renderBatchPreviewCanvas();
-    if (toolName === 'compress' || toolName === 'resize') {
-      recalculateBatchCompression();
-    }
+    debouncedRecalculateBatchCompression();
     showToast(`${toolName.charAt(0).toUpperCase() + toolName.slice(1)} ${cfg.enabled ? 'enabled' : 'disabled'} for batch`);
   };
 
@@ -7390,6 +7393,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('batch-toggle-resize')?.classList.add('active');
     const pill = document.getElementById('batch-toggle-resize');
     if (pill) pill.textContent = 'Active';
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'resize') {
+      detailPill.textContent = 'Active';
+      detailPill.classList.add('active');
+    }
 
     document.getElementById('btn-batch-resize-mode-exact')?.classList.toggle('active', mode === 'exact');
     document.getElementById('btn-batch-resize-mode-scale')?.classList.toggle('active', mode === 'scale');
@@ -7401,7 +7409,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateBatchToolStatusLabel('resize');
     renderBatchPreviewCanvas();
-    recalculateBatchCompression();
+    debouncedRecalculateBatchCompression();
   };
 
   window.updateBatchResizeScale = function (val) {
@@ -7415,9 +7423,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('batch-toggle-resize')?.classList.add('active');
     const pill = document.getElementById('batch-toggle-resize');
     if (pill) pill.textContent = 'Active';
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'resize') {
+      detailPill.textContent = 'Active';
+      detailPill.classList.add('active');
+    }
     updateBatchToolStatusLabel('resize');
     renderBatchPreviewCanvas();
-    recalculateBatchCompression();
+    debouncedRecalculateBatchCompression();
   };
 
   window.setBatchResizePreset = function (w, h, btn) {
@@ -7438,9 +7451,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('batch-toggle-resize')?.classList.add('active');
     const pill = document.getElementById('batch-toggle-resize');
     if (pill) pill.textContent = 'Active';
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'resize') {
+      detailPill.textContent = 'Active';
+      detailPill.classList.add('active');
+    }
     updateBatchToolStatusLabel('resize');
     renderBatchPreviewCanvas();
-    recalculateBatchCompression();
+    debouncedRecalculateBatchCompression();
   };
 
   window.toggleBatchResizeAspect = function () {
@@ -7461,9 +7479,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('batch-toggle-resize')?.classList.add('active');
     const pill = document.getElementById('batch-toggle-resize');
     if (pill) pill.textContent = 'Active';
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'resize') {
+      detailPill.textContent = 'Active';
+      detailPill.classList.add('active');
+    }
     updateBatchToolStatusLabel('resize');
     renderBatchPreviewCanvas();
-    recalculateBatchCompression();
+    debouncedRecalculateBatchCompression();
   };
 
   // --- 2. Crop Tool Handlers ---
@@ -7480,9 +7503,14 @@ document.addEventListener('DOMContentLoaded', () => {
       pill.textContent = batchState.configs.crop.enabled ? 'Active' : 'Off';
       pill.classList.toggle('active', batchState.configs.crop.enabled);
     }
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'crop') {
+      detailPill.textContent = batchState.configs.crop.enabled ? 'Active' : 'Off';
+      detailPill.classList.toggle('active', batchState.configs.crop.enabled);
+    }
     updateBatchToolStatusLabel('crop');
     renderBatchPreviewCanvas();
-    recalculateBatchCompression();
+    debouncedRecalculateBatchCompression();
   };
 
   window.setBatchCropAnchor = function (anchor, btn) {
@@ -7493,7 +7521,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     updateBatchToolStatusLabel('crop');
     renderBatchPreviewCanvas();
-    recalculateBatchCompression();
+    debouncedRecalculateBatchCompression();
   };
 
   // --- 3. Rotate & Flip Handlers ---
@@ -7507,8 +7535,14 @@ document.addEventListener('DOMContentLoaded', () => {
       pill.textContent = batchState.configs.rotate.enabled ? 'Active' : 'Off';
       pill.classList.toggle('active', batchState.configs.rotate.enabled);
     }
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'rotate') {
+      detailPill.textContent = batchState.configs.rotate.enabled ? 'Active' : 'Off';
+      detailPill.classList.toggle('active', batchState.configs.rotate.enabled);
+    }
     updateBatchToolStatusLabel('rotate');
     renderBatchPreviewCanvas();
+    debouncedRecalculateBatchCompression();
   };
 
   window.batchRotateReset = function () {
@@ -7523,8 +7557,14 @@ document.addEventListener('DOMContentLoaded', () => {
       pill.textContent = 'Off';
       pill.classList.remove('active');
     }
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'rotate') {
+      detailPill.textContent = 'Off';
+      detailPill.classList.remove('active');
+    }
     updateBatchToolStatusLabel('rotate');
     renderBatchPreviewCanvas();
+    debouncedRecalculateBatchCompression();
   };
 
   window.batchToggleFlip = function (axis) {
@@ -7541,8 +7581,14 @@ document.addEventListener('DOMContentLoaded', () => {
       pill.textContent = batchState.configs.rotate.enabled ? 'Active' : 'Off';
       pill.classList.toggle('active', batchState.configs.rotate.enabled);
     }
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'rotate') {
+      detailPill.textContent = batchState.configs.rotate.enabled ? 'Active' : 'Off';
+      detailPill.classList.toggle('active', batchState.configs.rotate.enabled);
+    }
     updateBatchToolStatusLabel('rotate');
     renderBatchPreviewCanvas();
+    debouncedRecalculateBatchCompression();
   };
 
   // --- 4. Compress Tool Handlers (Complete Match with Default Tool) ---
@@ -7843,7 +7889,6 @@ document.addEventListener('DOMContentLoaded', () => {
         : `${result.width} × ${result.height} px`;
       compCfg.calibratedSize = result.blob.size;
       compCfg.calibratedScale = result.scale;
-      batchState.activeCalibratedCanvas = result.canvas;
 
       const qualEl = document.getElementById('batch-calibrated-quality-text');
       const dimsEl = document.getElementById('batch-calibrated-dims-text');
@@ -7861,19 +7906,24 @@ document.addEventListener('DOMContentLoaded', () => {
       const b = await new Promise(res => testCanvas.toBlob(res, exportMime, q));
       if (thisId !== activeBatchCalibrationId) return;
       const finalSize = b ? b.size : Math.round(activeItem.size * 0.35);
-      batchState.activeCalibratedCanvas = testCanvas;
       updateBatchSavingsCard(activeItem.size, finalSize);
     } else if (compCfg.mode === 'manual') {
       const q = (compCfg.manualQuality || 80) / 100;
       const b = await new Promise(res => testCanvas.toBlob(res, exportMime, q));
       if (thisId !== activeBatchCalibrationId) return;
       const finalSize = b ? b.size : Math.round(activeItem.size * 0.4);
-      batchState.activeCalibratedCanvas = testCanvas;
       updateBatchSavingsCard(activeItem.size, finalSize);
     }
 
     updateBatchToolStatusLabel('compress');
-    renderBatchPreviewCanvas();
+  }
+
+  let batchCompressionDebounceTimer = null;
+  function debouncedRecalculateBatchCompression() {
+    clearTimeout(batchCompressionDebounceTimer);
+    batchCompressionDebounceTimer = setTimeout(() => {
+      recalculateBatchCompression();
+    }, 150);
   }
 
   function updateBatchSavingsCard(origBytes, finalBytes) {
@@ -7919,15 +7969,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (bText) bText.textContent = `${b}%`;
     if (cText) cText.textContent = `${c}%`;
     if (sText) sText.textContent = `${s}%`;
-    if (wText) wText.textContent = `${w}`;
+    if (wText) wText.textContent = `${w > 0 ? '+' : ''}${w}`;
 
     const pill = document.getElementById('batch-toggle-adjust');
     if (pill) {
       pill.textContent = batchState.configs.adjust.enabled ? 'Active' : 'Off';
       pill.classList.toggle('active', batchState.configs.adjust.enabled);
     }
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'adjust') {
+      detailPill.textContent = batchState.configs.adjust.enabled ? 'Active' : 'Off';
+      detailPill.classList.toggle('active', batchState.configs.adjust.enabled);
+    }
     updateBatchToolStatusLabel('adjust');
     renderBatchPreviewCanvas();
+    debouncedRecalculateBatchCompression();
   };
 
   window.resetBatchAdjust = function () {
@@ -7956,8 +8012,14 @@ document.addEventListener('DOMContentLoaded', () => {
       pill.textContent = 'Off';
       pill.classList.remove('active');
     }
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'adjust') {
+      detailPill.textContent = 'Off';
+      detailPill.classList.remove('active');
+    }
     updateBatchToolStatusLabel('adjust');
     renderBatchPreviewCanvas();
+    debouncedRecalculateBatchCompression();
   };
 
   // --- 6. Preset Filters Handlers ---
@@ -7973,8 +8035,14 @@ document.addEventListener('DOMContentLoaded', () => {
       pill.textContent = batchState.configs.filters.enabled ? 'Active' : 'Off';
       pill.classList.toggle('active', batchState.configs.filters.enabled);
     }
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'filters') {
+      detailPill.textContent = batchState.configs.filters.enabled ? 'Active' : 'Off';
+      detailPill.classList.toggle('active', batchState.configs.filters.enabled);
+    }
     updateBatchToolStatusLabel('filters');
     renderBatchPreviewCanvas();
+    debouncedRecalculateBatchCompression();
   };
 
   // --- 7. Blur & Focus Handlers ---
@@ -7994,8 +8062,14 @@ document.addEventListener('DOMContentLoaded', () => {
       pill.textContent = batchState.configs.blur.enabled ? 'Active' : 'Off';
       pill.classList.toggle('active', batchState.configs.blur.enabled);
     }
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'blur') {
+      detailPill.textContent = batchState.configs.blur.enabled ? 'Active' : 'Off';
+      detailPill.classList.toggle('active', batchState.configs.blur.enabled);
+    }
     updateBatchToolStatusLabel('blur');
     renderBatchPreviewCanvas();
+    debouncedRecalculateBatchCompression();
   };
 
   window.setBatchBlurType = function (type, btn) {
@@ -8013,12 +8087,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('batch-toggle-blur')?.classList.add('active');
     const pill = document.getElementById('batch-toggle-blur');
     if (pill) pill.textContent = 'Active';
+    const detailPill = document.getElementById('batch-detail-toggle-btn');
+    if (detailPill && batchState.activeDetailTool === 'blur') {
+      detailPill.textContent = 'Active';
+      detailPill.classList.add('active');
+    }
     updateBatchToolStatusLabel('blur');
     renderBatchPreviewCanvas();
+    debouncedRecalculateBatchCompression();
   };
 
   window.updateBatchBlurRadius = function (val) {
-    const r = Math.max(2, Math.min(48, parseInt(val, 10) || 18));
+    const r = Math.max(1, Math.min(60, parseInt(val, 10) || 18));
     batchState.configs.blur.radius = r;
     const text = document.getElementById('batch-blur-radius-val');
     if (text) text.textContent = `${r}px`;
@@ -8027,17 +8107,26 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('batch-toggle-blur')?.classList.add('active');
       const pill = document.getElementById('batch-toggle-blur');
       if (pill) pill.textContent = 'Active';
+      const detailPill = document.getElementById('batch-detail-toggle-btn');
+      if (detailPill && batchState.activeDetailTool === 'blur') {
+        detailPill.textContent = 'Active';
+        detailPill.classList.add('active');
+      }
     }
     updateBatchToolStatusLabel('blur');
     renderBatchPreviewCanvas();
+    debouncedRecalculateBatchCompression();
   };
 
   window.updateBatchFocusSize = function (val) {
     const f = Math.max(10, Math.min(85, parseInt(val, 10) || 35));
     batchState.configs.blur.focusSize = f;
-    const text = document.getElementById('batch-focus-size-val');
-    if (text) text.textContent = `${f}%`;
+    const text1 = document.getElementById('batch-focus-size-val');
+    const text2 = document.getElementById('batch-blur-focus-val');
+    if (text1) text1.textContent = `${f}%`;
+    if (text2) text2.textContent = `${f}%`;
     renderBatchPreviewCanvas();
+    debouncedRecalculateBatchCompression();
   };
 
   window.resetAllBatchOperations = function () {
@@ -8195,38 +8284,79 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx2 = c2.getContext('2d');
     ctx2.imageSmoothingEnabled = true;
     ctx2.imageSmoothingQuality = 'high';
+    ctx2.drawImage(c1, 0, 0, targetW, targetH);
 
-    // Step 3: Tone & Preset Filter String
+    // Step 3: Tone & Preset Filter Processing
     const adjCfg = batchState.configs.adjust;
     const fltCfg = batchState.configs.filters;
-    let filterParts = [];
+    let renderCanvas = c2;
 
-    if (adjCfg.enabled) {
-      if (adjCfg.bright !== 100) filterParts.push(`brightness(${adjCfg.bright}%)`);
-      if (adjCfg.contrast !== 100) filterParts.push(`contrast(${adjCfg.contrast}%)`);
-      if (adjCfg.saturate !== 100) filterParts.push(`saturate(${adjCfg.saturate}%)`);
-      if (adjCfg.warmth > 0) {
-        filterParts.push(`sepia(${adjCfg.warmth * 0.7}%) saturate(${100 + adjCfg.warmth * 0.6}%)`);
-      } else if (adjCfg.warmth < 0) {
-        filterParts.push(`hue-rotate(${adjCfg.warmth * 1.5}deg) saturate(${100 - adjCfg.warmth * 0.4}%)`);
+    if (adjCfg.enabled || (fltCfg.enabled && fltCfg.preset !== 'natural')) {
+      let b = adjCfg.enabled ? adjCfg.bright : 100;
+      let c = adjCfg.enabled ? adjCfg.contrast : 100;
+      let s = adjCfg.enabled ? adjCfg.saturate : 100;
+      let w = adjCfg.enabled ? adjCfg.warmth : 0;
+      let g = 0;
+      let sep = 0;
+
+      if (fltCfg.enabled && fltCfg.preset !== 'natural') {
+        if (fltCfg.preset === 'bw') {
+          g = 100;
+          c = Math.round(c * 1.2);
+        } else if (fltCfg.preset === 'vintage') {
+          sep = 45;
+          w += 20;
+          c = Math.round(c * 1.05);
+        } else if (fltCfg.preset === 'warm') {
+          w += 35;
+          b = Math.round(b * 1.04);
+        } else if (fltCfg.preset === 'cool') {
+          w -= 30;
+          c = Math.round(c * 1.1);
+        } else if (fltCfg.preset === 'crisp') {
+          c = Math.round(c * 1.25);
+          s = Math.round(s * 1.2);
+        } else if (fltCfg.preset === 'sepia') {
+          sep = 90;
+          c = Math.round(c * 0.95);
+        }
+      }
+
+      if (window.engine && typeof engine.applyFilters === 'function') {
+        renderCanvas = engine.applyFilters({
+          brightness: b,
+          contrast: c,
+          saturation: s,
+          warmth: w,
+          grayscale: g,
+          sepia: sep
+        }, c2);
+      } else {
+        const filterParts = [];
+        if (b !== 100) filterParts.push(`brightness(${b}%)`);
+        if (c !== 100) filterParts.push(`contrast(${c}%)`);
+        if (s !== 100) filterParts.push(`saturate(${s}%)`);
+        if (g > 0) filterParts.push(`grayscale(${g}%)`);
+        if (sep > 0) filterParts.push(`sepia(${sep}%)`);
+
+        const cFiltered = document.createElement('canvas');
+        cFiltered.width = targetW;
+        cFiltered.height = targetH;
+        const ctxFiltered = cFiltered.getContext('2d');
+        if (filterParts.length) ctxFiltered.filter = filterParts.join(' ');
+        ctxFiltered.drawImage(c2, 0, 0, targetW, targetH);
+        ctxFiltered.filter = 'none';
+
+        if (w !== 0) {
+          ctxFiltered.save();
+          ctxFiltered.globalCompositeOperation = w > 0 ? 'color' : 'color-burn';
+          ctxFiltered.fillStyle = w > 0 ? `rgba(255, 170, 80, ${Math.abs(w) / 350})` : `rgba(70, 130, 240, ${Math.abs(w) / 350})`;
+          ctxFiltered.fillRect(0, 0, targetW, targetH);
+          ctxFiltered.restore();
+        }
+        renderCanvas = cFiltered;
       }
     }
-
-    if (fltCfg.enabled && fltCfg.preset !== 'natural') {
-      if (fltCfg.preset === 'bw') filterParts.push('grayscale(100%)');
-      else if (fltCfg.preset === 'vintage') filterParts.push('sepia(45%) contrast(110%) brightness(105%)');
-      else if (fltCfg.preset === 'warm') filterParts.push('sepia(25%) saturate(135%) brightness(105%)');
-      else if (fltCfg.preset === 'cool') filterParts.push('hue-rotate(185deg) saturate(90%) contrast(105%)');
-      else if (fltCfg.preset === 'crisp') filterParts.push('contrast(125%) saturate(130%) brightness(102%)');
-      else if (fltCfg.preset === 'sepia') filterParts.push('sepia(90%) contrast(95%)');
-    }
-
-    if (filterParts.length) {
-      ctx2.filter = filterParts.join(' ');
-    }
-
-    ctx2.drawImage(c1, 0, 0, targetW, targetH);
-    ctx2.filter = 'none';
 
     // Step 4: Focus & Blur Effects
     const blurCfg = batchState.configs.blur;
@@ -8234,7 +8364,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const radius = blurCfg.radius || 18;
       const bType = blurCfg.type || 'gaussian';
 
-      // Create blurred layer according to effect type
+      // Create blurred layer according to effect type from renderCanvas
       const cBlur = document.createElement('canvas');
       cBlur.width = targetW;
       cBlur.height = targetH;
@@ -8248,7 +8378,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cSmall.width = smallW;
         cSmall.height = smallH;
         const ctxSmall = cSmall.getContext('2d');
-        ctxSmall.drawImage(c2, 0, 0, smallW, smallH);
+        ctxSmall.drawImage(renderCanvas, 0, 0, smallW, smallH);
         ctxBlur.imageSmoothingEnabled = false;
         ctxBlur.drawImage(cSmall, 0, 0, targetW, targetH);
       } else if (bType === 'motion') {
@@ -8256,7 +8386,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const offset = radius * 1.2;
         ctxBlur.globalAlpha = 1 / steps;
         for (let i = -steps / 2; i <= steps / 2; i++) {
-          ctxBlur.drawImage(c2, (i / steps) * offset, 0);
+          ctxBlur.drawImage(renderCanvas, (i / steps) * offset, 0);
         }
         ctxBlur.globalAlpha = 1.0;
       } else if (bType === 'zoom') {
@@ -8267,13 +8397,13 @@ document.addEventListener('DOMContentLoaded', () => {
           ctxBlur.save();
           ctxBlur.translate(targetW / 2, targetH / 2);
           ctxBlur.scale(scale, scale);
-          ctxBlur.drawImage(c2, -targetW / 2, -targetH / 2);
+          ctxBlur.drawImage(renderCanvas, -targetW / 2, -targetH / 2);
           ctxBlur.restore();
         }
         ctxBlur.globalAlpha = 1.0;
       } else if (bType === 'frosted') {
         ctxBlur.filter = `blur(${Math.max(2, Math.round(radius * 0.7))}px)`;
-        ctxBlur.drawImage(c2, 0, 0);
+        ctxBlur.drawImage(renderCanvas, 0, 0);
         ctxBlur.filter = 'none';
         // Add subtle glass refraction noise
         const imgData = ctxBlur.getImageData(0, 0, targetW, targetH);
@@ -8288,13 +8418,12 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         // Standard Gaussian
         ctxBlur.filter = `blur(${radius}px)`;
-        ctxBlur.drawImage(c2, 0, 0);
+        ctxBlur.drawImage(renderCanvas, 0, 0);
         ctxBlur.filter = 'none';
       }
 
       if (blurCfg.mode === 'full') {
-        ctx2.clearRect(0, 0, targetW, targetH);
-        ctx2.drawImage(cBlur, 0, 0);
+        renderCanvas = cBlur;
       } else if (blurCfg.mode === 'radial') {
         // Bokeh Lens: Radial focus mask (sharp center oval, blurred surround)
         const maskCanvas = document.createElement('canvas');
@@ -8313,7 +8442,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         ctxBlur.globalCompositeOperation = 'destination-in';
         ctxBlur.drawImage(maskCanvas, 0, 0);
-        ctx2.drawImage(cBlur, 0, 0);
+
+        const outCanvas = document.createElement('canvas');
+        outCanvas.width = targetW;
+        outCanvas.height = targetH;
+        const outCtx = outCanvas.getContext('2d');
+        outCtx.drawImage(renderCanvas, 0, 0);
+        outCtx.drawImage(cBlur, 0, 0);
+        renderCanvas = outCanvas;
       } else if (blurCfg.mode === 'tiltshift') {
         // Tilt-Shift: Horizontal focus strip (sharp center band, blurred top/bottom)
         const maskCanvas = document.createElement('canvas');
@@ -8336,12 +8472,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         ctxBlur.globalCompositeOperation = 'destination-in';
         ctxBlur.drawImage(maskCanvas, 0, 0);
-        ctx2.drawImage(cBlur, 0, 0);
+
+        const outCanvas = document.createElement('canvas');
+        outCanvas.width = targetW;
+        outCanvas.height = targetH;
+        const outCtx = outCanvas.getContext('2d');
+        outCtx.drawImage(renderCanvas, 0, 0);
+        outCtx.drawImage(cBlur, 0, 0);
+        renderCanvas = outCanvas;
       }
     }
 
     if (!forExport) {
-      return c2;
+      return renderCanvas;
     }
 
     // Step 5: Export / Compress Blob
@@ -8358,27 +8501,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!compCfg.enabled) {
       // Compress disabled: export at pristine high quality
       const defaultQ = exportMime.includes('png') ? undefined : 0.92;
-      exportBlob = await new Promise(r => c2.toBlob(r, exportMime, defaultQ));
+      exportBlob = await new Promise(r => renderCanvas.toBlob(r, exportMime, defaultQ));
     } else if (compCfg.mode === 'target') {
       const v = compCfg.targetVal || 200;
       const targetBytes = (compCfg.targetUnit === 'MB' ? v * 1024 * 1024 : v * 1024);
 
-      // Auto-calibrate this specific item's canvas c2 to guarantee strictly <= targetBytes
-      const calibResult = await engine.autoCalibrateCompression(targetBytes, exportMime, c2);
+      // Auto-calibrate this specific item's canvas to guarantee strictly <= targetBytes
+      const calibResult = await engine.autoCalibrateCompression(targetBytes, exportMime, renderCanvas);
       if (calibResult && calibResult.blob) {
         exportBlob = calibResult.blob;
         finalW = calibResult.width;
         finalH = calibResult.height;
       } else {
-        exportBlob = await new Promise(r => c2.toBlob(r, exportMime, 0.75));
+        exportBlob = await new Promise(r => renderCanvas.toBlob(r, exportMime, 0.75));
       }
     } else if (compCfg.mode === 'pixels') {
       const exportQuality = (compCfg.pxQuality || 82) / 100;
-      exportBlob = await new Promise(r => c2.toBlob(r, exportMime, exportQuality));
+      exportBlob = await new Promise(r => renderCanvas.toBlob(r, exportMime, exportQuality));
     } else {
       // manual mode
       const exportQuality = (compCfg.manualQuality || 80) / 100;
-      exportBlob = await new Promise(r => c2.toBlob(r, exportMime, exportQuality));
+      exportBlob = await new Promise(r => renderCanvas.toBlob(r, exportMime, exportQuality));
     }
 
     let ext = 'jpg';
@@ -8396,7 +8539,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const viewport = document.getElementById('batch-viewport');
     if (!canvas) return;
     const activeItem = batchState.items[batchState.activeIndex];
-    if (!activeItem) return;
+    if (!activeItem || !activeItem.img) return;
 
     let targetWidth = 0;
     let targetHeight = 0;
@@ -8410,13 +8553,7 @@ document.addEventListener('DOMContentLoaded', () => {
       targetWidth = canvas.width;
       targetHeight = canvas.height;
     } else {
-      let processedCanvas = null;
-      const compCfg = batchState.configs.compress;
-      if (compCfg.enabled && batchState.activeCalibratedCanvas) {
-        processedCanvas = batchState.activeCalibratedCanvas;
-      } else {
-        processedCanvas = await processSingleBatchItem(activeItem, false);
-      }
+      const processedCanvas = await processSingleBatchItem(activeItem, false);
       if (!processedCanvas) return;
 
       canvas.width = processedCanvas.width;
