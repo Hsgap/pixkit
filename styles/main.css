@@ -7973,6 +7973,9 @@ aside.batch-settings-panel {
   box-sizing: border-box;
   min-height: 560px;
   height: 100%;
+  overflow: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   transition: border-color var(--transition-fast), background var(--transition-fast);
 }
 
@@ -7993,17 +7996,45 @@ aside.batch-settings-panel {
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
-  padding-right: 2px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--line-strong) transparent;
+  padding-right: 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+  -ms-overflow-style: none;
 }
 
-.batch-control-center-panel::-webkit-scrollbar {
-  width: 5px;
+/* Invisible Theme-Aligned Scrollbars for Batch Panel (Light & Dark) */
+.batch-control-center-panel::-webkit-scrollbar,
+.batch-settings-panel::-webkit-scrollbar,
+.batch-cc-view::-webkit-scrollbar {
+  width: 0px !important;
+  height: 0px !important;
+  display: none !important;
+  background: transparent !important;
 }
-.batch-control-center-panel::-webkit-scrollbar-thumb {
-  background: var(--line-strong);
-  border-radius: 4px;
+
+.batch-control-center-panel::-webkit-scrollbar-track,
+.batch-settings-panel::-webkit-scrollbar-track {
+  background: var(--white);
+}
+
+.batch-control-center-panel::-webkit-scrollbar-thumb,
+.batch-settings-panel::-webkit-scrollbar-thumb {
+  background: var(--white);
+}
+
+[data-theme="dark"] .batch-control-center-panel {
+  scrollbar-color: #181915 #181915;
+}
+
+[data-theme="dark"] .batch-control-center-panel::-webkit-scrollbar-track,
+[data-theme="dark"] .batch-settings-panel::-webkit-scrollbar-track {
+  background: #181915 !important;
+}
+
+[data-theme="dark"] .batch-control-center-panel::-webkit-scrollbar-thumb,
+[data-theme="dark"] .batch-settings-panel::-webkit-scrollbar-thumb {
+  background: #181915 !important;
 }
 
 .batch-cc-view {
