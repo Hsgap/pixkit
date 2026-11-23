@@ -7971,7 +7971,9 @@ aside.batch-settings-panel {
   flex-direction: column;
   box-shadow: var(--shadow-subtle);
   box-sizing: border-box;
-  min-height: 520px;
+  min-height: 560px;
+  height: 100%;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
 }
 
 [data-theme="dark"] .settings-panel.batch-settings-panel,
@@ -7983,8 +7985,11 @@ aside.batch-settings-panel {
 }
 
 .batch-control-center-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   max-height: calc(100vh - 160px);
-  min-height: 480px;
+  min-height: 510px;
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
@@ -8002,10 +8007,90 @@ aside.batch-settings-panel {
 }
 
 .batch-cc-view {
-  animation: batchViewFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 480px;
 }
 
-@keyframes batchViewFadeIn {
+/* Premium Zero-Jitter Fade Up & Fade Down Animation Suite */
+@keyframes batchFadeUpIn {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes batchFadeDownOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@keyframes batchFadeDownIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes batchFadeUpOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+
+.anim-fade-up-in {
+  animation: batchFadeUpIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  will-change: opacity, transform;
+}
+
+.anim-fade-down-out {
+  animation: batchFadeDownOut 0.12s cubic-bezier(0.2, 0, 0.8, 1) forwards !important;
+  will-change: opacity, transform;
+  pointer-events: none;
+}
+
+.anim-fade-down-in {
+  animation: batchFadeDownIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  will-change: opacity, transform;
+}
+
+.anim-fade-up-out {
+  animation: batchFadeUpOut 0.12s cubic-bezier(0.2, 0, 0.8, 1) forwards !important;
+  will-change: opacity, transform;
+  pointer-events: none;
+}
+
+#batch-compress-mode-target-panel,
+#batch-compress-mode-pixels-panel,
+#batch-compress-mode-manual-panel,
+#batch-resize-scale-box,
+#batch-resize-exact-box {
+  animation: batchSubFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes batchSubFadeIn {
   from {
     opacity: 0;
     transform: translateY(6px);

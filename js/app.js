@@ -7031,8 +7031,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  let isBatchTransitioning = false;
+
   window.openBatchToolDetail = function (toolName) {
     if (!toolName || !batchState.configs[toolName]) return;
+    if (isBatchTransitioning) return;
     batchState.activeDetailTool = toolName;
 
     // Update Detail Header
@@ -7061,15 +7064,32 @@ document.addEventListener('DOMContentLoaded', () => {
       targetPanel.style.display = 'block';
     }
 
-    // Switch Views
+    // Smooth Fade Up & Out Transition
     const masterView = document.getElementById('batch-cc-master-view');
     const detailView = document.getElementById('batch-cc-detail-view');
-    if (masterView) masterView.style.display = 'none';
-    if (detailView) detailView.style.display = 'block';
-
-    // Scroll Control Center panel to top smoothly
     const panel = document.getElementById('batch-control-center-panel');
-    if (panel) panel.scrollTop = 0;
+
+    if (masterView && detailView) {
+      isBatchTransitioning = true;
+      masterView.classList.remove('anim-fade-up-in', 'anim-fade-down-in', 'anim-fade-down-out');
+      masterView.classList.add('anim-fade-up-out');
+
+      setTimeout(() => {
+        masterView.style.display = 'none';
+        masterView.classList.remove('anim-fade-up-out');
+
+        detailView.style.display = 'block';
+        detailView.classList.remove('anim-fade-up-out', 'anim-fade-down-out', 'anim-fade-down-in');
+        detailView.classList.add('anim-fade-up-in');
+
+        if (panel) panel.scrollTop = 0;
+        isBatchTransitioning = false;
+      }, 110);
+    } else {
+      if (masterView) masterView.style.display = 'none';
+      if (detailView) detailView.style.display = 'block';
+      if (panel) panel.scrollTop = 0;
+    }
 
     if (toolName === 'compress' || toolName === 'resize') {
       recalculateBatchCompression();
@@ -7078,21 +7098,39 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.closeBatchToolDetail = function () {
+    if (isBatchTransitioning) return;
     batchState.activeDetailTool = null;
 
-    // Switch Views
     const masterView = document.getElementById('batch-cc-master-view');
     const detailView = document.getElementById('batch-cc-detail-view');
-    if (detailView) detailView.style.display = 'none';
-    if (masterView) masterView.style.display = 'block';
+    const panel = document.getElementById('batch-control-center-panel');
 
     // Update all status labels & toggle pills in Master View
     updateAllBatchToolStatusLabels();
     renderBatchPreviewCanvas();
 
-    // Scroll Control Center panel to top
-    const panel = document.getElementById('batch-control-center-panel');
-    if (panel) panel.scrollTop = 0;
+    if (detailView && masterView) {
+      isBatchTransitioning = true;
+      detailView.classList.remove('anim-fade-up-in', 'anim-fade-down-in', 'anim-fade-up-out');
+      detailView.classList.add('anim-fade-down-out');
+
+      setTimeout(() => {
+        detailView.style.display = 'none';
+        detailView.classList.remove('anim-fade-down-out');
+
+        masterView.style.display = 'block';
+        masterView.classList.remove('anim-fade-up-in', 'anim-fade-up-out', 'anim-fade-down-out');
+        masterView.classList.add('anim-fade-down-in');
+
+        if (panel) panel.scrollTop = 0;
+        isBatchTransitioning = false;
+      }, 110);
+    } else {
+      if (detailView) detailView.style.display = 'none';
+      if (masterView) masterView.style.display = 'block';
+      if (panel) panel.scrollTop = 0;
+    }
+
     persistBatchSession();
   };
 
