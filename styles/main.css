@@ -418,12 +418,21 @@ body.leaderboard-active .floating-dock-wrapper {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  cursor: pointer;
+  box-sizing: border-box;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
   transition: all var(--transition-fast);
 }
 
 .back-btn:hover {
   background: var(--soft);
   border-color: var(--line-strong);
+}
+
+.back-btn:active {
+  transform: scale(0.97);
 }
 
 /* Hero Section (Home) */
@@ -8176,21 +8185,33 @@ aside.batch-settings-panel {
   transform: translateX(3px);
 }
 
-/* Detail Sub-view Navigation Bar & Header */
+/* Detail Sub-view Navigation Bar & Header (Sticky Zero-Clip Navigation) */
 .batch-detail-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--white);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 6px 0 12px 0;
+  margin-top: 0;
   margin-bottom: 14px;
-  padding-bottom: 10px;
   border-bottom: 1px solid var(--line);
+  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="dark"] .batch-detail-topbar {
+  background: #181915;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.4);
 }
 
 .batch-detail-back-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
+  padding: 7px 14px;
   border-radius: var(--radius-sm);
   background: var(--soft);
   border: 1px solid var(--line);
@@ -8198,6 +8219,10 @@ aside.batch-settings-panel {
   font-weight: 600;
   color: var(--ink);
   cursor: pointer;
+  box-sizing: border-box;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -8206,6 +8231,10 @@ aside.batch-settings-panel {
   border-color: var(--ink);
   transform: translateX(-2px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.batch-detail-back-btn:active {
+  transform: scale(0.97);
 }
 
 .batch-detail-back-btn .back-arrow {

@@ -1020,7 +1020,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Browser Navigation Listener (Back / Forward buttons)
+  // Browser Navigation Listener (Back / Forward buttons & System Gesture Navigation)
   window.addEventListener('popstate', (e) => {
     // If Shortcuts modal is open, close it first without navigating away
     const modal = document.getElementById('shortcuts-modal');
@@ -1028,9 +1028,77 @@ document.addEventListener('DOMContentLoaded', () => {
       toggleShortcutsModal(false);
       return;
     }
+    // If Batch sub-tool detail is open, dismiss back to All Configurations
+    if (typeof batchState !== 'undefined' && batchState.activeDetailTool) {
+      if (typeof closeBatchToolDetail === 'function') {
+        closeBatchToolDetail(true);
+        return;
+      }
+    }
     const targetRoute = (e.state && e.state.route) ? e.state.route : (location.hash || localStorage.getItem('pixkit_last_route') || '#/home');
     handleRoute(targetRoute, true);
   });
+
+  // Touch Gesture Navigation (Swipe-Right to Go Back across all tools)
+  (function initTouchGestureNavigation() {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    let isTracking = false;
+
+    document.addEventListener('touchstart', (e) => {
+      if (!e.touches || e.touches.length !== 1) return;
+      const touch = e.touches[0];
+      const target = e.target;
+
+      // Do not hijack interactive controls, sliders, or drawing/crop canvases
+      if (target && target.closest('input, textarea, select, canvas, .range-slider, .track-thumb, .crop-box-corner')) {
+        isTracking = false;
+        return;
+      }
+
+      touchStartX = touch.clientX;
+      touchStartY = touch.clientY;
+      touchStartTime = Date.now();
+      isTracking = true;
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+      if (!isTracking) return;
+      isTracking = false;
+      if (!e.changedTouches || e.changedTouches.length !== 1) return;
+
+      const touch = e.changedTouches[0];
+      const deltaX = touch.clientX - touchStartX;
+      const deltaY = touch.clientY - touchStartY;
+      const deltaTime = Date.now() - touchStartTime;
+
+      const startX = touchStartX;
+      touchStartX = 0;
+      touchStartY = 0;
+
+      // Horizontal swipe-right condition:
+      // Minimum 60px rightward travel, low vertical drift, fast gesture (< 450ms)
+      if (deltaX >= 60 && Math.abs(deltaY) <= 75 && deltaX > Math.abs(deltaY) * 1.25 && deltaTime <= 450) {
+        // Priority 1: If Batch tool detail is open, swipe-right navigates back to All Configurations
+        if (typeof batchState !== 'undefined' && batchState.activeDetailTool && typeof closeBatchToolDetail === 'function') {
+          closeBatchToolDetail();
+          return;
+        }
+
+        // Priority 2: If in a standalone tool workspace and swipe started near left screen edge (<= 110px)
+        if (activeTool && startX <= 110) {
+          if (activeTool.startsWith('doc-') || (activeTool === 'convert-pdf' && lastCategoryOrigin === 'document')) {
+            window.showView('document');
+          } else if (activeTool.startsWith('convert-')) {
+            window.showView('convert');
+          } else {
+            window.showView('edit');
+          }
+        }
+      }
+    }, { passive: true });
+  })();
 
   // --- Stage Preview Smooth Image Transitions (Fade Down & Fade Up) ---
   let stageTransitionTimer = null;
@@ -4163,6 +4231,12 @@ document.addEventListener('DOMContentLoaded', () => {
         window.toggleShortcutsModal(false);
         return;
       }
+      // Batch sub-tool detail dismissal back to All Configurations
+      if (typeof batchState !== 'undefined' && batchState.activeDetailTool) {
+        e.preventDefault();
+        window.closeBatchToolDetail();
+        return;
+      }
       if (currentView === 'recent' || currentView === 'settings') {
         e.preventDefault();
         window.showView('home');
@@ -7038,6 +7112,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isBatchTransitioning) return;
     batchState.activeDetailTool = toolName;
 
+    // Push history state so default device back button, trackpad & system gesture navigation return to All Configurations
+    try {
+      history.pushState({ isBatchDetail: true, tool: toolName, route: '#/tool/batch-edit' }, '', getCleanStudioBase());
+    } catch (_) { }
+
     // Update Detail Header
     const meta = batchToolMeta[toolName] || { icon: '◉', title: toolName, desc: '' };
     const iconEl = document.getElementById('batch-detail-icon');
@@ -7097,8 +7176,16 @@ document.addEventListener('DOMContentLoaded', () => {
     persistBatchSession();
   };
 
-  window.closeBatchToolDetail = function () {
+  window.closeBatchToolDetail = function (fromPopState = false) {
     if (isBatchTransitioning) return;
+    if (!batchState.activeDetailTool) return;
+
+    // If dismissed via button, keyboard or touch gesture (not popstate), pop the history state
+    if (!fromPopState && history.state && history.state.isBatchDetail) {
+      history.back();
+      return;
+    }
+
     batchState.activeDetailTool = null;
 
     const masterView = document.getElementById('batch-cc-master-view');
