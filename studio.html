@@ -2349,8 +2349,9 @@
               </div>
 
               <!-- Active Batch Canvas Wrapper -->
-              <div class="batch-canvas-wrapper" id="batch-canvas-wrapper" style="display:none;">
+              <div class="batch-canvas-wrapper" id="batch-canvas-wrapper" style="display:none; position:relative;">
                 <canvas id="canvas-batch-preview"></canvas>
+                <canvas id="canvas-batch-blur-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; border-radius:var(--radius-md); pointer-events:auto; cursor:crosshair; display:none;"></canvas>
               </div>
             </div>
 
@@ -2829,85 +2830,84 @@
                 <div class="batch-tool-detail-body" id="batch-detail-blur" style="display:none;">
                   <div class="form-group">
                     <label class="form-label">Blur Mode</label>
-                    <div class="preset-cards-grid" style="grid-template-columns: repeat(2, 1fr);">
-                      <div class="preset-card" id="batch-blur-mode-none" onclick="setBatchBlurMode('none', this)">
-                        <strong>None</strong>
-                        <small>Sharp Full Frame</small>
-                      </div>
-                      <div class="preset-card active" id="batch-blur-mode-radial" onclick="setBatchBlurMode('radial', this)">
-                        <strong>◎ Bokeh Lens</strong>
-                        <small>Portrait Circle</small>
-                      </div>
-                      <div class="preset-card" id="batch-blur-mode-tiltshift" onclick="setBatchBlurMode('tiltshift', this)">
-                        <strong>⌸ Tilt-Shift</strong>
-                        <small>Miniature Band</small>
-                      </div>
-                      <div class="preset-card" id="batch-blur-mode-full" onclick="setBatchBlurMode('full', this)">
-                        <strong>▦ Full Blur</strong>
-                        <small>Background Soft</small>
-                      </div>
+                    <div class="preset-grid" style="grid-template-columns: repeat(2, 1fr);">
+                      <button type="button" id="batch-blur-mode-radial" class="preset-card active" onclick="setBatchBlurMode('radial', this)"><strong>◎ Bokeh Lens</strong></button>
+                      <button type="button" id="batch-blur-mode-tilt" class="preset-card" onclick="setBatchBlurMode('tiltshift', this)"><strong>⌸ Tilt-Shift</strong></button>
+                      <button type="button" id="batch-blur-mode-brush" class="preset-card" onclick="setBatchBlurMode('brush', this)"><strong>🖌 Blur Brush</strong></button>
+                      <button type="button" id="batch-blur-mode-full" class="preset-card" onclick="setBatchBlurMode('full', this)"><strong>▦ Full Blur</strong></button>
                     </div>
                   </div>
 
-                  <!-- Blur Style & Optical Effect -->
                   <div class="form-group" id="batch-group-blur-type">
                     <label class="form-label">Blur Style &amp; Effect</label>
-                    <div class="preset-cards-grid" style="grid-template-columns: repeat(3, 1fr); gap:8px;">
-                      <div class="preset-card active" id="batch-blur-type-gaussian" onclick="setBatchBlurType('gaussian', this)">
+                    <div class="preset-grid" style="grid-template-columns: repeat(3, 1fr);">
+                      <button type="button" id="batch-blur-type-gaussian" class="preset-card active" onclick="setBatchBlurType('gaussian', this)">
                         <strong>Simple</strong>
-                        <small>Gaussian Lens</small>
-                      </div>
-                      <div class="preset-card" id="batch-blur-type-pixelate" onclick="setBatchBlurType('pixelate', this)">
+                        <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Gaussian</span>
+                      </button>
+                      <button type="button" id="batch-blur-type-pixelate" class="preset-card" onclick="setBatchBlurType('pixelate', this)">
                         <strong>Pixelated</strong>
-                        <small>Mosaic</small>
-                      </div>
-                      <div class="preset-card" id="batch-blur-type-motion" onclick="setBatchBlurType('motion', this)">
+                        <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Mosaic</span>
+                      </button>
+                      <button type="button" id="batch-blur-type-motion" class="preset-card" onclick="setBatchBlurType('motion', this)">
                         <strong>Motion</strong>
-                        <small>Speed Streak</small>
-                      </div>
-                      <div class="preset-card" id="batch-blur-type-zoom" onclick="setBatchBlurType('zoom', this)">
+                        <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Streak</span>
+                      </button>
+                      <button type="button" id="batch-blur-type-zoom" class="preset-card" onclick="setBatchBlurType('zoom', this)">
                         <strong>Zoom</strong>
-                        <small>Radial Spin</small>
-                      </div>
-                      <div class="preset-card" id="batch-blur-type-frosted" onclick="setBatchBlurType('frosted', this)">
+                        <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Radial Spin</span>
+                      </button>
+                      <button type="button" id="batch-blur-type-frosted" class="preset-card" onclick="setBatchBlurType('frosted', this)">
                         <strong>Frosted</strong>
-                        <small>Glass Prism</small>
-                      </div>
+                        <span style="font-size:11px; color:var(--muted); display:block; margin-top:2px;">Glass Prism</span>
+                      </button>
                     </div>
                   </div>
 
-                  <!-- Focus Position (for Radial & TiltShift) -->
-                  <div class="form-group" id="batch-group-focus-pos">
-                    <label class="form-label">Focus Position</label>
-                    <div class="segmented-control">
-                      <button type="button" class="segment-btn active" id="batch-blur-pos-center" onclick="setBatchBlurPosition('center', this)">Center</button>
-                      <button type="button" class="segment-btn" id="batch-blur-pos-top" onclick="setBatchBlurPosition('top', this)">Top / Face</button>
-                      <button type="button" class="segment-btn" id="batch-blur-pos-bottom" onclick="setBatchBlurPosition('bottom', this)">Bottom</button>
+                  <div class="slider-group" id="batch-group-blur-radius">
+                    <div class="slider-header">
+                      <span id="lbl-batch-blur-strength-title">Blur Intensity</span>
+                      <strong id="lbl-batch-blur-radius">18px</strong>
                     </div>
-                    <small style="display:block; margin-top:6px; color:var(--muted); font-size:11px;">Tip: Click or tap anywhere on the photo preview to shift focus point.</small>
+                    <input id="batch-blur-radius" class="range-slider" type="range" min="2" max="48" value="18" oninput="updateBatchBlurRadius(this.value)">
                   </div>
 
-                  <!-- Intensity / Radius Slider -->
-                  <div class="form-group" id="batch-group-blur-radius">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                      <label class="form-label" id="batch-blur-radius-lbl" style="margin:0;">Blur Intensity</label>
-                      <span id="batch-blur-radius-val" style="font-size:12px; font-weight:700;">18px</span>
+                  <!-- Shown in Radial & TiltShift -->
+                  <div class="slider-group" id="batch-group-focus-radius">
+                    <div class="slider-header">
+                      <span id="lbl-batch-focus-title">Sharp Focus Area</span>
+                      <strong id="lbl-batch-focus-size">35%</strong>
                     </div>
-                    <input type="range" class="range-slider" id="batch-blur-radius" min="1" max="60" value="18" oninput="updateBatchBlurRadius(this.value)">
+                    <input id="batch-blur-focus-size" class="range-slider" type="range" min="10" max="85" value="35" oninput="updateBatchFocusSize(this.value)">
                   </div>
 
-                  <!-- Clear Focus Zone Size Slider (for Radial & TiltShift) -->
-                  <div class="form-group" id="batch-group-focus-radius">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-                      <label class="form-label" id="batch-blur-focus-lbl" style="margin:0;">Bokeh Focus Radius</label>
-                      <span id="batch-blur-focus-val" style="font-size:12px; font-weight:700;">35%</span>
+                  <!-- Shown in Brush Mode -->
+                  <div class="slider-group" id="batch-group-blur-brush-size" style="display:none;">
+                    <div class="slider-header">
+                      <span>Brush Size</span>
+                      <strong id="lbl-batch-blur-brush-size">45px</strong>
                     </div>
-                    <input type="range" class="range-slider" id="batch-blur-focus" min="10" max="85" value="35" oninput="updateBatchFocusSize(this.value)">
+                    <input id="batch-blur-brush-size" class="range-slider" type="range" min="10" max="160" value="45" oninput="updateBatchBlurBrushSize(this.value)">
                   </div>
 
-                  <!-- Off / Disabled Hint -->
-                  <div id="batch-blur-disabled-hint" style="display:none; padding:14px; background:rgba(0,0,0,0.025); border:1px dashed var(--border-light); border-radius:12px; margin-top:6px; font-size:12px; color:var(--muted); line-height:1.5;">
-                    Blur is currently turned off. Select <strong>Bokeh Lens</strong>, <strong>Tilt-Shift</strong>, or <strong>Full Blur</strong> above to customize lens depth across all images.
+                  <div class="form-group" id="batch-group-blur-brush-tools" style="display:none;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                      <label class="form-label" style="margin:0;">Painted Blur Areas</label>
+                      <button type="button" class="action-btn-sm" style="color:#E5484D; background:rgba(229,72,77,0.1);" onclick="clearBatchBlurBrush()">✕ Clear Brush</button>
+                    </div>
+                    <p style="font-size:12px; color:var(--muted); margin-top:6px;">Paint directly with cursor/pen over areas you want to blur.</p>
+                  </div>
+
+                  <!-- Overlay Boundary Toggle -->
+                  <div class="form-group" id="batch-group-blur-guides">
+                    <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-weight:600; font-size:13px;">
+                      <input id="batch-blur-show-guides" type="checkbox" checked onchange="drawBatchBlurOverlayGuides()" style="width:18px; height:18px; accent-color:var(--ink);">
+                      <span>Show Focus Boundary Guidelines</span>
+                    </label>
+                  </div>
+
+                  <div class="drag-tip-banner" id="batch-blur-mode-tip">
+                    <span>Tip: Drag on image to move the focus point. Boundary lines show sharp vs blurred zones.</span>
                   </div>
                 </div>
 

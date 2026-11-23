@@ -1008,7 +1008,7 @@ class PixKitEngine {
         const bmCtx = blurMasked.getContext('2d');
         bmCtx.drawImage(blurCanvas, 0, 0);
         bmCtx.globalCompositeOperation = 'destination-in';
-        bmCtx.drawImage(brushCanvas, 0, 0);
+        bmCtx.drawImage(brushCanvas, 0, 0, w, h);
 
         // Draw masked blur over sharp base
         ctx.drawImage(blurMasked, 0, 0);

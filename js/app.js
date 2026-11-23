@@ -6386,17 +6386,24 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       blur: {
         enabled: false,
-        mode: 'radial', // 'radial' | 'tiltshift' | 'full' | 'none'
+        mode: 'radial', // 'radial' | 'tiltshift' | 'brush' | 'full'
         type: 'gaussian', // 'gaussian' | 'pixelate' | 'motion' | 'zoom' | 'frosted'
         radius: 18,
         focusSize: 35,
         focusX: 0.5,
         focusY: 0.5,
         bandCenterY: 0.5,
-        position: 'center' // 'center' | 'top' | 'bottom' | 'custom'
+        brushSize: 45,
+        brushCanvas: null
       }
     }
   };
+
+  let batchBlurBrushMaskCanvas = null;
+  let isDraggingBatchBlurFocus = false;
+  let isPaintingBatchBlur = false;
+  let lastBatchBlurBrushPos = null;
+  let batchBlurHoverPos = null;
 
   let batchDropzoneBound = false;
   let batchCalibrationTimer = null;
@@ -6409,33 +6416,10 @@ document.addEventListener('DOMContentLoaded', () => {
     syncBatchViewUI();
     updateBatchAccordionUI();
     updateAllBatchToolStatusLabels();
+    setupBatchBlurOverlayEvents();
     if (batchState.items.length > 0) {
       renderBatchPreviewCanvas();
       recalculateBatchCompression();
-    }
-
-    const canvas = document.getElementById('canvas-batch-preview');
-    if (canvas && !canvas.dataset.blurClickBound) {
-      canvas.dataset.blurClickBound = 'true';
-      canvas.addEventListener('click', (e) => {
-        if (batchState.activeDetailTool !== 'blur' || !batchState.configs.blur.enabled) return;
-        const mode = batchState.configs.blur.mode;
-        if (mode !== 'radial' && mode !== 'tiltshift') return;
-        const rect = canvas.getBoundingClientRect();
-        const x = Math.max(0.05, Math.min(0.95, (e.clientX - rect.left) / rect.width));
-        const y = Math.max(0.05, Math.min(0.95, (e.clientY - rect.top) / rect.height));
-        if (mode === 'radial') {
-          batchState.configs.blur.focusX = x;
-          batchState.configs.blur.focusY = y;
-          batchState.configs.blur.position = 'custom';
-        } else if (mode === 'tiltshift') {
-          batchState.configs.blur.bandCenterY = y;
-          batchState.configs.blur.position = 'custom';
-        }
-        document.querySelectorAll('#batch-group-focus-pos .segment-btn').forEach(b => b.classList.remove('active'));
-        renderBatchPreviewCanvas();
-        debouncedRecalculateBatchCompression();
-      });
     }
   }
   window.initBatchEditStage = initBatchEditStage;
@@ -7248,10 +7232,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toolName === 'compress' || toolName === 'resize') {
       recalculateBatchCompression();
     }
-    if (toolName === 'blur' && typeof syncBatchBlurUI === 'function') {
-      syncBatchBlurUI();
-      const c = document.getElementById('canvas-batch-preview');
-      if (c) c.style.cursor = batchState.configs.blur.enabled ? 'crosshair' : 'default';
+    if (toolName === 'blur') {
+      setupBatchBlurOverlayEvents();
+      if (typeof syncBatchBlurUI === 'function') {
+        syncBatchBlurUI();
+      }
+      drawBatchBlurOverlayGuides();
+    } else {
+      const overlay = document.getElementById('canvas-batch-blur-overlay');
+      if (overlay) overlay.style.display = 'none';
     }
     persistBatchSession();
   };
@@ -7260,9 +7249,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (isBatchTransitioning) return;
     if (!batchState.activeDetailTool) return;
 
-    // Reset canvas cursor
+    // Reset canvas cursor & hide blur overlay
     const c = document.getElementById('canvas-batch-preview');
     if (c) c.style.cursor = 'default';
+    const overlay = document.getElementById('canvas-batch-blur-overlay');
+    if (overlay) overlay.style.display = 'none';
 
     // If dismissed via button, keyboard or touch gesture (not popstate), pop the history state
     if (!fromPopState && history.state && history.state.isBatchDetail) {
@@ -7352,14 +7343,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toolName === 'blur') {
       if (cfg.enabled) {
         if (!cfg.mode || cfg.mode === 'none') cfg.mode = 'radial';
-      } else {
-        cfg.mode = 'none';
       }
       if (typeof syncBatchBlurUI === 'function') syncBatchBlurUI();
-      const c = document.getElementById('canvas-batch-preview');
-      if (c && batchState.activeDetailTool === 'blur') {
-        c.style.cursor = cfg.enabled ? 'crosshair' : 'default';
-      }
+      drawBatchBlurOverlayGuides();
     }
     const pill = document.getElementById(`batch-toggle-${toolName}`);
     if (pill) {
@@ -7420,7 +7406,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!cfg.enabled || cfg.mode === 'none') {
         lbl.textContent = 'Off';
       } else {
-        const modeNames = { radial: 'Bokeh', tiltshift: 'Tilt-Shift', full: 'Full Blur' };
+        const modeNames = { radial: 'Bokeh', tiltshift: 'Tilt-Shift', brush: 'Brush', full: 'Full Blur' };
         const typeNames = { gaussian: 'Gaussian', pixelate: 'Pixelated', motion: 'Motion', zoom: 'Zoom', frosted: 'Frosted' };
         const mName = modeNames[cfg.mode] || 'Bokeh';
         const tName = typeNames[cfg.type] || 'Gaussian';
@@ -8088,49 +8074,385 @@ document.addEventListener('DOMContentLoaded', () => {
     debouncedRecalculateBatchCompression();
   };
 
-  // --- 7. Blur & Focus Handlers ---
+  // --- 7. Blur & Focus Handlers (Exact Tool 09 Replica) ---
+  function getBatchBlurPointerPos(e, canvas) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
+      normX: Math.max(0, Math.min(1, (clientX - rect.left) / rect.width)),
+      normY: Math.max(0, Math.min(1, (clientY - rect.top) / rect.height))
+    };
+  }
+
+  function setupBatchBlurOverlayEvents() {
+    const overlay = document.getElementById('canvas-batch-blur-overlay');
+    if (!overlay || overlay.dataset.eventsBound) return;
+    overlay.dataset.eventsBound = 'true';
+
+    overlay.onmousedown = (e) => {
+      const cfg = batchState.configs.blur;
+      if (!cfg || !cfg.enabled) return;
+      const pos = getBatchBlurPointerPos(e, overlay);
+
+      if (cfg.mode === 'brush') {
+        isPaintingBatchBlur = true;
+        lastBatchBlurBrushPos = { x: pos.x, y: pos.y };
+        paintBatchBlurStroke(pos.x, pos.y, pos.x, pos.y);
+      } else if (cfg.mode === 'radial' || cfg.mode === 'tiltshift') {
+        isDraggingBatchBlurFocus = true;
+        cfg.focusX = pos.normX;
+        cfg.focusY = pos.normY;
+        cfg.bandCenterY = pos.normY;
+        renderBatchPreviewCanvas();
+        drawBatchBlurOverlayGuides();
+      }
+    };
+
+    overlay.onmousemove = (e) => {
+      const cfg = batchState.configs.blur;
+      if (!cfg || !cfg.enabled) return;
+      const pos = getBatchBlurPointerPos(e, overlay);
+      batchBlurHoverPos = { x: pos.x, y: pos.y };
+
+      if (cfg.mode === 'brush') {
+        if (isPaintingBatchBlur && lastBatchBlurBrushPos) {
+          paintBatchBlurStroke(lastBatchBlurBrushPos.x, lastBatchBlurBrushPos.y, pos.x, pos.y);
+          lastBatchBlurBrushPos = { x: pos.x, y: pos.y };
+        } else {
+          drawBatchBlurOverlayGuides();
+        }
+      } else if (isDraggingBatchBlurFocus) {
+        cfg.focusX = pos.normX;
+        cfg.focusY = pos.normY;
+        cfg.bandCenterY = pos.normY;
+        renderBatchPreviewCanvas();
+        drawBatchBlurOverlayGuides();
+      }
+    };
+
+    window.addEventListener('mouseup', () => {
+      if (isPaintingBatchBlur || isDraggingBatchBlurFocus) {
+        isPaintingBatchBlur = false;
+        isDraggingBatchBlurFocus = false;
+        debouncedRecalculateBatchCompression();
+      }
+    });
+
+    overlay.onmouseleave = () => {
+      batchBlurHoverPos = null;
+      if (batchState.configs.blur?.mode === 'brush' && !isPaintingBatchBlur) {
+        drawBatchBlurOverlayGuides();
+      }
+    };
+
+    // Touch Support
+    overlay.ontouchstart = (e) => {
+      if (e.touches.length === 1) {
+        e.preventDefault();
+        const cfg = batchState.configs.blur;
+        if (!cfg || !cfg.enabled) return;
+        const pos = getBatchBlurPointerPos(e, overlay);
+
+        if (cfg.mode === 'brush') {
+          isPaintingBatchBlur = true;
+          lastBatchBlurBrushPos = { x: pos.x, y: pos.y };
+          paintBatchBlurStroke(pos.x, pos.y, pos.x, pos.y);
+        } else if (cfg.mode === 'radial' || cfg.mode === 'tiltshift') {
+          isDraggingBatchBlurFocus = true;
+          cfg.focusX = pos.normX;
+          cfg.focusY = pos.normY;
+          cfg.bandCenterY = pos.normY;
+          renderBatchPreviewCanvas();
+          drawBatchBlurOverlayGuides();
+        }
+      }
+    };
+
+    overlay.ontouchmove = (e) => {
+      if (e.touches.length === 1) {
+        e.preventDefault();
+        const cfg = batchState.configs.blur;
+        if (!cfg || !cfg.enabled) return;
+        const pos = getBatchBlurPointerPos(e, overlay);
+        batchBlurHoverPos = { x: pos.x, y: pos.y };
+
+        if (cfg.mode === 'brush' && isPaintingBatchBlur && lastBatchBlurBrushPos) {
+          paintBatchBlurStroke(lastBatchBlurBrushPos.x, lastBatchBlurBrushPos.y, pos.x, pos.y);
+          lastBatchBlurBrushPos = { x: pos.x, y: pos.y };
+        } else if (isDraggingBatchBlurFocus) {
+          cfg.focusX = pos.normX;
+          cfg.focusY = pos.normY;
+          cfg.bandCenterY = pos.normY;
+          renderBatchPreviewCanvas();
+          drawBatchBlurOverlayGuides();
+        }
+      }
+    };
+
+    overlay.ontouchend = () => {
+      isPaintingBatchBlur = false;
+      isDraggingBatchBlurFocus = false;
+      batchBlurHoverPos = null;
+      debouncedRecalculateBatchCompression();
+    };
+  }
+
+  function paintBatchBlurStroke(x1, y1, x2, y2) {
+    const previewCanvas = document.getElementById('canvas-batch-preview');
+    if (!previewCanvas) return;
+    if (!batchBlurBrushMaskCanvas || batchBlurBrushMaskCanvas.width !== previewCanvas.width || batchBlurBrushMaskCanvas.height !== previewCanvas.height) {
+      batchBlurBrushMaskCanvas = document.createElement('canvas');
+      batchBlurBrushMaskCanvas.width = previewCanvas.width;
+      batchBlurBrushMaskCanvas.height = previewCanvas.height;
+    }
+    const ctx = batchBlurBrushMaskCanvas.getContext('2d');
+    const brushSize = batchState.configs.blur.brushSize || 45;
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = brushSize;
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(x2, y2, brushSize / 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    batchState.configs.blur.brushCanvas = batchBlurBrushMaskCanvas;
+    renderBatchPreviewCanvas();
+  }
+
+  window.clearBatchBlurBrush = function () {
+    if (batchBlurBrushMaskCanvas) {
+      const ctx = batchBlurBrushMaskCanvas.getContext('2d');
+      ctx.clearRect(0, 0, batchBlurBrushMaskCanvas.width, batchBlurBrushMaskCanvas.height);
+    }
+    batchState.configs.blur.brushCanvas = null;
+    renderBatchPreviewCanvas();
+    drawBatchBlurOverlayGuides();
+    debouncedRecalculateBatchCompression();
+    showToast('Cleared painted blur brush');
+  };
+
+  window.updateBatchBlurBrushSize = function (val) {
+    const sz = Math.max(10, Math.min(160, parseInt(val, 10) || 45));
+    batchState.configs.blur.brushSize = sz;
+    const lbl = document.getElementById('lbl-batch-blur-brush-size');
+    if (lbl) lbl.textContent = `${sz}px`;
+    drawBatchBlurOverlayGuides();
+  };
+
+  window.drawBatchBlurOverlayGuides = function () {
+    const overlay = document.getElementById('canvas-batch-blur-overlay');
+    const previewCanvas = document.getElementById('canvas-batch-preview');
+    if (!overlay || !previewCanvas) return;
+
+    if (batchState.activeDetailTool !== 'blur' || !batchState.configs.blur?.enabled) {
+      overlay.style.display = 'none';
+      return;
+    }
+
+    overlay.style.display = 'block';
+    if (overlay.width !== previewCanvas.width || overlay.height !== previewCanvas.height) {
+      overlay.width = previewCanvas.width;
+      overlay.height = previewCanvas.height;
+    }
+
+    const ctx = overlay.getContext('2d');
+    const w = overlay.width;
+    const h = overlay.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const cfg = batchState.configs.blur;
+    const showGuides = document.getElementById('batch-blur-show-guides')?.checked ?? true;
+
+    // 1. Radial Bokeh Guide Rings
+    if (cfg.mode === 'radial' && showGuides) {
+      const fx = (cfg.focusX !== undefined ? cfg.focusX : 0.5) * w;
+      const fy = (cfg.focusY !== undefined ? cfg.focusY : 0.5) * h;
+      const fr = ((cfg.focusSize || 35) / 100) * Math.min(w, h);
+      const innerR = fr * 0.4;
+
+      // Outer blur boundary ring
+      ctx.save();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 6]);
+      ctx.beginPath();
+      ctx.arc(fx, fy, fr, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Outer label badge
+      ctx.font = '600 12px "DM Sans", -apple-system, sans-serif';
+      ctx.fillStyle = 'rgba(34, 36, 31, 0.85)';
+      ctx.fillRect(fx - 65, fy - fr - 22, 130, 20);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Blur Outer Boundary', fx, fy - fr - 12);
+
+      // Inner 100% sharp core ring
+      ctx.strokeStyle = '#D7F36A';
+      ctx.lineWidth = 2.5;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      ctx.arc(fx, fy, innerR, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Center Focal Bullseye
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#D7F36A';
+      ctx.beginPath();
+      ctx.arc(fx, fy, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#22241F';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Crosshair tick marks
+      ctx.strokeStyle = '#D7F36A';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(fx - 16, fy); ctx.lineTo(fx + 16, fy);
+      ctx.moveTo(fx, fy - 16); ctx.lineTo(fx, fy + 16);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 2. Tilt-Shift Guide Lines
+    else if (cfg.mode === 'tiltshift' && showGuides) {
+      const cy = (cfg.bandCenterY !== undefined ? cfg.bandCenterY : 0.5) * h;
+      const bh = ((cfg.focusSize || 35) / 100) * h;
+      const topFocusY = cy - bh / 2;
+      const bottomFocusY = cy + bh / 2;
+      const topTransY = cy - bh / 2 - bh * 0.4;
+      const bottomTransY = cy + bh / 2 + bh * 0.4;
+
+      ctx.save();
+
+      // Sharp Band Fill highlight
+      ctx.fillStyle = 'rgba(215, 243, 106, 0.08)';
+      ctx.fillRect(0, Math.max(0, topFocusY), w, Math.max(0, bottomFocusY - topFocusY));
+
+      // Center Line
+      ctx.strokeStyle = '#D7F36A';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(0, cy); ctx.lineTo(w, cy);
+      ctx.stroke();
+
+      // Center Bullseye Marker
+      ctx.fillStyle = '#D7F36A';
+      ctx.beginPath();
+      ctx.arc(w / 2, cy, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#22241F';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Top Sharp Boundary Line
+      ctx.strokeStyle = '#D7F36A';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 6]);
+      ctx.beginPath();
+      ctx.moveTo(0, topFocusY); ctx.lineTo(w, topFocusY);
+      ctx.stroke();
+
+      // Bottom Sharp Boundary Line
+      ctx.beginPath();
+      ctx.moveTo(0, bottomFocusY); ctx.lineTo(w, bottomFocusY);
+      ctx.stroke();
+
+      // Boundary Labels
+      ctx.setLineDash([]);
+      ctx.font = '600 11px "DM Sans", -apple-system, sans-serif';
+      ctx.fillStyle = 'rgba(34, 36, 31, 0.85)';
+      ctx.fillRect(16, topFocusY - 18, 140, 18);
+      ctx.fillStyle = '#D7F36A';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('▲ Sharp Boundary (Top)', 22, topFocusY - 9);
+
+      ctx.fillStyle = 'rgba(34, 36, 31, 0.85)';
+      ctx.fillRect(16, bottomFocusY + 2, 160, 18);
+      ctx.fillStyle = '#D7F36A';
+      ctx.fillText('▼ Sharp Boundary (Bottom)', 22, bottomFocusY + 11);
+
+      // Outer Transition Dashed Lines
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(0, topTransY); ctx.lineTo(w, topTransY);
+      ctx.moveTo(0, bottomTransY); ctx.lineTo(w, bottomTransY);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 3. Brush Mode Cursor Circle
+    else if (cfg.mode === 'brush' && batchBlurHoverPos) {
+      ctx.save();
+      const r = (cfg.brushSize || 45) / 2;
+      ctx.strokeStyle = '#D7F36A';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(batchBlurHoverPos.x, batchBlurHoverPos.y, r, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(215, 243, 106, 0.2)';
+      ctx.fill();
+      ctx.restore();
+    }
+  };
+
   function syncBatchBlurUI() {
     const cfg = batchState.configs.blur;
     if (!cfg) return;
 
-    const isEnabled = !!cfg.enabled && cfg.mode !== 'none';
-    const mode = isEnabled ? (cfg.mode || 'radial') : 'none';
+    const isEnabled = !!cfg.enabled;
+    const mode = cfg.mode || 'radial';
     const type = cfg.type || 'gaussian';
-    const pos = cfg.position || 'center';
 
-    // 1. Sync Blur Mode cards
-    ['none', 'radial', 'tiltshift', 'full'].forEach(m => {
-      const card = document.getElementById(`batch-blur-mode-${m}`);
-      if (card) card.classList.toggle('active', mode === m);
+    // 1. Sync Blur Mode buttons
+    ['radial', 'tilt', 'brush', 'full'].forEach(m => {
+      let modeKey = m === 'tilt' ? 'tiltshift' : m;
+      const btn = document.getElementById(`batch-blur-mode-${m}`);
+      if (btn) btn.classList.toggle('active', mode === modeKey);
     });
 
-    // 2. Sync Blur Style cards
+    // 2. Sync Blur Style buttons
     ['gaussian', 'pixelate', 'motion', 'zoom', 'frosted'].forEach(t => {
-      const card = document.getElementById(`batch-blur-type-${t}`);
-      if (card) card.classList.toggle('active', type === t);
+      const btn = document.getElementById(`batch-blur-type-${t}`);
+      if (btn) btn.classList.toggle('active', type === t);
     });
 
-    // 3. Sync Position segmented buttons
-    ['center', 'top', 'bottom'].forEach(p => {
-      const btn = document.getElementById(`batch-blur-pos-${p}`);
-      if (btn) btn.classList.toggle('active', pos === p);
-    });
-
-    // 4. Sync sliders & values
+    // 3. Sync sliders & values
     const rInput = document.getElementById('batch-blur-radius');
-    const rVal = document.getElementById('batch-blur-radius-val');
+    const rVal = document.getElementById('lbl-batch-blur-radius');
     if (rInput) rInput.value = cfg.radius || 18;
     if (rVal) rVal.textContent = `${cfg.radius || 18}px`;
 
-    const fInput = document.getElementById('batch-blur-focus');
-    const fVal1 = document.getElementById('batch-blur-focus-val');
-    const fVal2 = document.getElementById('batch-focus-size-val');
+    const fInput = document.getElementById('batch-blur-focus-size');
+    const fVal = document.getElementById('lbl-batch-focus-size');
     if (fInput) fInput.value = cfg.focusSize || 35;
-    if (fVal1) fVal1.textContent = `${cfg.focusSize || 35}%`;
-    if (fVal2) fVal2.textContent = `${cfg.focusSize || 35}%`;
+    if (fVal) fVal.textContent = `${cfg.focusSize || 35}%`;
 
-    // 5. Dynamic slider labels based on blur style and mode
-    const rLbl = document.getElementById('batch-blur-radius-lbl');
+    const bInput = document.getElementById('batch-blur-brush-size');
+    const bVal = document.getElementById('lbl-batch-blur-brush-size');
+    if (bInput) bInput.value = cfg.brushSize || 45;
+    if (bVal) bVal.textContent = `${cfg.brushSize || 45}px`;
+
+    // 4. Dynamic slider labels based on blur style and mode
+    const rLbl = document.getElementById('lbl-batch-blur-strength-title');
     if (rLbl) {
       if (type === 'pixelate') rLbl.textContent = 'Pixel Block Size';
       else if (type === 'motion') rLbl.textContent = 'Motion Streak Distance';
@@ -8139,35 +8461,48 @@ document.addEventListener('DOMContentLoaded', () => {
       else rLbl.textContent = 'Blur Intensity';
     }
 
-    const fLbl = document.getElementById('batch-blur-focus-lbl');
+    const fLbl = document.getElementById('lbl-batch-focus-title');
     if (fLbl) {
-      fLbl.textContent = (mode === 'tiltshift') ? 'Sharp Center Band Height' : 'Bokeh Focus Radius';
+      fLbl.textContent = (mode === 'radial') ? 'Bokeh Focus Radius' : 'Sharp Band Height';
     }
 
-    // 6. Section Visibility
-    const typeGroup = document.getElementById('batch-group-blur-type');
-    const posGroup = document.getElementById('batch-group-focus-pos');
-    const radiusGroup = document.getElementById('batch-group-blur-radius');
+    // 5. Visibility of sub-groups
+    const isBrush = (mode === 'brush');
+    const isGuideMode = (mode === 'radial' || mode === 'tiltshift');
+
     const focusGroup = document.getElementById('batch-group-focus-radius');
-    const disabledHint = document.getElementById('batch-blur-disabled-hint');
+    if (focusGroup) focusGroup.style.display = isGuideMode ? 'block' : 'none';
 
-    if (!isEnabled) {
-      if (typeGroup) typeGroup.style.display = 'none';
-      if (posGroup) posGroup.style.display = 'none';
-      if (radiusGroup) radiusGroup.style.display = 'none';
-      if (focusGroup) focusGroup.style.display = 'none';
-      if (disabledHint) disabledHint.style.display = 'block';
-    } else {
-      if (disabledHint) disabledHint.style.display = 'none';
-      if (typeGroup) typeGroup.style.display = 'block';
-      if (radiusGroup) radiusGroup.style.display = 'block';
+    const brushGroup = document.getElementById('batch-group-blur-brush-size');
+    if (brushGroup) brushGroup.style.display = isBrush ? 'block' : 'none';
 
-      const isFocalMode = (mode === 'radial' || mode === 'tiltshift');
-      if (posGroup) posGroup.style.display = isFocalMode ? 'block' : 'none';
-      if (focusGroup) focusGroup.style.display = isFocalMode ? 'block' : 'none';
+    const brushTools = document.getElementById('batch-group-blur-brush-tools');
+    if (brushTools) brushTools.style.display = isBrush ? 'block' : 'none';
+
+    const guidesGroup = document.getElementById('batch-group-blur-guides');
+    if (guidesGroup) guidesGroup.style.display = isGuideMode ? 'block' : 'none';
+
+    // 6. Tip banner text
+    const tip = document.getElementById('batch-blur-mode-tip');
+    if (tip) {
+      if (mode === 'radial') {
+        tip.innerHTML = '<span>Tip: Drag the green bullseye to move focus. Dashed rings indicate sharp core and blur edge.</span>';
+      } else if (mode === 'tiltshift') {
+        tip.innerHTML = '<span>Tip: Drag up or down on the canvas to move the miniature focus line.</span>';
+      } else if (mode === 'brush') {
+        tip.innerHTML = '<span>Tip: Paint directly with your cursor or touch over any image area to blur it.</span>';
+      } else {
+        tip.innerHTML = '<span>Tip: Full frame blur applies uniform optical blur across the entire image.</span>';
+      }
     }
 
-    // 7. Sync Detail Header Toggle Pill
+    // 7. Overlay cursor
+    const overlay = document.getElementById('canvas-batch-blur-overlay');
+    if (overlay) {
+      overlay.style.cursor = isBrush ? 'none' : 'crosshair';
+    }
+
+    // 8. Sync Detail Header Toggle Pill
     const detailPill = document.getElementById('batch-detail-toggle-btn');
     if (detailPill && batchState.activeDetailTool === 'blur') {
       detailPill.textContent = isEnabled ? 'Active' : 'Off';
@@ -8183,83 +8518,45 @@ document.addEventListener('DOMContentLoaded', () => {
   window.syncBatchBlurUI = syncBatchBlurUI;
 
   window.setBatchBlurMode = function (mode, btn) {
-    if (mode === 'none') {
-      batchState.configs.blur.enabled = false;
-      batchState.configs.blur.mode = 'none';
-    } else {
-      batchState.configs.blur.enabled = true;
-      batchState.configs.blur.mode = mode;
-    }
+    batchState.configs.blur.mode = mode;
+    batchState.configs.blur.enabled = true;
     syncBatchBlurUI();
-    const c = document.getElementById('canvas-batch-preview');
-    if (c && batchState.activeDetailTool === 'blur') {
-      c.style.cursor = batchState.configs.blur.enabled ? 'crosshair' : 'default';
-    }
     updateBatchToolStatusLabel('blur');
     renderBatchPreviewCanvas();
+    drawBatchBlurOverlayGuides();
     debouncedRecalculateBatchCompression();
   };
 
   window.setBatchBlurType = function (type, btn) {
     batchState.configs.blur.type = type;
-    if (!batchState.configs.blur.enabled || batchState.configs.blur.mode === 'none') {
-      batchState.configs.blur.enabled = true;
-      batchState.configs.blur.mode = 'radial';
-    }
+    batchState.configs.blur.enabled = true;
     syncBatchBlurUI();
-    const c = document.getElementById('canvas-batch-preview');
-    if (c && batchState.activeDetailTool === 'blur') {
-      c.style.cursor = 'crosshair';
-    }
     updateBatchToolStatusLabel('blur');
     renderBatchPreviewCanvas();
-    debouncedRecalculateBatchCompression();
-  };
-
-  window.setBatchBlurPosition = function (pos, btn) {
-    batchState.configs.blur.position = pos;
-    if (pos === 'top') {
-      batchState.configs.blur.focusX = 0.5;
-      batchState.configs.blur.focusY = 0.32;
-      batchState.configs.blur.bandCenterY = 0.35;
-    } else if (pos === 'bottom') {
-      batchState.configs.blur.focusX = 0.5;
-      batchState.configs.blur.focusY = 0.68;
-      batchState.configs.blur.bandCenterY = 0.65;
-    } else {
-      // center
-      batchState.configs.blur.focusX = 0.5;
-      batchState.configs.blur.focusY = 0.5;
-      batchState.configs.blur.bandCenterY = 0.5;
-    }
-    syncBatchBlurUI();
-    renderBatchPreviewCanvas();
+    drawBatchBlurOverlayGuides();
     debouncedRecalculateBatchCompression();
   };
 
   window.updateBatchBlurRadius = function (val) {
-    const r = Math.max(1, Math.min(60, parseInt(val, 10) || 18));
+    const r = Math.max(2, Math.min(48, parseInt(val, 10) || 18));
     batchState.configs.blur.radius = r;
-    const text = document.getElementById('batch-blur-radius-val');
+    batchState.configs.blur.enabled = true;
+    const text = document.getElementById('lbl-batch-blur-radius');
     if (text) text.textContent = `${r}px`;
-    if (!batchState.configs.blur.enabled || batchState.configs.blur.mode === 'none') {
-      batchState.configs.blur.enabled = true;
-      batchState.configs.blur.mode = 'radial';
-      syncBatchBlurUI();
-    }
     updateBatchToolStatusLabel('blur');
     renderBatchPreviewCanvas();
+    drawBatchBlurOverlayGuides();
     debouncedRecalculateBatchCompression();
   };
 
   window.updateBatchFocusSize = function (val) {
     const f = Math.max(10, Math.min(85, parseInt(val, 10) || 35));
     batchState.configs.blur.focusSize = f;
-    const text1 = document.getElementById('batch-focus-size-val');
-    const text2 = document.getElementById('batch-blur-focus-val');
-    if (text1) text1.textContent = `${f}%`;
-    if (text2) text2.textContent = `${f}%`;
+    batchState.configs.blur.enabled = true;
+    const text = document.getElementById('lbl-batch-focus-size');
+    if (text) text.textContent = `${f}%`;
     renderBatchPreviewCanvas();
+    drawBatchBlurOverlayGuides();
     debouncedRecalculateBatchCompression();
   };
 
@@ -8292,6 +8589,16 @@ document.addEventListener('DOMContentLoaded', () => {
     batchState.configs.blur.mode = 'radial';
     batchState.configs.blur.type = 'gaussian';
     batchState.configs.blur.radius = 18;
+    batchState.configs.blur.focusSize = 35;
+    batchState.configs.blur.focusX = 0.5;
+    batchState.configs.blur.focusY = 0.5;
+    batchState.configs.blur.bandCenterY = 0.5;
+    batchState.configs.blur.brushSize = 45;
+    batchState.configs.blur.brushCanvas = null;
+    if (batchBlurBrushMaskCanvas) {
+      const ctx = batchBlurBrushMaskCanvas.getContext('2d');
+      ctx.clearRect(0, 0, batchBlurBrushMaskCanvas.width, batchBlurBrushMaskCanvas.height);
+    }
 
     ['resize', 'crop', 'rotate', 'adjust', 'filters', 'blur'].forEach(t => {
       const pill = document.getElementById(`batch-toggle-${t}`);
@@ -8503,7 +8810,8 @@ document.addEventListener('DOMContentLoaded', () => {
         bandHeight: (blurCfg.focusSize || 35) / 100,
         focusX: (blurCfg.focusX !== undefined) ? blurCfg.focusX : 0.5,
         focusY: (blurCfg.focusY !== undefined) ? blurCfg.focusY : 0.5,
-        bandCenterY: (blurCfg.bandCenterY !== undefined) ? blurCfg.bandCenterY : 0.5
+        bandCenterY: (blurCfg.bandCenterY !== undefined) ? blurCfg.bandCenterY : 0.5,
+        brushCanvas: blurCfg.brushCanvas || null
       };
 
       if (window.engine && typeof engine.applySelectiveBlur === 'function') {
@@ -8606,6 +8914,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
       wrapper.style.width = `${dispW}px`;
       wrapper.style.height = `${dispH}px`;
+    }
+
+    // Sync batch blur overlay if active
+    const blurOverlay = document.getElementById('canvas-batch-blur-overlay');
+    if (blurOverlay) {
+      if (batchState.activeDetailTool === 'blur' && batchState.configs.blur.enabled) {
+        blurOverlay.style.display = 'block';
+        if (blurOverlay.width !== canvas.width || blurOverlay.height !== canvas.height) {
+          blurOverlay.width = canvas.width;
+          blurOverlay.height = canvas.height;
+        }
+        drawBatchBlurOverlayGuides();
+      } else {
+        blurOverlay.style.display = 'none';
+      }
     }
   }
 
