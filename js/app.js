@@ -6523,28 +6523,28 @@ document.addEventListener('DOMContentLoaded', () => {
           const panel = document.getElementById(`batch-comp-panel-${m}`);
           if (panel) panel.style.display = (c.mode === m) ? 'block' : 'none';
         });
-        const tVal = document.getElementById('batch-comp-target-val');
+        const tVal = document.getElementById('batch-compress-target-val') || document.getElementById('batch-comp-target-val');
         if (tVal && c.targetVal) tVal.value = c.targetVal;
-        const tUnit = document.getElementById('batch-comp-target-unit');
+        const tUnit = document.getElementById('batch-compress-target-unit') || document.getElementById('batch-comp-target-unit');
         if (tUnit && c.targetUnit) tUnit.value = c.targetUnit;
-        document.querySelectorAll('.batch-target-pill').forEach(pill => {
-          const v = parseInt(pill.dataset.val, 10);
-          const u = pill.dataset.unit || 'KB';
+        document.querySelectorAll('#batch-compress-mode-target-panel .chip-btn, .batch-target-pill').forEach(pill => {
+          const v = parseInt(pill.dataset.val || pill.textContent, 10);
+          const u = pill.dataset.unit || (pill.textContent.includes('MB') ? 'MB' : 'KB');
           pill.classList.toggle('active', (v === c.targetVal && u === c.targetUnit));
         });
-        const pxW = document.getElementById('batch-comp-px-w');
+        const pxW = document.getElementById('batch-compress-px-width') || document.getElementById('batch-comp-px-w');
         if (pxW && c.pxWidth) pxW.value = c.pxWidth;
-        const pxH = document.getElementById('batch-comp-px-h');
+        const pxH = document.getElementById('batch-compress-px-height') || document.getElementById('batch-comp-px-h');
         if (pxH && c.pxHeight) pxH.value = c.pxHeight;
-        const pxQ = document.getElementById('batch-comp-px-q');
+        const pxQ = document.getElementById('batch-compress-px-slider') || document.getElementById('batch-comp-px-q');
         if (pxQ && c.pxQuality) pxQ.value = c.pxQuality;
-        const pxQVal = document.getElementById('batch-comp-px-q-val');
+        const pxQVal = document.getElementById('batch-compress-px-quality-val') || document.getElementById('batch-comp-px-q-val');
         if (pxQVal && c.pxQuality) pxQVal.textContent = c.pxQuality + '%';
-        const lockAspectBtn = document.getElementById('btn-batch-comp-aspect');
+        const lockAspectBtn = document.getElementById('batch-compress-px-lock-btn') || document.getElementById('btn-batch-comp-aspect');
         if (lockAspectBtn) lockAspectBtn.classList.toggle('active', !!c.lockAspect);
-        const manQ = document.getElementById('batch-comp-manual-q');
+        const manQ = document.getElementById('batch-compress-manual-slider') || document.getElementById('batch-comp-manual-q');
         if (manQ && c.manualQuality) manQ.value = c.manualQuality;
-        const manQVal = document.getElementById('batch-comp-manual-q-val');
+        const manQVal = document.getElementById('batch-compress-manual-quality-val') || document.getElementById('batch-comp-manual-q-val');
         if (manQVal && c.manualQuality) manQVal.textContent = c.manualQuality + '%';
         ['jpeg', 'webp', 'png', 'original'].forEach(fmt => {
           const btn = document.getElementById(`batch-comp-fmt-${fmt}`);
@@ -6556,23 +6556,23 @@ document.addEventListener('DOMContentLoaded', () => {
       // 2. Resize
       if (cfg.resize) {
         const r = cfg.resize;
-        const exactBtn = document.getElementById('batch-resize-mode-exact');
-        const scaleBtn = document.getElementById('batch-resize-mode-scale');
+        const exactBtn = document.getElementById('btn-batch-resize-mode-exact') || document.getElementById('batch-resize-mode-exact');
+        const scaleBtn = document.getElementById('btn-batch-resize-mode-scale') || document.getElementById('batch-resize-mode-scale');
         if (exactBtn) exactBtn.classList.toggle('active', r.mode === 'exact');
         if (scaleBtn) scaleBtn.classList.toggle('active', r.mode === 'scale');
-        const scalePanel = document.getElementById('batch-resize-scale-panel');
-        const exactPanel = document.getElementById('batch-resize-exact-panel');
+        const scalePanel = document.getElementById('batch-resize-scale-box') || document.getElementById('batch-resize-scale-panel');
+        const exactPanel = document.getElementById('batch-resize-exact-box') || document.getElementById('batch-resize-exact-panel');
         if (scalePanel) scalePanel.style.display = (r.mode === 'scale') ? 'block' : 'none';
         if (exactPanel) exactPanel.style.display = (r.mode === 'exact') ? 'block' : 'none';
-        const scaleVal = document.getElementById('batch-resize-scale-val');
+        const scaleVal = document.getElementById('batch-resize-scale-slider') || document.getElementById('batch-resize-scale-val');
         if (scaleVal && r.scale) scaleVal.value = r.scale;
-        const scaleNum = document.getElementById('batch-resize-scale-num');
+        const scaleNum = document.getElementById('batch-resize-scale-val');
         if (scaleNum && r.scale) scaleNum.textContent = r.scale + '%';
         const wVal = document.getElementById('batch-resize-w');
         if (wVal && r.w) wVal.value = r.w;
         const hVal = document.getElementById('batch-resize-h');
         if (hVal && r.h) hVal.value = r.h;
-        const lockAspectBtn = document.getElementById('btn-batch-resize-aspect');
+        const lockAspectBtn = document.getElementById('batch-resize-aspect-btn') || document.getElementById('btn-batch-resize-aspect');
         if (lockAspectBtn) lockAspectBtn.classList.toggle('active', !!r.lockAspect);
       }
 

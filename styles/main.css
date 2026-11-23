@@ -7960,12 +7960,35 @@ body.leaderboard-active .leaderboard-screen {
 }
 
 /* Control Center Accordion Styles & Master-Detail Sub-view Architecture */
-.batch-control-center-panel {
-  max-height: calc(100vh - 120px);
+.settings-panel.batch-settings-panel,
+.controls-panel.batch-settings-panel,
+aside.batch-settings-panel {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-subtle);
+  box-sizing: border-box;
   min-height: 520px;
+}
+
+[data-theme="dark"] .settings-panel.batch-settings-panel,
+[data-theme="dark"] .controls-panel.batch-settings-panel,
+[data-theme="dark"] aside.batch-settings-panel {
+  background: #181915;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.batch-control-center-panel {
+  max-height: calc(100vh - 160px);
+  min-height: 480px;
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
+  padding-right: 2px;
   scrollbar-width: thin;
   scrollbar-color: var(--line-strong) transparent;
 }
@@ -8003,19 +8026,19 @@ body.leaderboard-active .leaderboard-screen {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
+  padding: 11px 13px;
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   cursor: pointer;
   user-select: none;
-  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .batch-tool-nav-item:hover {
-  background: var(--white);
-  border-color: var(--ink);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  background: var(--soft-hover);
+  border-color: var(--line-strong);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
   transform: translateY(-1px);
 }
 
@@ -8042,7 +8065,9 @@ body.leaderboard-active .leaderboard-screen {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
 }
 
 .batch-detail-back-btn {
@@ -8061,9 +8086,9 @@ body.leaderboard-active .leaderboard-screen {
 }
 
 .batch-detail-back-btn:hover {
-  background: var(--white);
+  background: var(--paper);
   border-color: var(--ink);
-  transform: translateX(-3px);
+  transform: translateX(-2px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
@@ -8082,6 +8107,7 @@ body.leaderboard-active .leaderboard-screen {
   align-items: center;
   justify-content: space-between;
   padding-bottom: 12px;
+  margin-bottom: 16px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -8089,6 +8115,314 @@ body.leaderboard-active .leaderboard-screen {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.batch-detail-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--soft);
+  border: 1px solid var(--line);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+/* Custom PixKit Toggle Pills for Batch Tools */
+.batch-tool-toggle-pill {
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--soft);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  line-height: 1.2;
+}
+
+.batch-tool-toggle-pill.active {
+  background: var(--lime);
+  color: #121310;
+  border-color: var(--accent-lime-border);
+  box-shadow: 0 1px 4px rgba(215, 243, 106, 0.35);
+}
+
+/* Batch Execute Action Button with Lime Pop */
+#btn-batch-process-all {
+  background: var(--lime) !important;
+  color: #121310 !important;
+  border: 1px solid var(--accent-lime-border) !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  height: 44px !important;
+  box-shadow: 0 2px 10px rgba(215, 243, 106, 0.3) !important;
+}
+
+#btn-batch-process-all:hover {
+  background: var(--lime-hover) !important;
+  transform: translateY(-1px) scale(1.01) !important;
+  box-shadow: 0 4px 16px rgba(215, 243, 106, 0.45) !important;
+}
+
+/* Universal Preset Cards Grid & Chips Styling */
+.preset-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.preset-cards-grid .preset-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.preset-cards-grid .preset-card:hover {
+  border-color: var(--accent-lime-border);
+  background: var(--lime-tint);
+  transform: translateY(-1px);
+}
+
+.preset-cards-grid .preset-card.active {
+  border-color: var(--accent-lime-border);
+  background: var(--lime-tint);
+  box-shadow: 0 0 0 1.5px var(--accent-lime-border);
+}
+
+.preset-cards-grid .preset-card strong {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink);
+  display: block;
+  line-height: 1.25;
+}
+
+.preset-cards-grid .preset-card small {
+  font-size: 10px;
+  color: var(--muted);
+  display: block;
+  margin-top: 2px;
+}
+
+[data-theme="dark"] .preset-cards-grid .preset-card {
+  background: #1D1F18;
+  border-color: rgba(255, 255, 255, 0.09);
+}
+
+[data-theme="dark"] .preset-cards-grid .preset-card:hover {
+  border-color: var(--accent-lime-border);
+  background: var(--lime-tint);
+}
+
+[data-theme="dark"] .preset-cards-grid .preset-card.active {
+  border-color: var(--lime);
+  background: rgba(215, 243, 106, 0.12);
+  box-shadow: 0 0 0 1.5px var(--lime);
+}
+
+[data-theme="dark"] .preset-cards-grid .preset-card.active strong {
+  color: var(--lime);
+}
+
+.chips-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.chips-group .chip-btn {
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.chips-group .chip-btn:hover {
+  background: var(--soft-hover);
+  border-color: var(--line-strong);
+}
+
+.chips-group .chip-btn.active {
+  background: var(--lime);
+  color: #121310;
+  border-color: var(--accent-lime-border);
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(215, 243, 106, 0.35);
+}
+
+/* Dim Inputs Row (Pixels & Resize) */
+.dim-inputs-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.dim-inputs-row input,
+.dim-inputs-row .input-text {
+  font-family: var(--font-body);
+  font-weight: 600;
+  text-align: center;
+  width: 100%;
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 13px;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.dim-inputs-row input:focus {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px var(--lime-tint);
+}
+
+.dim-inputs-row .aspect-lock-btn {
+  width: 36px;
+  height: 40px;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.dim-inputs-row .aspect-lock-btn.active {
+  background: var(--lime-tint);
+  border-color: var(--accent-lime-border);
+  color: var(--ink);
+}
+
+/* Input With Select Container Hardening */
+.input-with-select {
+  display: flex;
+  align-items: stretch;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper);
+  overflow: hidden;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  margin-top: 6px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input-with-select:focus-within {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px var(--lime-tint);
+}
+
+.input-with-select .text-input,
+.input-with-select input[type="number"],
+.input-with-select input[type="text"] {
+  border: none !important;
+  border-radius: 0 !important;
+  flex: 1;
+  min-width: 0;
+  padding: 0 14px;
+  height: 100%;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  background: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+  -moz-appearance: textfield;
+}
+
+.input-with-select .unit-select,
+.input-with-select select {
+  border: none !important;
+  border-left: 1px solid var(--line) !important;
+  border-radius: 0 !important;
+  background: var(--soft) !important;
+  padding: 0 14px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  outline: none !important;
+  box-shadow: none !important;
+  height: 100%;
+}
+
+[data-theme="dark"] .input-with-select {
+  background: #141511;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .input-with-select .unit-select,
+[data-theme="dark"] .input-with-select select {
+  background: #1F211A !important;
+  border-left-color: rgba(255, 255, 255, 0.12) !important;
+  color: #F2F3EC !important;
+}
+
+/* Smooth range slider track & thumb */
+.batch-tool-detail-body input[type="range"] {
+  width: 100%;
+  height: 6px;
+  background: var(--line);
+  border-radius: 4px;
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  margin-top: 6px;
+}
+
+.batch-tool-detail-body input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: transform var(--transition-fast), background var(--transition-fast);
+}
+
+.batch-tool-detail-body input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.18);
+  background: var(--lime);
+}
+
+[data-theme="dark"] .batch-tool-detail-body input[type="range"] {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme="dark"] .batch-tool-detail-body input[type="range"]::-webkit-slider-thumb {
+  background: var(--lime);
 }
 
 .batch-tool-detail-body,

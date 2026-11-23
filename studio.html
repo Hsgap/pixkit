@@ -2390,28 +2390,28 @@
           </div>
 
           <!-- Controls Panel (Master-Detail Control Center) -->
-          <aside class="controls-panel">
+          <aside class="settings-panel batch-settings-panel">
             <div class="batch-control-center-panel" id="batch-control-center-panel">
 
               <!-- ================= MASTER VIEW (Configurations List) ================= -->
               <div class="batch-cc-view" id="batch-cc-master-view">
-                <div class="panel-header" style="margin-bottom:12px;">
-                  <h3 style="margin:0; font-size:15px; font-weight:700;">Batch Configurations</h3>
-                  <p style="margin:4px 0 0; font-size:12px; color:var(--muted);">Actions apply to all images simultaneously.</p>
+                <div class="panel-header" style="margin-bottom:16px;">
+                  <h3 style="margin:0; font-size:16px; font-weight:700;">Batch Configurations</h3>
+                  <p class="sub" style="margin:4px 0 0; font-size:12px; color:var(--muted);">Actions apply to all queued images simultaneously.</p>
                 </div>
 
                 <div class="batch-tool-nav-list">
                   <!-- 1. Compress (Active by default) -->
                   <div class="batch-tool-nav-item" onclick="openBatchToolDetail('compress')">
                     <div style="display:flex; align-items:center; gap:10px;">
-                      <span style="font-size:16px;">◉</span>
+                      <span class="batch-detail-icon-box">◉</span>
                       <div>
                         <strong style="font-size:13px; display:block;">Compress Image</strong>
                         <small style="color:var(--muted); font-size:11px;" id="batch-status-compress">&lt; 200 KB (Auto)</small>
                       </div>
                     </div>
                     <div style="display:flex; align-items:center; gap:6px;">
-                      <button type="button" class="action-btn-sm active" id="batch-toggle-compress" onclick="event.stopPropagation(); toggleBatchFeature('compress')">Active</button>
+                      <button type="button" class="batch-tool-toggle-pill active" id="batch-toggle-compress" onclick="event.stopPropagation(); toggleBatchFeature('compress')">Active</button>
                       <span class="batch-nav-arrow">›</span>
                     </div>
                   </div>
@@ -2419,14 +2419,14 @@
                   <!-- 2. Resize -->
                   <div class="batch-tool-nav-item" onclick="openBatchToolDetail('resize')">
                     <div style="display:flex; align-items:center; gap:10px;">
-                      <span style="font-size:16px;">↗</span>
+                      <span class="batch-detail-icon-box">↗</span>
                       <div>
                         <strong style="font-size:13px; display:block;">Resize</strong>
                         <small style="color:var(--muted); font-size:11px;" id="batch-status-resize">Off</small>
                       </div>
                     </div>
                     <div style="display:flex; align-items:center; gap:6px;">
-                      <button type="button" class="action-btn-sm" id="batch-toggle-resize" onclick="event.stopPropagation(); toggleBatchFeature('resize')">Off</button>
+                      <button type="button" class="batch-tool-toggle-pill" id="batch-toggle-resize" onclick="event.stopPropagation(); toggleBatchFeature('resize')">Off</button>
                       <span class="batch-nav-arrow">›</span>
                     </div>
                   </div>
@@ -2434,14 +2434,14 @@
                   <!-- 3. Crop -->
                   <div class="batch-tool-nav-item" onclick="openBatchToolDetail('crop')">
                     <div style="display:flex; align-items:center; gap:10px;">
-                      <span style="font-size:16px;">⌗</span>
+                      <span class="batch-detail-icon-box">⌗</span>
                       <div>
                         <strong style="font-size:13px; display:block;">Crop &amp; Aspect</strong>
                         <small style="color:var(--muted); font-size:11px;" id="batch-status-crop">Off</small>
                       </div>
                     </div>
                     <div style="display:flex; align-items:center; gap:6px;">
-                      <button type="button" class="action-btn-sm" id="batch-toggle-crop" onclick="event.stopPropagation(); toggleBatchFeature('crop')">Off</button>
+                      <button type="button" class="batch-tool-toggle-pill" id="batch-toggle-crop" onclick="event.stopPropagation(); toggleBatchFeature('crop')">Off</button>
                       <span class="batch-nav-arrow">›</span>
                     </div>
                   </div>
@@ -2449,14 +2449,14 @@
                   <!-- 4. Rotate & Flip -->
                   <div class="batch-tool-nav-item" onclick="openBatchToolDetail('rotate')">
                     <div style="display:flex; align-items:center; gap:10px;">
-                      <span style="font-size:16px;">↻</span>
+                      <span class="batch-detail-icon-box">↻</span>
                       <div>
                         <strong style="font-size:13px; display:block;">Rotate &amp; Mirror</strong>
                         <small style="color:var(--muted); font-size:11px;" id="batch-status-rotate">Off</small>
                       </div>
                     </div>
                     <div style="display:flex; align-items:center; gap:6px;">
-                      <button type="button" class="action-btn-sm" id="batch-toggle-rotate" onclick="event.stopPropagation(); toggleBatchFeature('rotate')">Off</button>
+                      <button type="button" class="batch-tool-toggle-pill" id="batch-toggle-rotate" onclick="event.stopPropagation(); toggleBatchFeature('rotate')">Off</button>
                       <span class="batch-nav-arrow">›</span>
                     </div>
                   </div>
@@ -2464,14 +2464,14 @@
                   <!-- 5. Lighting & Tone (Adjust) -->
                   <div class="batch-tool-nav-item" onclick="openBatchToolDetail('adjust')">
                     <div style="display:flex; align-items:center; gap:10px;">
-                      <span style="font-size:16px;">☼</span>
+                      <span class="batch-detail-icon-box">☼</span>
                       <div>
                         <strong style="font-size:13px; display:block;">Lighting &amp; Tone</strong>
                         <small style="color:var(--muted); font-size:11px;" id="batch-status-adjust">Off</small>
                       </div>
                     </div>
                     <div style="display:flex; align-items:center; gap:6px;">
-                      <button type="button" class="action-btn-sm" id="batch-toggle-adjust" onclick="event.stopPropagation(); toggleBatchFeature('adjust')">Off</button>
+                      <button type="button" class="batch-tool-toggle-pill" id="batch-toggle-adjust" onclick="event.stopPropagation(); toggleBatchFeature('adjust')">Off</button>
                       <span class="batch-nav-arrow">›</span>
                     </div>
                   </div>
@@ -2479,14 +2479,14 @@
                   <!-- 6. Preset Styles (Filters) -->
                   <div class="batch-tool-nav-item" onclick="openBatchToolDetail('filters')">
                     <div style="display:flex; align-items:center; gap:10px;">
-                      <span style="font-size:16px;">✧</span>
+                      <span class="batch-detail-icon-box">✧</span>
                       <div>
                         <strong style="font-size:13px; display:block;">Preset Styles</strong>
                         <small style="color:var(--muted); font-size:11px;" id="batch-status-filters">Off</small>
                       </div>
                     </div>
                     <div style="display:flex; align-items:center; gap:6px;">
-                      <button type="button" class="action-btn-sm" id="batch-toggle-filters" onclick="event.stopPropagation(); toggleBatchFeature('filters')">Off</button>
+                      <button type="button" class="batch-tool-toggle-pill" id="batch-toggle-filters" onclick="event.stopPropagation(); toggleBatchFeature('filters')">Off</button>
                       <span class="batch-nav-arrow">›</span>
                     </div>
                   </div>
@@ -2494,14 +2494,14 @@
                   <!-- 7. Focus & Blur -->
                   <div class="batch-tool-nav-item" onclick="openBatchToolDetail('blur')">
                     <div style="display:flex; align-items:center; gap:10px;">
-                      <span style="font-size:16px;">◎</span>
+                      <span class="batch-detail-icon-box">◎</span>
                       <div>
                         <strong style="font-size:13px; display:block;">Focus &amp; Depth</strong>
                         <small style="color:var(--muted); font-size:11px;" id="batch-status-blur">Off</small>
                       </div>
                     </div>
                     <div style="display:flex; align-items:center; gap:6px;">
-                      <button type="button" class="action-btn-sm" id="batch-toggle-blur" onclick="event.stopPropagation(); toggleBatchFeature('blur')">Off</button>
+                      <button type="button" class="batch-tool-toggle-pill" id="batch-toggle-blur" onclick="event.stopPropagation(); toggleBatchFeature('blur')">Off</button>
                       <span class="batch-nav-arrow">›</span>
                     </div>
                   </div>
@@ -2532,11 +2532,11 @@
                   <button type="button" class="batch-detail-back-btn" onclick="closeBatchToolDetail()">
                     <span class="back-arrow">←</span> All Configurations
                   </button>
-                  <button type="button" class="action-btn-sm" id="batch-detail-toggle-btn" onclick="toggleBatchFeatureFromDetail()">Off</button>
+                  <button type="button" class="batch-tool-toggle-pill" id="batch-detail-toggle-btn" onclick="toggleBatchFeatureFromDetail()">Off</button>
                 </div>
-                <div class="batch-detail-header" style="margin-bottom:16px;">
+                <div class="batch-detail-header">
                   <div class="batch-detail-title-group">
-                    <span id="batch-detail-icon" style="font-size:20px;">◉</span>
+                    <span class="batch-detail-icon-box" id="batch-detail-icon">◉</span>
                     <div>
                       <h3 id="batch-detail-title" style="margin:0; font-size:16px; font-weight:700;">Tool</h3>
                       <p id="batch-detail-desc" style="margin:2px 0 0; font-size:11.5px; color:var(--muted);"></p>
@@ -2557,8 +2557,8 @@
                     <div class="form-group">
                       <label class="form-label">Strict Target File Size</label>
                       <div class="input-with-select">
-                        <input type="number" id="batch-compress-target-val" value="200" min="1" max="9999" oninput="onBatchTargetSizeInput()">
-                        <select id="batch-compress-target-unit" onchange="onBatchTargetUnitChange()">
+                        <input type="number" class="text-input" id="batch-compress-target-val" value="200" min="1" max="9999" oninput="onBatchTargetSizeInput()">
+                        <select class="unit-select" id="batch-compress-target-unit" onchange="onBatchTargetUnitChange()">
                           <option value="KB" selected>KB</option>
                           <option value="MB">MB</option>
                         </select>
@@ -2573,13 +2573,18 @@
                     </div>
 
                     <!-- Calibrated Status Pill -->
-                    <div style="background:var(--soft); border:1px solid var(--line); border-radius:var(--radius-md); padding:12px; margin-bottom:16px;">
-                      <div style="font-size:12px; font-weight:700; color:var(--ink); margin-bottom:4px;" id="batch-calibrated-size-text">
-                        ~184 KB (Target: &lt; 200 KB)
+                    <div class="calibrated-status-card" style="margin-bottom:16px;">
+                      <div class="calibrated-row">
+                        <span>Calibration:</span>
+                        <strong id="batch-calibrated-size-text" class="highlight-text">~184 KB (Target: &lt; 200 KB)</strong>
                       </div>
-                      <div style="font-size:11px; color:var(--muted); display:flex; justify-content:space-between;">
-                        <span>Resolution: <b id="batch-calibrated-dims-text" style="color:var(--ink);">1600 × 1200 px</b></span>
-                        <span>Quality: <b id="batch-calibrated-quality-text" style="color:var(--ink);">82%</b></span>
+                      <div class="calibrated-row">
+                        <span>Resolution:</span>
+                        <strong id="batch-calibrated-dims-text">1600 × 1200 px</strong>
+                      </div>
+                      <div class="calibrated-row">
+                        <span>Auto-Quality:</span>
+                        <strong id="batch-calibrated-quality-text">82%</strong>
                       </div>
                     </div>
                   </div>
@@ -2589,9 +2594,9 @@
                     <div class="form-group">
                       <label class="form-label">Target Max Dimensions</label>
                       <div class="dim-inputs-row">
-                        <input type="number" id="batch-compress-px-width" value="1600" oninput="onBatchCompressPxChange('width')">
+                        <input type="number" class="input-text" id="batch-compress-px-width" value="1600" oninput="onBatchCompressPxChange('width')">
                         <button type="button" class="aspect-lock-btn active" id="batch-compress-px-lock-btn" onclick="toggleBatchCompressAspectLock()" title="Lock Aspect Ratio">🔗</button>
-                        <input type="number" id="batch-compress-px-height" value="1200" oninput="onBatchCompressPxChange('height')">
+                        <input type="number" class="input-text" id="batch-compress-px-height" value="1200" oninput="onBatchCompressPxChange('height')">
                       </div>
                     </div>
                     <div class="chips-group" style="margin-bottom:14px;">
@@ -2604,7 +2609,7 @@
                         <label class="form-label" style="margin:0;">Encoding Quality</label>
                         <span id="batch-compress-px-quality-val" style="font-size:12px; font-weight:700;">82%</span>
                       </div>
-                      <input type="range" id="batch-compress-px-slider" min="10" max="100" value="82" oninput="updateBatchCompressPxLive()">
+                      <input type="range" class="range-slider" id="batch-compress-px-slider" min="10" max="100" value="82" oninput="updateBatchCompressPxLive()">
                     </div>
                   </div>
 
@@ -2615,7 +2620,7 @@
                         <label class="form-label" style="margin:0;">Quality Factor</label>
                         <span id="batch-compress-manual-quality-val" style="font-size:12px; font-weight:700;">80%</span>
                       </div>
-                      <input type="range" id="batch-compress-manual-slider" min="5" max="100" value="80" oninput="updateBatchCompressManualLive()">
+                      <input type="range" class="range-slider" id="batch-compress-manual-slider" min="5" max="100" value="80" oninput="updateBatchCompressManualLive()">
                     </div>
                   </div>
 
@@ -2636,9 +2641,9 @@
                       <span class="stat-label">Original: <b id="batch-compress-orig-size">--</b></span>
                       <span class="savings-pill" id="batch-compress-savings-badge">↓ 0% Savings</span>
                     </div>
-                    <div class="stat-detail-line">
-                      <span>Compressed Output:</span>
-                      <strong id="batch-compress-final-size">Calculating...</strong>
+                    <div class="stat-detail-line" style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                      <span style="font-size:11px; color:var(--muted);">Estimated Output:</span>
+                      <strong id="batch-compress-final-size" style="font-size:13px; font-weight:700; color:var(--ink);">Ready for queue</strong>
                     </div>
                   </div>
                 </div>
@@ -2655,7 +2660,7 @@
                         <label class="form-label" style="margin:0;">Scale Factor</label>
                         <span id="batch-resize-scale-val" style="font-size:12px; font-weight:700;">100%</span>
                       </div>
-                      <input type="range" id="batch-resize-scale-slider" min="10" max="200" value="100" oninput="updateBatchResizeScale(this.value)">
+                      <input type="range" class="range-slider" id="batch-resize-scale-slider" min="10" max="200" value="100" oninput="updateBatchResizeScale(this.value)">
                     </div>
                     <div class="chips-group">
                       <button type="button" class="chip-btn" onclick="updateBatchResizeScale(25)">25%</button>
@@ -2669,9 +2674,9 @@
                     <div class="form-group">
                       <label class="form-label">Dimensions (Pixels)</label>
                       <div class="dim-inputs-row">
-                        <input type="number" id="batch-resize-w" value="1600" oninput="onBatchResizeDimsChange()">
+                        <input type="number" class="input-text" id="batch-resize-w" value="1600" oninput="onBatchResizeDimsChange()">
                         <button type="button" class="aspect-lock-btn active" id="batch-resize-aspect-btn" onclick="toggleBatchResizeAspect()" title="Lock Aspect Ratio">🔗</button>
-                        <input type="number" id="batch-resize-h" value="1200" oninput="onBatchResizeDimsChange()">
+                        <input type="number" class="input-text" id="batch-resize-h" value="1200" oninput="onBatchResizeDimsChange()">
                       </div>
                     </div>
                     <div class="preset-cards-grid">
@@ -2746,8 +2751,8 @@
                   <div class="form-group">
                     <label class="form-label">Mirror Reflection</label>
                     <div style="display:flex; gap:10px;">
-                      <button type="button" class="action-btn-sm" id="btn-batch-flip-h" style="flex:1; padding:10px;" onclick="batchToggleFlip('h')">⇄ Flip Horizontal</button>
-                      <button type="button" class="action-btn-sm" id="btn-batch-flip-v" style="flex:1; padding:10px;" onclick="batchToggleFlip('v')">⇅ Flip Vertical</button>
+                      <button type="button" class="action-btn-sm" id="btn-batch-flip-h" style="flex:1; padding:10px; border-radius:var(--radius-sm); font-weight:600;" onclick="batchToggleFlip('h')">⇄ Flip Horizontal</button>
+                      <button type="button" class="action-btn-sm" id="btn-batch-flip-v" style="flex:1; padding:10px; border-radius:var(--radius-sm); font-weight:600;" onclick="batchToggleFlip('v')">⇅ Flip Vertical</button>
                     </div>
                   </div>
                 </div>
@@ -2759,28 +2764,28 @@
                       <label class="form-label" style="margin:0;">Brightness</label>
                       <span id="batch-adj-bright-val" style="font-size:12px; font-weight:700;">100%</span>
                     </div>
-                    <input type="range" id="batch-adj-bright" min="0" max="200" value="100" oninput="updateBatchAdjust()">
+                    <input type="range" class="range-slider" id="batch-adj-bright" min="0" max="200" value="100" oninput="updateBatchAdjust()">
                   </div>
                   <div class="form-group">
                     <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
                       <label class="form-label" style="margin:0;">Contrast</label>
                       <span id="batch-adj-contrast-val" style="font-size:12px; font-weight:700;">100%</span>
                     </div>
-                    <input type="range" id="batch-adj-contrast" min="0" max="200" value="100" oninput="updateBatchAdjust()">
+                    <input type="range" class="range-slider" id="batch-adj-contrast" min="0" max="200" value="100" oninput="updateBatchAdjust()">
                   </div>
                   <div class="form-group">
                     <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
                       <label class="form-label" style="margin:0;">Saturation</label>
                       <span id="batch-adj-saturate-val" style="font-size:12px; font-weight:700;">100%</span>
                     </div>
-                    <input type="range" id="batch-adj-saturate" min="0" max="200" value="100" oninput="updateBatchAdjust()">
+                    <input type="range" class="range-slider" id="batch-adj-saturate" min="0" max="200" value="100" oninput="updateBatchAdjust()">
                   </div>
                   <div class="form-group">
                     <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
                       <label class="form-label" style="margin:0;">Warmth</label>
                       <span id="batch-adj-warmth-val" style="font-size:12px; font-weight:700;">0</span>
                     </div>
-                    <input type="range" id="batch-adj-warmth" min="-50" max="50" value="0" oninput="updateBatchAdjust()">
+                    <input type="range" class="range-slider" id="batch-adj-warmth" min="-50" max="50" value="0" oninput="updateBatchAdjust()">
                   </div>
                   <button type="button" class="btn-secondary" style="margin-top:10px;" onclick="resetBatchAdjust()">Reset Tone</button>
                 </div>
@@ -2847,14 +2852,14 @@
                       <label class="form-label" style="margin:0;">Blur Radius</label>
                       <span id="batch-blur-radius-val" style="font-size:12px; font-weight:700;">18px</span>
                     </div>
-                    <input type="range" id="batch-blur-radius" min="1" max="60" value="18" oninput="document.getElementById('batch-blur-radius-val').textContent = this.value + 'px'; batchState.configs.blur.radius = parseInt(this.value, 10); renderBatchPreviewCanvas();">
+                    <input type="range" class="range-slider" id="batch-blur-radius" min="1" max="60" value="18" oninput="document.getElementById('batch-blur-radius-val').textContent = this.value + 'px'; batchState.configs.blur.radius = parseInt(this.value, 10); renderBatchPreviewCanvas();">
                   </div>
                   <div class="form-group" id="batch-group-focus-radius" style="display:none;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
                       <label class="form-label" style="margin:0;">Clear Focus Zone Size</label>
                       <span id="batch-blur-focus-val" style="font-size:12px; font-weight:700;">35%</span>
                     </div>
-                    <input type="range" id="batch-blur-focus" min="10" max="80" value="35" oninput="document.getElementById('batch-blur-focus-val').textContent = this.value + '%'; batchState.configs.blur.focusSize = parseInt(this.value, 10); renderBatchPreviewCanvas();">
+                    <input type="range" class="range-slider" id="batch-blur-focus" min="10" max="80" value="35" oninput="document.getElementById('batch-blur-focus-val').textContent = this.value + '%'; batchState.configs.blur.focusSize = parseInt(this.value, 10); renderBatchPreviewCanvas();">
                   </div>
                 </div>
 
