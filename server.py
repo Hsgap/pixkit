@@ -78,7 +78,11 @@ class PixKitHandler(http.server.SimpleHTTPRequestHandler):
                     return target + '.html'
             return target
             
-        return super().translate_path(path)
+        default_target = super().translate_path(path)
+        if not os.path.exists(default_target) and not os.path.splitext(clean)[1]:
+            if os.path.isfile(default_target + '.html'):
+                return default_target + '.html'
+        return default_target
 
     def do_GET(self):
         # Redirect /mobile to /mobile/ for clean relative asset loading

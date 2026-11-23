@@ -244,7 +244,7 @@
               <!-- 3D Layered Floating Badges -->
               <div class="float-badge a">
                 <span class="tiny-icon">⌗</span>
-                <span><b>9 Edit Tools</b><br><small style="color:var(--muted)">Resize, Crop, Adjust & more</small></span>
+                <span><b>10 Edit Tools</b><br><small style="color:var(--muted)">Resize, Crop, Batch & more</small></span>
               </div>
               <div class="float-badge b">
                 <span class="tiny-icon">🔒</span>
@@ -348,12 +348,12 @@
       </section>
 
       <!-- ============================================================== -->
-      <!-- 2. EDIT CATEGORY SCREEN (9 Tool Rows)                          -->
+      <!-- 2. EDIT CATEGORY SCREEN (10 Tool Rows)                         -->
       <!-- ============================================================== -->
       <section class="view" id="edit-view">
         <div class="page-title">
           <div>
-            <div class="eyebrow">Category · 9 Studio Tools</div>
+            <div class="eyebrow">Category · 10 Studio Tools</div>
             <h1>Edit Image</h1>
             <p>Select any tool to open its dedicated live editing workspace.</p>
           </div>
@@ -521,6 +521,24 @@
             </div>
             <div class="tool-row-right">
               <span class="tool-tag">Depth</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 10. Batch Image Processor -->
+          <div class="tool-row-card" onclick="openToolWorkspace('batch-edit')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">⧉</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Batch Image Processor</strong>
+                  <span class="tool-number-badge">10</span>
+                </div>
+                <p>Process, resize, rotate, filter, and compress multiple images or ZIP archives together</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Batch Multi-Action</span>
               <div class="tool-arrow">→</div>
             </div>
           </div>
@@ -2272,6 +2290,579 @@
 
             <button class="btn-primary" onclick="commitBlurAction(true)">Save & Download</button>
             <button class="btn-secondary" onclick="commitBlurAction(false)">Apply Blur</button>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TOOL 10 WORKSPACE: BATCH IMAGE PROCESSOR                       -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-batch-edit-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 10 · Edit Suite</div>
+            <h1>Batch Image Processor</h1>
+            <p>Process, resize, rotate, filter, and compress multiple images or ZIP archives together.</p>
+          </div>
+          <button class="back-btn" onclick="showView('edit')">← Back to Edit Tools</button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <div class="stage-topbar" id="batch-stage-topbar">
+              <div class="batch-topbar-left">
+                <span class="batch-count-tag" id="batch-viewing-tag" style="display:none;">Viewing 1 of 5</span>
+                <span class="stage-hint" id="batch-stage-status">Batch queue empty · Drop images or ZIP to begin</span>
+              </div>
+              <div class="stage-topbar-tools" id="batch-topbar-tools" style="display:none;">
+                <button type="button" class="stage-tool-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen
+                </button>
+                <button type="button" class="stage-tool-btn" onmousedown="startBatchCompareOriginal()" onmouseup="stopBatchCompareOriginal()" onmouseleave="stopBatchCompareOriginal()" ontouchstart="startBatchCompareOriginal()" ontouchend="stopBatchCompareOriginal()" title="Hold to compare with unedited original">
+                  ⇄ Compare
+                </button>
+                <button type="button" class="stage-tool-btn" onclick="clearBatchQueue()" title="Remove all images from batch">
+                  ✕ Clear
+                </button>
+              </div>
+            </div>
+
+            <div class="stage-viewport" id="batch-viewport">
+              <button class="viewport-fullscreen-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg><span>Full Screen</span></button>
+
+              <!-- Empty Batch Dropzone -->
+              <div class="batch-empty-dropzone" id="batch-dropzone" onclick="triggerBatchUpload()">
+                <div class="batch-dropzone-icon">⧉</div>
+                <h3 style="margin: 0 0 6px 0; font-size: 18px; font-weight: 700; color: var(--ink);">Drop multiple images or ZIP archive here</h3>
+                <p style="margin: 0 0 20px 0; font-size: 13px; color: var(--muted); max-width: 440px;">
+                  JPG, PNG, WEBP, AVIF, HEIC, or ZIP files up to 100+ images. 100% private, client-side batch processing.
+                </p>
+                <div class="batch-dropzone-actions" onclick="event.stopPropagation()">
+                  <button type="button" class="btn-primary" onclick="triggerBatchUpload()">
+                    <span>📁 Select Images or ZIP</span>
+                  </button>
+                  <button type="button" class="btn-secondary" onclick="loadSampleBatchImages()">
+                    <span>⚡ Load 5 Sample Photos</span>
+                  </button>
+                </div>
+                <input type="file" id="batch-files-input" multiple accept="image/*,.zip,application/zip" style="display:none;" onchange="handleBatchFilesSelect(event)">
+              </div>
+
+              <!-- Active Batch Canvas Wrapper -->
+              <div class="batch-canvas-wrapper" id="batch-canvas-wrapper" style="display:none;">
+                <canvas id="canvas-batch-preview"></canvas>
+              </div>
+            </div>
+
+            <!-- Batch Carousel / Thumbnails Strip -->
+            <div class="batch-slider-panel" id="batch-slider-panel" style="display:none;">
+              <div class="batch-slider-header">
+                <span class="batch-slider-title">
+                  <strong id="batch-count-pill">0 Images</strong>
+                  <span id="batch-active-name" style="color:var(--muted); font-size:12px;"></span>
+                </span>
+                <div class="batch-slider-actions">
+                  <button type="button" class="action-btn-sm" onclick="scrollBatchCarousel(-1)" title="Scroll left">‹</button>
+                  <button type="button" class="action-btn-sm" onclick="scrollBatchCarousel(1)" title="Scroll right">›</button>
+                  <button type="button" class="action-btn-sm" onclick="triggerBatchUpload()" title="Add more images to batch">+ Add More</button>
+                  <button type="button" class="batch-expand-btn" onclick="toggleBatchGridExpand()">
+                    <span id="batch-expand-btn-text">Expand Grid</span>
+                  </button>
+                </div>
+              </div>
+              <div class="batch-carousel-strip" id="batch-carousel-strip"></div>
+            </div>
+
+            <!-- Stage Footer -->
+            <div class="stage-footer" id="batch-stage-footer" style="display:none;">
+              <div class="file-info">
+                <span class="tiny-icon">⧉</span>
+                <div>
+                  <strong id="batch-meta-summary">0 Images in Queue</strong>
+                  <small id="batch-meta-details">Ready to process</small>
+                </div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="action-btn-sm" onclick="navigateBatchImage(-1)" title="Previous image (←)">← Prev</button>
+                <button type="button" class="action-btn-sm" onclick="navigateBatchImage(1)" title="Next image (→)">Next →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Controls Panel (Master-Detail Control Center) -->
+          <aside class="controls-panel">
+            <div class="batch-control-center-panel" id="batch-control-center-panel">
+
+              <!-- ================= MASTER VIEW (Configurations List) ================= -->
+              <div class="batch-cc-view" id="batch-cc-master-view">
+                <div class="panel-header" style="margin-bottom:12px;">
+                  <h3 style="margin:0; font-size:15px; font-weight:700;">Batch Configurations</h3>
+                  <p style="margin:4px 0 0; font-size:12px; color:var(--muted);">Actions apply to all images simultaneously.</p>
+                </div>
+
+                <div class="batch-tool-nav-list">
+                  <!-- 1. Compress (Active by default) -->
+                  <div class="batch-tool-nav-item" onclick="openBatchToolDetail('compress')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span style="font-size:16px;">◉</span>
+                      <div>
+                        <strong style="font-size:13px; display:block;">Compress Image</strong>
+                        <small style="color:var(--muted); font-size:11px;" id="batch-status-compress">&lt; 200 KB (Auto)</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <button type="button" class="action-btn-sm active" id="batch-toggle-compress" onclick="event.stopPropagation(); toggleBatchFeature('compress')">Active</button>
+                      <span class="batch-nav-arrow">›</span>
+                    </div>
+                  </div>
+
+                  <!-- 2. Resize -->
+                  <div class="batch-tool-nav-item" onclick="openBatchToolDetail('resize')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span style="font-size:16px;">↗</span>
+                      <div>
+                        <strong style="font-size:13px; display:block;">Resize</strong>
+                        <small style="color:var(--muted); font-size:11px;" id="batch-status-resize">Off</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <button type="button" class="action-btn-sm" id="batch-toggle-resize" onclick="event.stopPropagation(); toggleBatchFeature('resize')">Off</button>
+                      <span class="batch-nav-arrow">›</span>
+                    </div>
+                  </div>
+
+                  <!-- 3. Crop -->
+                  <div class="batch-tool-nav-item" onclick="openBatchToolDetail('crop')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span style="font-size:16px;">⌗</span>
+                      <div>
+                        <strong style="font-size:13px; display:block;">Crop &amp; Aspect</strong>
+                        <small style="color:var(--muted); font-size:11px;" id="batch-status-crop">Off</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <button type="button" class="action-btn-sm" id="batch-toggle-crop" onclick="event.stopPropagation(); toggleBatchFeature('crop')">Off</button>
+                      <span class="batch-nav-arrow">›</span>
+                    </div>
+                  </div>
+
+                  <!-- 4. Rotate & Flip -->
+                  <div class="batch-tool-nav-item" onclick="openBatchToolDetail('rotate')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span style="font-size:16px;">↻</span>
+                      <div>
+                        <strong style="font-size:13px; display:block;">Rotate &amp; Mirror</strong>
+                        <small style="color:var(--muted); font-size:11px;" id="batch-status-rotate">Off</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <button type="button" class="action-btn-sm" id="batch-toggle-rotate" onclick="event.stopPropagation(); toggleBatchFeature('rotate')">Off</button>
+                      <span class="batch-nav-arrow">›</span>
+                    </div>
+                  </div>
+
+                  <!-- 5. Lighting & Tone (Adjust) -->
+                  <div class="batch-tool-nav-item" onclick="openBatchToolDetail('adjust')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span style="font-size:16px;">☼</span>
+                      <div>
+                        <strong style="font-size:13px; display:block;">Lighting &amp; Tone</strong>
+                        <small style="color:var(--muted); font-size:11px;" id="batch-status-adjust">Off</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <button type="button" class="action-btn-sm" id="batch-toggle-adjust" onclick="event.stopPropagation(); toggleBatchFeature('adjust')">Off</button>
+                      <span class="batch-nav-arrow">›</span>
+                    </div>
+                  </div>
+
+                  <!-- 6. Preset Styles (Filters) -->
+                  <div class="batch-tool-nav-item" onclick="openBatchToolDetail('filters')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span style="font-size:16px;">✧</span>
+                      <div>
+                        <strong style="font-size:13px; display:block;">Preset Styles</strong>
+                        <small style="color:var(--muted); font-size:11px;" id="batch-status-filters">Off</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <button type="button" class="action-btn-sm" id="batch-toggle-filters" onclick="event.stopPropagation(); toggleBatchFeature('filters')">Off</button>
+                      <span class="batch-nav-arrow">›</span>
+                    </div>
+                  </div>
+
+                  <!-- 7. Focus & Blur -->
+                  <div class="batch-tool-nav-item" onclick="openBatchToolDetail('blur')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span style="font-size:16px;">◎</span>
+                      <div>
+                        <strong style="font-size:13px; display:block;">Focus &amp; Depth</strong>
+                        <small style="color:var(--muted); font-size:11px;" id="batch-status-blur">Off</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                      <button type="button" class="action-btn-sm" id="batch-toggle-blur" onclick="event.stopPropagation(); toggleBatchFeature('blur')">Off</button>
+                      <span class="batch-nav-arrow">›</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Live Progress Box (When processing) -->
+                <div id="batch-progress-box" style="display:none; margin-top:16px; padding:12px; border-radius:var(--radius-md); background:var(--soft); border:1px solid var(--line);">
+                  <div style="display:flex; justify-content:space-between; font-size:11.5px; font-weight:600; margin-bottom:6px;">
+                    <span id="batch-progress-text">Processing batch...</span>
+                    <span id="batch-progress-percent">0%</span>
+                  </div>
+                  <div style="height:6px; background:var(--line); border-radius:3px; overflow:hidden;">
+                    <div id="batch-progress-bar" style="height:100%; width:0%; background:var(--ink); transition:width 0.15s ease;"></div>
+                  </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <!-- Process All Action Button -->
+                <button type="button" class="btn-primary" id="btn-batch-process-all" onclick="executeBatchExport(true)">
+                  ⚡ Process All &amp; Download ZIP
+                </button>
+              </div>
+
+              <!-- ================= DETAIL VIEW (Individual Configuration Slide-over) ================= -->
+              <div class="batch-cc-view" id="batch-cc-detail-view" style="display:none;">
+                <div class="batch-detail-topbar">
+                  <button type="button" class="batch-detail-back-btn" onclick="closeBatchToolDetail()">
+                    <span class="back-arrow">←</span> All Configurations
+                  </button>
+                  <button type="button" class="action-btn-sm" id="batch-detail-toggle-btn" onclick="toggleBatchFeatureFromDetail()">Off</button>
+                </div>
+                <div class="batch-detail-header" style="margin-bottom:16px;">
+                  <div class="batch-detail-title-group">
+                    <span id="batch-detail-icon" style="font-size:20px;">◉</span>
+                    <div>
+                      <h3 id="batch-detail-title" style="margin:0; font-size:16px; font-weight:700;">Tool</h3>
+                      <p id="batch-detail-desc" style="margin:2px 0 0; font-size:11.5px; color:var(--muted);"></p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sub-panel: COMPRESS -->
+                <div class="batch-tool-detail-body" id="batch-detail-compress" style="display:none;">
+                  <div class="segmented-control" style="margin-bottom:16px;">
+                    <button type="button" class="segment-btn active" id="batch-compress-tab-target" onclick="setBatchCompressMode('target')">Target File Size</button>
+                    <button type="button" class="segment-btn" id="batch-compress-tab-pixels" onclick="setBatchCompressMode('pixels')">Pixels &amp; Scale</button>
+                    <button type="button" class="segment-btn" id="batch-compress-tab-manual" onclick="setBatchCompressMode('manual')">Manual Quality</button>
+                  </div>
+
+                  <!-- Target Mode Panel -->
+                  <div id="batch-compress-mode-target-panel">
+                    <div class="form-group">
+                      <label class="form-label">Strict Target File Size</label>
+                      <div class="input-with-select">
+                        <input type="number" id="batch-compress-target-val" value="200" min="1" max="9999" oninput="onBatchTargetSizeInput()">
+                        <select id="batch-compress-target-unit" onchange="onBatchTargetUnitChange()">
+                          <option value="KB" selected>KB</option>
+                          <option value="MB">MB</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="chips-group" style="margin-bottom:16px;">
+                      <button type="button" class="chip-btn" onclick="setBatchQuickTargetSize(50, 'KB')">50 KB</button>
+                      <button type="button" class="chip-btn" onclick="setBatchQuickTargetSize(100, 'KB')">100 KB</button>
+                      <button type="button" class="chip-btn active" onclick="setBatchQuickTargetSize(200, 'KB')">200 KB</button>
+                      <button type="button" class="chip-btn" onclick="setBatchQuickTargetSize(500, 'KB')">500 KB</button>
+                      <button type="button" class="chip-btn" onclick="setBatchQuickTargetSize(1, 'MB')">1 MB</button>
+                    </div>
+
+                    <!-- Calibrated Status Pill -->
+                    <div style="background:var(--soft); border:1px solid var(--line); border-radius:var(--radius-md); padding:12px; margin-bottom:16px;">
+                      <div style="font-size:12px; font-weight:700; color:var(--ink); margin-bottom:4px;" id="batch-calibrated-size-text">
+                        ~184 KB (Target: &lt; 200 KB)
+                      </div>
+                      <div style="font-size:11px; color:var(--muted); display:flex; justify-content:space-between;">
+                        <span>Resolution: <b id="batch-calibrated-dims-text" style="color:var(--ink);">1600 × 1200 px</b></span>
+                        <span>Quality: <b id="batch-calibrated-quality-text" style="color:var(--ink);">82%</b></span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Pixels Mode Panel -->
+                  <div id="batch-compress-mode-pixels-panel" style="display:none;">
+                    <div class="form-group">
+                      <label class="form-label">Target Max Dimensions</label>
+                      <div class="dim-inputs-row">
+                        <input type="number" id="batch-compress-px-width" value="1600" oninput="onBatchCompressPxChange('width')">
+                        <button type="button" class="aspect-lock-btn active" id="batch-compress-px-lock-btn" onclick="toggleBatchCompressAspectLock()" title="Lock Aspect Ratio">🔗</button>
+                        <input type="number" id="batch-compress-px-height" value="1200" oninput="onBatchCompressPxChange('height')">
+                      </div>
+                    </div>
+                    <div class="chips-group" style="margin-bottom:14px;">
+                      <button type="button" class="chip-btn" onclick="setBatchCompressPxPreset(1920, 1080)">1920×1080</button>
+                      <button type="button" class="chip-btn" onclick="setBatchCompressPxPreset(1200, 1200)">1200×1200</button>
+                      <button type="button" class="chip-btn" onclick="setBatchCompressPxPreset(800, 600)">800×600</button>
+                    </div>
+                    <div class="form-group">
+                      <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                        <label class="form-label" style="margin:0;">Encoding Quality</label>
+                        <span id="batch-compress-px-quality-val" style="font-size:12px; font-weight:700;">82%</span>
+                      </div>
+                      <input type="range" id="batch-compress-px-slider" min="10" max="100" value="82" oninput="updateBatchCompressPxLive()">
+                    </div>
+                  </div>
+
+                  <!-- Manual Mode Panel -->
+                  <div id="batch-compress-mode-manual-panel" style="display:none;">
+                    <div class="form-group">
+                      <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                        <label class="form-label" style="margin:0;">Quality Factor</label>
+                        <span id="batch-compress-manual-quality-val" style="font-size:12px; font-weight:700;">80%</span>
+                      </div>
+                      <input type="range" id="batch-compress-manual-slider" min="5" max="100" value="80" oninput="updateBatchCompressManualLive()">
+                    </div>
+                  </div>
+
+                  <!-- Export Format Selector -->
+                  <div class="form-group" style="margin-top:16px;">
+                    <label class="form-label">Output Format</label>
+                    <div class="segmented-control">
+                      <button type="button" class="segment-btn active" id="batch-comp-fmt-jpeg" onclick="setBatchCompressFormat('image/jpeg')">JPG</button>
+                      <button type="button" class="segment-btn" id="batch-comp-fmt-webp" onclick="setBatchCompressFormat('image/webp')">WEBP</button>
+                      <button type="button" class="segment-btn" id="batch-comp-fmt-png" onclick="setBatchCompressFormat('image/png')">PNG</button>
+                      <button type="button" class="segment-btn" id="batch-comp-fmt-original" onclick="setBatchCompressFormat('original')">Keep Original</button>
+                    </div>
+                  </div>
+
+                  <!-- Live Savings Card -->
+                  <div class="summary-stat-box" style="margin-top:16px;">
+                    <div class="stat-badge-row">
+                      <span class="stat-label">Original: <b id="batch-compress-orig-size">--</b></span>
+                      <span class="savings-pill" id="batch-compress-savings-badge">↓ 0% Savings</span>
+                    </div>
+                    <div class="stat-detail-line">
+                      <span>Compressed Output:</span>
+                      <strong id="batch-compress-final-size">Calculating...</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sub-panel: RESIZE -->
+                <div class="batch-tool-detail-body" id="batch-detail-resize" style="display:none;">
+                  <div class="segmented-control" style="margin-bottom:16px;">
+                    <button type="button" class="segment-btn active" id="btn-batch-resize-mode-scale" onclick="setBatchResizeMode('scale')">Percentage Scale</button>
+                    <button type="button" class="segment-btn" id="btn-batch-resize-mode-exact" onclick="setBatchResizeMode('exact')">Exact Dimensions</button>
+                  </div>
+                  <div id="batch-resize-scale-box">
+                    <div class="form-group">
+                      <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                        <label class="form-label" style="margin:0;">Scale Factor</label>
+                        <span id="batch-resize-scale-val" style="font-size:12px; font-weight:700;">100%</span>
+                      </div>
+                      <input type="range" id="batch-resize-scale-slider" min="10" max="200" value="100" oninput="updateBatchResizeScale(this.value)">
+                    </div>
+                    <div class="chips-group">
+                      <button type="button" class="chip-btn" onclick="updateBatchResizeScale(25)">25%</button>
+                      <button type="button" class="chip-btn" onclick="updateBatchResizeScale(50)">50%</button>
+                      <button type="button" class="chip-btn" onclick="updateBatchResizeScale(75)">75%</button>
+                      <button type="button" class="chip-btn active" onclick="updateBatchResizeScale(100)">100%</button>
+                      <button type="button" class="chip-btn" onclick="updateBatchResizeScale(150)">150%</button>
+                    </div>
+                  </div>
+                  <div id="batch-resize-exact-box" style="display:none;">
+                    <div class="form-group">
+                      <label class="form-label">Dimensions (Pixels)</label>
+                      <div class="dim-inputs-row">
+                        <input type="number" id="batch-resize-w" value="1600" oninput="onBatchResizeDimsChange()">
+                        <button type="button" class="aspect-lock-btn active" id="batch-resize-aspect-btn" onclick="toggleBatchResizeAspect()" title="Lock Aspect Ratio">🔗</button>
+                        <input type="number" id="batch-resize-h" value="1200" oninput="onBatchResizeDimsChange()">
+                      </div>
+                    </div>
+                    <div class="preset-cards-grid">
+                      <div class="preset-card active" onclick="setBatchResizePreset(1920, 1080, this)">
+                        <strong>1920 × 1080</strong>
+                        <small>Full HD 16:9</small>
+                      </div>
+                      <div class="preset-card" onclick="setBatchResizePreset(1200, 1200, this)">
+                        <strong>1200 × 1200</strong>
+                        <small>Square 1:1</small>
+                      </div>
+                      <div class="preset-card" onclick="setBatchResizePreset(1080, 1350, this)">
+                        <strong>1080 × 1350</strong>
+                        <small>Portrait 4:5</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sub-panel: CROP -->
+                <div class="batch-tool-detail-body" id="batch-detail-crop" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">Aspect Ratio</label>
+                    <div class="preset-cards-grid">
+                      <div class="preset-card active" onclick="setBatchCropRatio('original', this)">
+                        <strong>Original</strong>
+                        <small>No Crop</small>
+                      </div>
+                      <div class="preset-card" onclick="setBatchCropRatio('1:1', this)">
+                        <strong>1:1</strong>
+                        <small>Square</small>
+                      </div>
+                      <div class="preset-card" onclick="setBatchCropRatio('4:5', this)">
+                        <strong>4:5</strong>
+                        <small>Portrait</small>
+                      </div>
+                      <div class="preset-card" onclick="setBatchCropRatio('16:9', this)">
+                        <strong>16:9</strong>
+                        <small>Widescreen</small>
+                      </div>
+                      <div class="preset-card" onclick="setBatchCropRatio('9:16', this)">
+                        <strong>9:16</strong>
+                        <small>Story / Reel</small>
+                      </div>
+                      <div class="preset-card" onclick="setBatchCropRatio('3:2', this)">
+                        <strong>3:2</strong>
+                        <small>Classic Photo</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Crop Anchor</label>
+                    <div class="segmented-control">
+                      <button type="button" class="segment-btn active" onclick="setBatchCropAnchor('center', this)">Center</button>
+                      <button type="button" class="segment-btn" onclick="setBatchCropAnchor('top', this)">Top</button>
+                      <button type="button" class="segment-btn" onclick="setBatchCropAnchor('bottom', this)">Bottom</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sub-panel: ROTATE & FLIP -->
+                <div class="batch-tool-detail-body" id="batch-detail-rotate" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">Rotate Step</label>
+                    <div class="chips-group" style="margin-bottom:14px;">
+                      <button type="button" class="chip-btn" onclick="batchRotateStep(-90)">↺ 90° Left</button>
+                      <button type="button" class="chip-btn" onclick="batchRotateStep(90)">↻ 90° Right</button>
+                      <button type="button" class="chip-btn" onclick="batchRotateStep(180)">180° Flip</button>
+                      <button type="button" class="chip-btn" onclick="batchRotateReset()">Reset</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Mirror Reflection</label>
+                    <div style="display:flex; gap:10px;">
+                      <button type="button" class="action-btn-sm" id="btn-batch-flip-h" style="flex:1; padding:10px;" onclick="batchToggleFlip('h')">⇄ Flip Horizontal</button>
+                      <button type="button" class="action-btn-sm" id="btn-batch-flip-v" style="flex:1; padding:10px;" onclick="batchToggleFlip('v')">⇅ Flip Vertical</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sub-panel: LIGHTING & TONE (Adjust) -->
+                <div class="batch-tool-detail-body" id="batch-detail-adjust" style="display:none;">
+                  <div class="form-group">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                      <label class="form-label" style="margin:0;">Brightness</label>
+                      <span id="batch-adj-bright-val" style="font-size:12px; font-weight:700;">100%</span>
+                    </div>
+                    <input type="range" id="batch-adj-bright" min="0" max="200" value="100" oninput="updateBatchAdjust()">
+                  </div>
+                  <div class="form-group">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                      <label class="form-label" style="margin:0;">Contrast</label>
+                      <span id="batch-adj-contrast-val" style="font-size:12px; font-weight:700;">100%</span>
+                    </div>
+                    <input type="range" id="batch-adj-contrast" min="0" max="200" value="100" oninput="updateBatchAdjust()">
+                  </div>
+                  <div class="form-group">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                      <label class="form-label" style="margin:0;">Saturation</label>
+                      <span id="batch-adj-saturate-val" style="font-size:12px; font-weight:700;">100%</span>
+                    </div>
+                    <input type="range" id="batch-adj-saturate" min="0" max="200" value="100" oninput="updateBatchAdjust()">
+                  </div>
+                  <div class="form-group">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                      <label class="form-label" style="margin:0;">Warmth</label>
+                      <span id="batch-adj-warmth-val" style="font-size:12px; font-weight:700;">0</span>
+                    </div>
+                    <input type="range" id="batch-adj-warmth" min="-50" max="50" value="0" oninput="updateBatchAdjust()">
+                  </div>
+                  <button type="button" class="btn-secondary" style="margin-top:10px;" onclick="resetBatchAdjust()">Reset Tone</button>
+                </div>
+
+                <!-- Sub-panel: PRESET FILTERS -->
+                <div class="batch-tool-detail-body" id="batch-detail-filters" style="display:none;">
+                  <div class="preset-cards-grid">
+                    <div class="preset-card active" onclick="setBatchFilterPreset('natural', this)">
+                      <strong>Natural</strong>
+                      <small>No Filter</small>
+                    </div>
+                    <div class="preset-card" onclick="setBatchFilterPreset('bw', this)">
+                      <strong>Monochrome</strong>
+                      <small>B&amp;W Contrast</small>
+                    </div>
+                    <div class="preset-card" onclick="setBatchFilterPreset('vintage', this)">
+                      <strong>Vintage</strong>
+                      <small>Warm 70s Film</small>
+                    </div>
+                    <div class="preset-card" onclick="setBatchFilterPreset('warm', this)">
+                      <strong>Golden Hour</strong>
+                      <small>Sunlit Glow</small>
+                    </div>
+                    <div class="preset-card" onclick="setBatchFilterPreset('cool', this)">
+                      <strong>Nordic Chill</strong>
+                      <small>Crisp Blues</small>
+                    </div>
+                    <div class="preset-card" onclick="setBatchFilterPreset('crisp', this)">
+                      <strong>Vivid Punch</strong>
+                      <small>Bold Pop</small>
+                    </div>
+                    <div class="preset-card" onclick="setBatchFilterPreset('sepia', this)">
+                      <strong>Sepia</strong>
+                      <small>Classic Antique</small>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sub-panel: FOCUS & BLUR -->
+                <div class="batch-tool-detail-body" id="batch-detail-blur" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">Blur Mode</label>
+                    <div class="preset-cards-grid">
+                      <div class="preset-card active" onclick="setBatchBlurMode('none', this)">
+                        <strong>None</strong>
+                        <small>Sharp Full Frame</small>
+                      </div>
+                      <div class="preset-card" onclick="setBatchBlurMode('radial', this)">
+                        <strong>Radial Bokeh</strong>
+                        <small>Portrait Circle</small>
+                      </div>
+                      <div class="preset-card" onclick="setBatchBlurMode('tiltshift', this)">
+                        <strong>Tilt-Shift</strong>
+                        <small>Miniature Band</small>
+                      </div>
+                      <div class="preset-card" onclick="setBatchBlurMode('full', this)">
+                        <strong>Full Blur</strong>
+                        <small>Background Soft</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                      <label class="form-label" style="margin:0;">Blur Radius</label>
+                      <span id="batch-blur-radius-val" style="font-size:12px; font-weight:700;">18px</span>
+                    </div>
+                    <input type="range" id="batch-blur-radius" min="1" max="60" value="18" oninput="document.getElementById('batch-blur-radius-val').textContent = this.value + 'px'; batchState.configs.blur.radius = parseInt(this.value, 10); renderBatchPreviewCanvas();">
+                  </div>
+                  <div class="form-group" id="batch-group-focus-radius" style="display:none;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                      <label class="form-label" style="margin:0;">Clear Focus Zone Size</label>
+                      <span id="batch-blur-focus-val" style="font-size:12px; font-weight:700;">35%</span>
+                    </div>
+                    <input type="range" id="batch-blur-focus" min="10" max="80" value="35" oninput="document.getElementById('batch-blur-focus-val').textContent = this.value + '%'; batchState.configs.blur.focusSize = parseInt(this.value, 10); renderBatchPreviewCanvas();">
+                  </div>
+                </div>
+
+                <div class="divider"></div>
+                <button type="button" class="btn-primary" onclick="closeBatchToolDetail()">✓ Save Configuration</button>
+              </div>
+
+            </div>
           </aside>
         </div>
       </section>

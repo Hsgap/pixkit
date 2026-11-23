@@ -18,11 +18,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Mark that user has entered the studio on this browser
   localStorage.setItem('pixkit_entered', 'true');
 
-  // Strip .html and # from browser address bar immediately for clean branding
+  // Strip .html and # from browser address bar immediately for clean branding, preserving target route
+  let initialUrlRoute = null;
   try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramTool = urlParams.get('tool');
+    if (paramTool) {
+      initialUrlRoute = `#/tool/${paramTool}`;
+    } else if (window.location.hash) {
+      initialUrlRoute = window.location.hash;
+    }
     const cleanBaseInit = window.location.pathname.replace(/\/studio\.html\/?$/, '/studio').replace(/\.html$/, '') || '/studio';
-    if (window.location.pathname.endsWith('.html') || window.location.hash) {
-      window.history.replaceState({ route: window.location.hash || '#/home' }, '', cleanBaseInit);
+    if (window.location.pathname.endsWith('.html') || window.location.hash || window.location.search) {
+      window.history.replaceState({ route: initialUrlRoute || window.location.hash || '#/home' }, '', cleanBaseInit);
     }
   } catch (_) { }
 
@@ -16595,7 +16603,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // ==============================================================
   hideImageUploadProgress();
 
-  const initialRoute = location.hash || localStorage.getItem('pixkit_last_route') || '#/home';
+  const initialRoute = initialUrlRoute || (history.state && history.state.route) || location.hash || localStorage.getItem('pixkit_last_route') || '#/home';
 
   // Restore active user session if one exists, otherwise load default sample artwork
   (async () => {
