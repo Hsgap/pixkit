@@ -861,7 +861,10 @@ class PixKitEngine {
     canvas.height = h;
     const ctx = canvas.getContext('2d');
 
-    const rad = Math.max(1, blurRadius);
+    const baseRad = Math.max(1, blurRadius);
+    const minDim = Math.min(w, h);
+    const scaleFactor = Math.max(1, minDim / 800);
+    const rad = Math.max(1, Math.round(baseRad * scaleFactor));
 
     // 1. Pixelated / Mosaic Blur
     if (blurType === 'pixelate') {
@@ -922,9 +925,10 @@ class PixKitEngine {
 
     // 4. Frosted Glass / Acrylic Grain Blur
     if (blurType === 'frosted') {
+      ctx.save();
       ctx.filter = `blur(${rad}px)`;
-      ctx.drawImage(src, 0, 0);
-      ctx.filter = 'none';
+      ctx.drawImage(src, -rad * 1.2, -rad * 1.2, w + rad * 2.4, h + rad * 2.4);
+      ctx.restore();
 
       // Frosted dispersion noise overlay
       const grainCanvas = document.createElement('canvas');
@@ -956,8 +960,10 @@ class PixKitEngine {
     }
 
     // 5. Default: Simple Gaussian Optical Blur
+    ctx.save();
     ctx.filter = `blur(${rad}px)`;
-    ctx.drawImage(src, 0, 0);
+    ctx.drawImage(src, -rad * 1.2, -rad * 1.2, w + rad * 2.4, h + rad * 2.4);
+    ctx.restore();
     return canvas;
   }
 
@@ -1033,8 +1039,9 @@ class PixKitEngine {
     if (mode === 'radial') {
       const fx = focusX * w;
       const fy = focusY * h;
-      const fr = focusRadius * Math.min(w, h);
-      const grad = maskCtx.createRadialGradient(fx, fy, fr * 0.4, fx, fy, fr);
+      const fr = Math.max(10, focusRadius * Math.min(w, h));
+      const innerR = Math.max(2, fr * 0.35);
+      const grad = maskCtx.createRadialGradient(fx, fy, innerR, fx, fy, fr);
       grad.addColorStop(0, 'rgba(0,0,0,1)');
       grad.addColorStop(0.7, 'rgba(0,0,0,0.8)');
       grad.addColorStop(1, 'rgba(0,0,0,0)');
@@ -2405,3 +2412,4 @@ class PixKitEngine {
 }
 
 window.pixkitEngine = new PixKitEngine();
+window.engine = window.pixkitEngine;

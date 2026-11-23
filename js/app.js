@@ -4,6 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const engine = window.pixkitEngine;
+  window.engine = window.pixkitEngine;
   if (engine && typeof engine.onChange === 'function') {
     engine.onChange(() => {
       updateHistoryUI();
@@ -8279,8 +8280,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cfg.mode === 'radial' && showGuides) {
       const fx = (cfg.focusX !== undefined ? cfg.focusX : 0.5) * w;
       const fy = (cfg.focusY !== undefined ? cfg.focusY : 0.5) * h;
-      const fr = ((cfg.focusSize || 35) / 100) * Math.min(w, h);
-      const innerR = fr * 0.4;
+      const fr = Math.max(10, ((cfg.focusSize || 35) / 100) * Math.min(w, h));
+      const innerR = Math.max(2, fr * 0.35);
 
       // Outer blur boundary ring
       ctx.save();
@@ -8538,7 +8539,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   window.updateBatchBlurRadius = function (val) {
-    const r = Math.max(2, Math.min(48, parseInt(val, 10) || 18));
+    const r = Math.max(1, Math.min(64, parseInt(val, 10) || 18));
     batchState.configs.blur.radius = r;
     batchState.configs.blur.enabled = true;
     const text = document.getElementById('lbl-batch-blur-radius');
@@ -8763,8 +8764,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      if (window.engine && typeof engine.applyFilters === 'function') {
-        renderCanvas = engine.applyFilters({
+      const eng = window.pixkitEngine || window.engine || engine;
+      if (eng && typeof eng.applyFilters === 'function') {
+        renderCanvas = eng.applyFilters({
           brightness: b,
           contrast: c,
           saturation: s,
@@ -8814,8 +8816,9 @@ document.addEventListener('DOMContentLoaded', () => {
         brushCanvas: blurCfg.brushCanvas || null
       };
 
-      if (window.engine && typeof engine.applySelectiveBlur === 'function') {
-        const blurred = engine.applySelectiveBlur(bOptions, renderCanvas);
+      const eng = window.pixkitEngine || window.engine || engine;
+      if (eng && typeof eng.applySelectiveBlur === 'function') {
+        const blurred = eng.applySelectiveBlur(bOptions, renderCanvas);
         if (blurred) renderCanvas = blurred;
       }
     }
