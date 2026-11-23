@@ -6963,12 +6963,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  window.selectBatchImage = function (index) {
+  let isBatchImageSelecting = false;
+
+  window.selectBatchImage = function (index, skipFade = false) {
     if (index < 0 || index >= batchState.items.length) return;
+    const isDifferent = (index !== batchState.activeIndex);
     batchState.activeIndex = index;
     renderBatchCarousel();
-    renderBatchPreviewCanvas();
-    recalculateBatchCompression();
 
     const cur = batchState.items[index];
     const count = batchState.items.length;
@@ -6981,6 +6982,39 @@ document.addEventListener('DOMContentLoaded', () => {
     if (statusHint && cur) {
       statusHint.textContent = cur.name;
       statusHint.title = `${cur.name} (${cur.width} × ${cur.height} px)`;
+    }
+
+    const canvas = document.getElementById('canvas-batch-preview');
+    const wrapper = document.getElementById('batch-canvas-wrapper');
+
+    // Smooth photographic cross-fade & aspect ratio morphing
+    if (isDifferent && !skipFade && canvas && wrapper) {
+      isBatchImageSelecting = true;
+      canvas.classList.remove('batch-preview-fade-in-prep', 'batch-preview-fade-in-active');
+      canvas.classList.add('batch-preview-fade-out');
+
+      setTimeout(async () => {
+        await renderBatchPreviewCanvas();
+        recalculateBatchCompression();
+
+        canvas.classList.remove('batch-preview-fade-out');
+        canvas.classList.add('batch-preview-fade-in-prep');
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            canvas.classList.remove('batch-preview-fade-in-prep');
+            canvas.classList.add('batch-preview-fade-in-active');
+
+            setTimeout(() => {
+              canvas.classList.remove('batch-preview-fade-in-active');
+              isBatchImageSelecting = false;
+            }, 360);
+          });
+        });
+      }, 100);
+    } else {
+      renderBatchPreviewCanvas();
+      recalculateBatchCompression();
     }
     persistBatchSession();
   };
@@ -7017,13 +7051,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
   window.toggleBatchGridExpand = function () {
     const panel = document.getElementById('batch-slider-panel');
+    const strip = document.getElementById('batch-carousel-strip');
     const btnText = document.getElementById('batch-expand-btn-text');
-    if (!panel) return;
-    batchState.isExpanded = !batchState.isExpanded;
-    panel.classList.toggle('expanded', batchState.isExpanded);
-    if (btnText) {
-      btnText.textContent = batchState.isExpanded ? 'Collapse Strip' : 'Expand Grid';
-    }
+    if (!panel || !strip) return;
+
+    const willExpand = !batchState.isExpanded;
+    batchState.isExpanded = willExpand;
+
+    // Quick gentle fade out for seamless morphing
+    strip.style.transition = 'opacity 0.12s cubic-bezier(0.4, 0, 0.2, 1), transform 0.12s cubic-bezier(0.4, 0, 0.2, 1)';
+    strip.style.opacity = '0';
+    strip.style.transform = willExpand ? 'translateY(6px) scale(0.99)' : 'translateY(-6px) scale(0.99)';
+
+    setTimeout(() => {
+      panel.classList.toggle('expanded', willExpand);
+      if (btnText) {
+        btnText.textContent = willExpand ? 'Collapse Strip' : 'Expand Grid';
+      }
+      renderBatchCarousel();
+
+      // Smooth glide in with staggered card entrance
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          strip.style.transition = 'opacity 0.34s cubic-bezier(0.16, 1, 0.3, 1), transform 0.34s cubic-bezier(0.16, 1, 0.3, 1)';
+          strip.style.opacity = '1';
+          strip.style.transform = 'translateY(0) scale(1)';
+
+          setTimeout(() => {
+            strip.style.transition = '';
+            strip.style.opacity = '';
+            strip.style.transform = '';
+          }, 360);
+        });
+      });
+    }, 110);
   };
 
   window.removeBatchItem = function (index, e) {
@@ -8331,9 +8392,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function renderBatchPreviewCanvas() {
     const canvas = document.getElementById('canvas-batch-preview');
+    const wrapper = document.getElementById('batch-canvas-wrapper');
+    const viewport = document.getElementById('batch-viewport');
     if (!canvas) return;
     const activeItem = batchState.items[batchState.activeIndex];
     if (!activeItem) return;
+
+    let targetWidth = 0;
+    let targetHeight = 0;
 
     if (batchState.compareOriginal) {
       canvas.width = activeItem.img.naturalWidth;
@@ -8341,23 +8407,40 @@ document.addEventListener('DOMContentLoaded', () => {
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(activeItem.img, 0, 0);
-      return;
-    }
-
-    let processedCanvas = null;
-    const compCfg = batchState.configs.compress;
-    if (compCfg.enabled && batchState.activeCalibratedCanvas) {
-      processedCanvas = batchState.activeCalibratedCanvas;
+      targetWidth = canvas.width;
+      targetHeight = canvas.height;
     } else {
-      processedCanvas = await processSingleBatchItem(activeItem, false);
-    }
-    if (!processedCanvas) return;
+      let processedCanvas = null;
+      const compCfg = batchState.configs.compress;
+      if (compCfg.enabled && batchState.activeCalibratedCanvas) {
+        processedCanvas = batchState.activeCalibratedCanvas;
+      } else {
+        processedCanvas = await processSingleBatchItem(activeItem, false);
+      }
+      if (!processedCanvas) return;
 
-    canvas.width = processedCanvas.width;
-    canvas.height = processedCanvas.height;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(processedCanvas, 0, 0);
+      canvas.width = processedCanvas.width;
+      canvas.height = processedCanvas.height;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(processedCanvas, 0, 0);
+      targetWidth = processedCanvas.width;
+      targetHeight = processedCanvas.height;
+    }
+
+    // Smoothly adapt wrapper box size to maintain aspect ratio with fluid transitions
+    if (wrapper && targetWidth > 0 && targetHeight > 0) {
+      const vW = (viewport && viewport.clientWidth) ? viewport.clientWidth : 700;
+      const vH = (viewport && viewport.clientHeight) ? viewport.clientHeight : 480;
+      const maxW = Math.max(180, vW - 48);
+      const maxH = Math.max(180, Math.min(460, vH - 48));
+      const scale = Math.min(maxW / targetWidth, maxH / targetHeight, 1);
+      const dispW = Math.round(targetWidth * scale);
+      const dispH = Math.round(targetHeight * scale);
+
+      wrapper.style.width = `${dispW}px`;
+      wrapper.style.height = `${dispH}px`;
+    }
   }
 
   window.showBatchOriginal = function (show) {
