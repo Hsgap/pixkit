@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PixKit — Minimal Newsletter &amp; Announcement Template</title>
+  <style>
+    /* Preview Page Shell (For Browser Viewing & 1-Click Copy) */
+    body {
+      background: #eef0e7;
+      color: #22241f;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 32px 16px 64px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .toolbar {
+      max-width: 580px;
+      width: 100%;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #e1e3d8;
+      padding: 14px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(34, 36, 31, 0.04);
+      box-sizing: border-box;
+    }
+
+    .toolbar-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #22241f;
+      letter-spacing: -0.2px;
+    }
+
+    .toolbar-desc {
+      font-size: 11.5px;
+      color: #76796e;
+      margin-top: 2px;
+    }
+
+    .copy-btn {
+      background: #d7f36a;
+      color: #12140a;
+      border: 1px solid #c5e454;
+      font-weight: 700;
+      font-size: 12.5px;
+      padding: 9px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.15s ease;
+      font-family: inherit;
+    }
+
+    .copy-btn:hover {
+      background: #e2fb7c;
+      transform: translateY(-1px);
+    }
+
+    .copy-btn:active {
+      transform: scale(0.98);
+    }
+
+    .toast {
+      color: #3b7302;
+      font-size: 11.5px;
+      font-weight: 600;
+      display: none;
+      margin-right: 8px;
+    }
+
+    /* Container for the Email Preview */
+    .email-wrapper {
+      max-width: 580px;
+      width: 100%;
+      box-shadow: 0 8px 32px rgba(34, 36, 31, 0.06);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid #e4e6dc;
+    }
+
+    @media (max-width: 620px) {
+      body { padding: 16px 8px; }
+      .toolbar { border-radius: 10px; padding: 12px 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Action Toolbar -->
+  <div class="toolbar">
+    <div>
+      <div class="toolbar-title">PixKit Minimal Email Template</div>
+      <div class="toolbar-desc">One click copies formatted email ready to paste into Gmail</div>
+    </div>
+    <div style="display: flex; align-items: center;">
+      <span id="toast" class="toast">✓ Copied to clipboard!</span>
+      <button class="copy-btn" onclick="copyEmailToClipboard()">
+        <span>📋</span>
+        <span>Copy for Gmail</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- EMAIL PREVIEW WRAPPER -->
+  <div class="email-wrapper" id="emailContainer">
+
+    <!-- 
+      ======================================================================
+      EMAIL CODE START (Pure Email-Safe HTML & Inline Styles)
+      Works seamlessly in Gmail, Apple Mail, Outlook, Android, and iOS.
+      ======================================================================
+    -->
+    <div id="emailBody" style="background-color: #ffffff; color: #22241f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Manrope', 'DM Sans', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.6; margin: 0; padding: 0;">
+
+      <!-- Hidden Preview Snippet (Visible in inbox list before opening) -->
+      <div style="display: none; font-size: 1px; color: #ffffff; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">
+        100% private, client-side in-browser image studio &amp; PDF tools. Edit, compress, and convert with zero server tracking.
+      </div>
+
+      <!-- Outer Centering Table -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; width: 100%; border-collapse: collapse;">
+        <tr>
+          <td align="center" style="padding: 28px 20px 36px;">
+
+            <!-- Main Content Container (Max 580px) -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 540px; width: 100%; text-align: left; border-collapse: collapse;">
+
+              <!-- ================= SECTION 1: HEADER & NAV ================= -->
+              <tr>
+                <td style="padding-bottom: 22px; border-bottom: 1px solid #ebece4;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td align="left" vertical-align="middle">
+                        <a href="https://pixkit.site/" target="_blank" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                          <!-- PixKit Starburst Mark -->
+                          <span style="display: inline-block; width: 26px; height: 26px; background-color: #d7f36a; color: #12140a; border-radius: 7px; text-align: center; line-height: 26px; font-weight: 800; font-size: 16px;">✳</span>
+                          <span style="font-size: 19px; font-weight: 800; letter-spacing: -0.6px; color: #22241f; vertical-align: middle; font-family: -apple-system, BlinkMacSystemFont, 'Manrope', sans-serif;">pixkit</span>
+                        </a>
+                      </td>
+                      <td align="right" vertical-align="middle" style="font-size: 12px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase;">
+                        <a href="https://pixkit.site/studio" target="_blank" style="color: #76796e; text-decoration: none; margin-left: 14px;">Studio</a>
+                        <a href="https://pixkit.site/" target="_blank" style="color: #76796e; text-decoration: none; margin-left: 14px;">Tools</a>
+                        <a href="https://pixkit.site/privacy-policy" target="_blank" style="color: #76796e; text-decoration: none; margin-left: 14px;">Privacy</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- ================= SECTION 2: HERO BANNER ================= -->
+              <tr>
+                <td style="padding-top: 32px; padding-bottom: 30px; text-align: left;">
+                  
+                  <!-- Subtle Pill Badge -->
+                  <div style="display: inline-block; padding: 4px 11px; background-color: #f3f4ec; border: 1px solid #dfe1d5; border-radius: 20px; font-size: 11px; font-weight: 700; color: #43463e; letter-spacing: 0.4px; text-transform: uppercase; margin-bottom: 14px;">
+                    Release Announcement · v1.0.6
+                  </div>
+
+                  <!-- Headline -->
+                  <h1 style="margin: 0 0 12px 0; font-size: 26px; line-height: 1.25; font-weight: 800; letter-spacing: -0.8px; color: #1e201b; font-family: -apple-system, BlinkMacSystemFont, 'Manrope', sans-serif;">
+                    Faster compression, zero servers, built for your everyday workflow.
+                  </h1>
+
+                  <!-- Subtitle / Body Copy -->
+                  <p style="margin: 0 0 22px 0; font-size: 14px; line-height: 1.6; color: #61645a;">
+                    PixKit gives you professional photo editing and complete PDF tools right inside your browser. No accounts, no subscriptions, and your files never touch the cloud.
+                  </p>
+
+                  <!-- Primary CTA Button (Table-based for 100% email client compatibility) -->
+                  <table cellpadding="0" cellspacing="0" border="0" style="margin: 0; border-collapse: separate;">
+                    <tr>
+                      <td align="center" style="background-color: #d7f36a; border-radius: 9px; padding: 12px 22px; border: 1px solid #c5e454;">
+                        <a href="https://pixkit.site/studio" target="_blank" style="color: #101204; font-size: 13.5px; font-weight: 700; text-decoration: none; display: inline-block; letter-spacing: -0.1px;">
+                          Open PixKit Studio →
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+
+                </td>
+              </tr>
+
+              <!-- ================= SECTION 3: 2-COLUMN MINIMAL FEATURE GRID ================= -->
+              <tr>
+                <td style="padding-bottom: 28px;">
+                  
+                  <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #888b80; margin-bottom: 14px;">
+                    Core Tools
+                  </div>
+
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: separate; border-spacing: 0 10px;">
+                    
+                    <!-- Row 1: Compress & Resize -->
+                    <tr>
+                      <!-- Tool 1: Compress -->
+                      <td width="48%" style="background-color: #fafbf7; border: 1px solid #e7e9df; border-radius: 12px; padding: 16px; vertical-align: top;">
+                        <div style="font-size: 14px; font-weight: 700; color: #22241f; margin-bottom: 4px;">
+                          🗜️ Compress Image
+                        </div>
+                        <div style="font-size: 12px; line-height: 1.5; color: #71746a;">
+                          Target size budgeting under 200 KB, 100 KB, or 50 KB with intelligent resolution auto-tuning.
+                        </div>
+                        <div style="margin-top: 10px;">
+                          <a href="https://pixkit.site/compress-image" target="_blank" style="font-size: 11.5px; font-weight: 700; color: #2b3017; text-decoration: none;">
+                            Try Compress →
+                          </a>
+                        </div>
+                      </td>
+
+                      <td width="4%" style="font-size: 1px;">&nbsp;</td>
+
+                      <!-- Tool 2: Resize & Crop -->
+                      <td width="48%" style="background-color: #fafbf7; border: 1px solid #e7e9df; border-radius: 12px; padding: 16px; vertical-align: top;">
+                        <div style="font-size: 14px; font-weight: 700; color: #22241f; margin-bottom: 4px;">
+                          📐 Resize &amp; Crop
+                        </div>
+                        <div style="font-size: 12px; line-height: 1.5; color: #71746a;">
+                          Preset social aspect ratios, custom dimension scaling, and 1-pixel micro nudge controls.
+                        </div>
+                        <div style="margin-top: 10px;">
+                          <a href="https://pixkit.site/crop-image" target="_blank" style="font-size: 11.5px; font-weight: 700; color: #2b3017; text-decoration: none;">
+                            Try Resize →
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <!-- Row 2: PDF Suite & Convert Formats -->
+                    <tr>
+                      <!-- Tool 3: PDF Suite -->
+                      <td width="48%" style="background-color: #fafbf7; border: 1px solid #e7e9df; border-radius: 12px; padding: 16px; vertical-align: top;">
+                        <div style="font-size: 14px; font-weight: 700; color: #22241f; margin-bottom: 4px;">
+                          📑 PDF Toolkit
+                        </div>
+                        <div style="font-size: 12px; line-height: 1.5; color: #71746a;">
+                          Merge multi-page documents, split, rotate, or delete unwanted pages with instant local preview.
+                        </div>
+                        <div style="margin-top: 10px;">
+                          <a href="https://pixkit.site/merge-pdf" target="_blank" style="font-size: 11.5px; font-weight: 700; color: #2b3017; text-decoration: none;">
+                            Explore PDF →
+                          </a>
+                        </div>
+                      </td>
+
+                      <td width="4%" style="font-size: 1px;">&nbsp;</td>
+
+                      <!-- Tool 4: Convert Formats -->
+                      <td width="48%" style="background-color: #fafbf7; border: 1px solid #e7e9df; border-radius: 12px; padding: 16px; vertical-align: top;">
+                        <div style="font-size: 14px; font-weight: 700; color: #22241f; margin-bottom: 4px;">
+                          🔄 Format Converter
+                        </div>
+                        <div style="font-size: 12px; line-height: 1.5; color: #71746a;">
+                          Convert between HEIC, WEBP, PNG, JPG, and SVG without quality loss or server lag.
+                        </div>
+                        <div style="margin-top: 10px;">
+                          <a href="https://pixkit.site/convert-image" target="_blank" style="font-size: 11.5px; font-weight: 700; color: #2b3017; text-decoration: none;">
+                            Try Converter →
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+
+                  </table>
+
+                </td>
+              </tr>
+
+              <!-- ================= SECTION 4: PRIVACY TRUST BOX ================= -->
+              <tr>
+                <td style="padding-bottom: 28px;">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f6f7f0; border: 1px solid #e0e2d5; border-radius: 12px;">
+                    <tr>
+                      <td style="padding: 14px 18px;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                          <tr>
+                            <td width="28" vertical-align="top" style="font-size: 16px; line-height: 1;">
+                              🔒
+                            </td>
+                            <td vertical-align="middle" style="font-size: 12.5px; line-height: 1.5; color: #4e5147;">
+                              <strong style="color: #22241f;">100% In-Browser Privacy Guarantee:</strong> Every pixel and document is processed entirely in your device memory via WebAssembly. Nothing is ever sent to or stored on any server.
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- ================= SECTION 5: APP & WEB ACCESS ================= -->
+              <tr>
+                <td style="padding-bottom: 30px; text-align: center;">
+                  <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: #888b80; margin-bottom: 12px;">
+                    Available Everywhere
+                  </div>
+                  <table cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 0 auto;">
+                    <tr>
+                      <td style="padding: 0 6px;">
+                        <a href="https://play.google.com/store/apps/details?id=com.pixkit.studio" target="_blank" style="display: inline-block; padding: 8px 14px; background-color: #ffffff; border: 1px solid #dcdfd3; border-radius: 8px; font-size: 12px; font-weight: 700; color: #22241f; text-decoration: none;">
+                          📱 Google Play App
+                        </a>
+                      </td>
+                      <td style="padding: 0 6px;">
+                        <a href="https://pixkit.site/" target="_blank" style="display: inline-block; padding: 8px 14px; background-color: #ffffff; border: 1px solid #dcdfd3; border-radius: 8px; font-size: 12px; font-weight: 700; color: #22241f; text-decoration: none;">
+                          💻 In-Browser Web App
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- ================= SECTION 6: MINIMAL FOOTER ================= -->
+              <tr>
+                <td style="border-top: 1px solid #ebece4; padding-top: 24px; text-align: center; color: #8e9185; font-size: 11.5px; line-height: 1.6;">
+
+                  <!-- Brand text mark -->
+                  <div style="font-weight: 800; font-size: 14px; color: #22241f; margin-bottom: 6px; letter-spacing: -0.3px;">
+                    ✳ PixKit
+                  </div>
+
+                  <!-- Direct links -->
+                  <div style="margin-bottom: 12px;">
+                    <a href="https://pixkit.site/" target="_blank" style="color: #64675e; text-decoration: none; margin: 0 8px;">pixkit.site</a> ·
+                    <a href="https://github.com/Hsgap/pixkit" target="_blank" style="color: #64675e; text-decoration: none; margin: 0 8px;">GitHub</a> ·
+                    <a href="https://pixkit.site/privacy-policy" target="_blank" style="color: #64675e; text-decoration: none; margin: 0 8px;">Privacy Policy</a> ·
+                    <a href="mailto:support@pixkit.site?subject=[PixKit%20Web]%20Support%20Request" style="color: #64675e; text-decoration: none; margin: 0 8px;">Contact Support</a>
+                  </div>
+
+                  <!-- Support note -->
+                  <div style="margin-bottom: 12px; color: #76796e;">
+                    Have questions or feedback? Write to our team anytime at 
+                    <a href="mailto:support@pixkit.site" style="color: #22241f; font-weight: 600; text-decoration: underline;">support@pixkit.site</a>.
+                  </div>
+
+                  <!-- Legal & Unsubscribe (Required by CAN-SPAM / GDPR) -->
+                  <div style="font-size: 10.5px; color: #9da092; border-top: 1px solid #f2f3ec; padding-top: 12px; margin-top: 10px;">
+                    © 2026 PixKit Studio · Artàn Visual. 100% private &amp; independent web software.<br>
+                    You are receiving this announcement because you subscribed to PixKit updates or joined our testing program.<br>
+                    <a href="mailto:support@pixkit.site?subject=Unsubscribe" style="color: #76796e; text-decoration: underline;">Unsubscribe from updates</a>
+                  </div>
+
+                </td>
+              </tr>
+
+            </table>
+
+          </td>
+        </tr>
+      </table>
+
+    </div>
+    <!-- EMAIL CODE END -->
+
+  </div>
+
+  <script>
+    // 1-Click Copy Formatted HTML into System Clipboard
+    async function copyEmailToClipboard() {
+      const emailEl = document.getElementById('emailBody');
+      const toast = document.getElementById('toast');
+
+      try {
+        const html = emailEl.outerHTML;
+        const text = emailEl.innerText;
+
+        const blobHtml = new Blob([html], { type: 'text/html' });
+        const blobText = new Blob([text], { type: 'text/plain' });
+
+        const data = [new ClipboardItem({
+          'text/html': blobHtml,
+          'text/plain': blobText
+        })];
+
+        await navigator.clipboard.write(data);
+
+        toast.style.display = 'inline';
+        setTimeout(() => { toast.style.display = 'none'; }, 2600);
+      } catch (err) {
+        // Fallback for older browsers
+        const range = document.createRange();
+        range.selectNode(emailEl);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+
+        toast.style.display = 'inline';
+        setTimeout(() => { toast.style.display = 'none'; }, 2600);
+      }
+    }
+  </script>
+</body>
+</html>
