@@ -7735,7 +7735,21 @@ body.leaderboard-active .leaderboard-screen {
 }
 
 /* Batch Viewport & Canvas Preview Spacing */
-#batch-viewport,
+#batch-viewport {
+  padding: 24px;
+  min-height: 520px;
+  height: 560px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 45%, var(--surface) 0%, var(--stage) 75%);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
 #batch-conv-viewport,
 #batch-pdf-viewport {
   padding: 24px;
@@ -7756,14 +7770,27 @@ body.leaderboard-active .leaderboard-screen {
   max-width: 100%;
   max-height: 100%;
   border-radius: var(--radius-md);
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.12), 0 2px 10px rgba(0, 0, 0, 0.05);
   transition: width 0.38s cubic-bezier(0.16, 1, 0.3, 1),
               height 0.38s cubic-bezier(0.16, 1, 0.3, 1),
               box-shadow 0.25s ease;
   will-change: width, height;
 }
 
-#canvas-batch-preview,
+#canvas-batch-preview {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--radius-md);
+  display: block;
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform, filter;
+}
+
 #canvas-batch-conv-preview,
 #canvas-batch-pdf-preview {
   width: 100%;
@@ -10135,6 +10162,324 @@ aside.batch-settings-panel {
 [data-theme="dark"] .batch-thumb-edit-btn.is-custom {
   background: rgba(215, 243, 106, 0.18);
   color: #d7f36a;
+}
+
+/* ========================================================
+   PRO BATCH STUDIO - EXPANSIVE DARKROOM & GLASS HUD STYLES
+   ======================================================== */
+
+/* Floating Top HUD Glass Bar */
+.batch-stage-glass-hud {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 12;
+  pointer-events: none; /* Allows canvas panning/clicking underneath */
+}
+
+.batch-hud-left,
+.batch-hud-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto; /* Buttons & pills remain fully interactive */
+}
+
+.batch-glass-pill {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  color: var(--ink);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.batch-glass-custom-pill {
+  background: rgba(215, 243, 106, 0.94);
+  color: #111;
+  font-weight: 800;
+  border-color: rgba(215, 243, 106, 1);
+  box-shadow: 0 4px 14px rgba(215, 243, 106, 0.45);
+}
+
+.batch-glass-btn {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  color: var(--ink);
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+}
+
+.batch-glass-btn:hover {
+  background: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  color: var(--ink);
+}
+
+.batch-glass-btn:active {
+  transform: translateY(0);
+}
+
+.batch-glass-btn.active {
+  background: var(--ink);
+  color: var(--surface);
+  border-color: var(--ink);
+}
+
+.batch-glass-btn-danger:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.15);
+}
+
+/* Floating Bottom Quick Nav Glass Pill */
+.batch-floating-nav-bar {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 12;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  border-radius: 9999px;
+  padding: 4px 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.batch-nav-glass-btn {
+  background: transparent;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.15s ease;
+  user-select: none;
+}
+
+.batch-nav-glass-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.batch-nav-glass-btn:active {
+  transform: scale(0.96);
+}
+
+.batch-nav-glass-counter {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink);
+  opacity: 0.85;
+  min-width: 44px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+/* Consolidated Pro Filmstrip Dock Panel */
+.batch-dock-panel {
+  margin-top: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px 16px;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.batch-dock-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.batch-dock-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.batch-dock-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--soft);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.batch-dock-summary {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.batch-dock-active-hint {
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 260px;
+}
+
+.batch-dock-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.batch-dock-btn {
+  padding: 5px 11px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.batch-dock-btn:hover {
+  background: var(--soft);
+  border-color: var(--ink);
+}
+
+.batch-dock-btn-accent {
+  background: var(--ink);
+  color: var(--surface);
+  border-color: var(--ink);
+  font-weight: 700;
+}
+
+.batch-dock-btn-accent:hover {
+  opacity: 0.92;
+  background: var(--ink);
+  color: var(--surface);
+}
+
+/* Expanded Grid Mode for Filmstrip Dock */
+.batch-dock-panel.expanded .batch-carousel-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px;
+  min-height: 220px;
+  max-height: 480px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Section Header Dividers in Batch Control Center */
+.batch-section-header {
+  margin: 18px 0 8px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.batch-section-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+  opacity: 0.6;
+}
+
+/* Dark Mode Overrides for Pro Batch Studio */
+[data-theme="dark"] .batch-glass-pill,
+[data-theme="dark"] .batch-glass-btn,
+[data-theme="dark"] .batch-floating-nav-bar {
+  background: rgba(30, 32, 34, 0.84);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #f3f4f6;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="dark"] .batch-glass-btn:hover {
+  background: rgba(48, 52, 56, 0.96);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+[data-theme="dark"] .batch-glass-custom-pill {
+  background: #d7f36a;
+  color: #111;
+  border-color: #d7f36a;
+}
+
+[data-theme="dark"] .batch-nav-glass-btn {
+  color: #f3f4f6;
+}
+
+[data-theme="dark"] .batch-nav-glass-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .batch-dock-btn-accent {
+  background: #f3f4f6;
+  color: #111;
+  border-color: #f3f4f6;
+}
+
+[data-theme="dark"] .batch-dock-btn-accent:hover {
+  background: #ffffff;
+  color: #111;
+}
+
+[data-theme="dark"] .batch-glass-btn-danger:hover {
+  background: rgba(220, 38, 38, 0.25);
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.4);
 }
 
 /* Localhost / Development Only Visibility */

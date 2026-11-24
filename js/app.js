@@ -6920,12 +6920,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const topbarTools = document.getElementById('batch-topbar-tools');
     const statusHint = document.getElementById('batch-stage-status');
     const viewingTag = document.getElementById('batch-viewing-tag');
+    const glassHud = document.getElementById('batch-stage-glass-hud');
+    const floatingNav = document.getElementById('batch-floating-nav-bar');
+    const navCounter = document.getElementById('batch-nav-counter');
 
     if (dropzone) dropzone.style.display = hasItems ? 'none' : 'flex';
     if (canvasWrap) canvasWrap.style.display = hasItems ? 'flex' : 'none';
     if (sliderPanel) sliderPanel.style.display = hasItems ? 'block' : 'none';
-    if (stageFooter) stageFooter.style.display = hasItems ? 'flex' : 'none';
+    if (stageFooter) stageFooter.style.display = 'none';
     if (topbarTools) topbarTools.style.display = hasItems ? 'flex' : 'none';
+    if (glassHud) glassHud.style.display = hasItems ? 'flex' : 'none';
+    if (floatingNav) floatingNav.style.display = hasItems ? 'inline-flex' : 'none';
 
     if (hasItems) {
       const cur = batchState.items[batchState.activeIndex];
@@ -6934,6 +6939,9 @@ document.addEventListener('DOMContentLoaded', () => {
         viewingTag.style.display = 'inline-flex';
         viewingTag.textContent = `Viewing ${batchState.activeIndex + 1} of ${count}`;
       }
+      if (navCounter) {
+        navCounter.textContent = `${batchState.activeIndex + 1} / ${count}`;
+      }
       if (statusHint) {
         statusHint.textContent = cur ? cur.name : '';
         statusHint.title = cur ? `${cur.name} (${cur.width} × ${cur.height} px)` : '';
@@ -6941,6 +6949,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderBatchCarousel();
     } else {
       if (viewingTag) viewingTag.style.display = 'none';
+      if (navCounter) navCounter.textContent = '0 / 0';
       if (statusHint) {
         statusHint.textContent = 'Batch queue empty · Drop images or ZIP to begin';
         statusHint.title = '';
@@ -6955,6 +6964,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeName = document.getElementById('batch-active-name');
     const metaSummary = document.getElementById('batch-meta-summary');
     const metaDetails = document.getElementById('batch-meta-details');
+    const navCounter = document.getElementById('batch-nav-counter');
 
     if (!strip) return;
     strip.innerHTML = '';
@@ -6964,11 +6974,12 @@ document.addEventListener('DOMContentLoaded', () => {
     batchState.items.forEach(it => { totalBytes += (it.size || 0); });
     const sizeMb = (totalBytes / (1024 * 1024)).toFixed(1);
 
-    if (countPill) countPill.textContent = `${count} Image${count !== 1 ? 's' : ''}`;
+    if (countPill) countPill.textContent = `${count} Photo${count !== 1 ? 's' : ''}`;
     const activeItem = batchState.items[batchState.activeIndex];
     if (activeName) activeName.textContent = activeItem ? `· ${activeItem.name}` : '';
-    if (metaSummary) metaSummary.textContent = `${count} Images in Queue · ${sizeMb} MB Total`;
+    if (metaSummary) metaSummary.textContent = `${sizeMb} MB Total`;
     if (metaDetails) metaDetails.textContent = activeItem ? `Active: ${activeItem.name} (${activeItem.width} × ${activeItem.height} px)` : 'Ready to process';
+    if (navCounter) navCounter.textContent = count > 0 ? `${batchState.activeIndex + 1} / ${count}` : '0 / 0';
 
     batchState.items.forEach((item, index) => {
       const card = document.createElement('div');
@@ -7025,9 +7036,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const count = batchState.items.length;
     const viewingTag = document.getElementById('batch-viewing-tag');
     const statusHint = document.getElementById('batch-stage-status');
+    const navCounter = document.getElementById('batch-nav-counter');
     if (viewingTag) {
       viewingTag.style.display = 'inline-flex';
       viewingTag.textContent = `Viewing ${index + 1} of ${count}`;
+    }
+    if (navCounter) {
+      navCounter.textContent = `${index + 1} / ${count}`;
     }
     if (statusHint && cur) {
       statusHint.textContent = cur.name;
@@ -7216,6 +7231,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (topbarRevertBtn && activeItem) {
       topbarRevertBtn.style.display = activeItem.hasCustom ? 'inline-flex' : 'none';
+    }
+
+    // Topbar floating glass custom badge
+    const topbarCustomBadge = document.getElementById('batch-topbar-custom-badge');
+    if (topbarCustomBadge) {
+      topbarCustomBadge.style.display = (activeItem && activeItem.hasCustom) ? 'inline-flex' : 'none';
     }
 
     // Detail view scope badge
@@ -9126,9 +9147,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Smoothly adapt wrapper box size to maintain aspect ratio with fluid transitions
     if (wrapper && targetWidth > 0 && targetHeight > 0) {
       const vW = (viewport && viewport.clientWidth) ? viewport.clientWidth : 700;
-      const vH = (viewport && viewport.clientHeight) ? viewport.clientHeight : 480;
-      const maxW = Math.max(180, vW - 48);
-      const maxH = Math.max(180, Math.min(460, vH - 48));
+      const vH = (viewport && viewport.clientHeight) ? viewport.clientHeight : 560;
+      const maxW = Math.max(220, vW - 48);
+      const maxH = Math.max(220, vH - 64);
       const scale = Math.min(maxW / targetWidth, maxH / targetHeight, 1);
       const dispW = Math.round(targetWidth * scale);
       const dispH = Math.round(targetHeight * scale);

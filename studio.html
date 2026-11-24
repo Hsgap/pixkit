@@ -2342,45 +2342,58 @@
 
         <div class="workspace-layout">
           <div class="stage-container">
-            <div class="stage-topbar" id="batch-stage-topbar">
-              <div class="batch-topbar-left" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                <span class="batch-count-tag" id="batch-viewing-tag" style="display:none;">Viewing 1 of 5</span>
-                <span class="stage-hint" id="batch-stage-status">Batch queue empty · Drop images or ZIP to begin</span>
-                <div id="batch-topbar-scope-controls" style="display:none; align-items:center; gap:6px;">
-                  <button type="button" class="batch-scope-pill-btn" id="batch-topbar-customize-btn" onclick="toggleBatchEditScopeForActiveItem()" title="Customize this image separately">
-                    ✏️ Edit Separately
+            <!-- Stage Viewport (Expansive Hero Photo Stage) -->
+            <div class="stage-viewport" id="batch-viewport">
+              <!-- Floating Top HUD Glass Bar -->
+              <div class="batch-stage-glass-hud" id="batch-stage-glass-hud" style="display:none;">
+                <div class="batch-hud-left">
+                  <div class="batch-glass-pill" id="batch-viewing-tag">Viewing 1 of 5</div>
+                  <div class="batch-glass-pill batch-glass-custom-pill" id="batch-topbar-custom-badge" style="display:none;">
+                    ⚡ Custom
+                  </div>
+                  <span class="stage-hint" id="batch-stage-status" style="display:none;"></span>
+                  <div id="batch-topbar-scope-controls" style="display:none; align-items:center; gap:6px;">
+                    <button type="button" class="batch-glass-btn" id="batch-topbar-customize-btn" onclick="toggleBatchEditScopeForActiveItem()" title="Customize this photo separately">
+                      ✏️ Edit Separately
+                    </button>
+                    <button type="button" class="batch-glass-btn batch-glass-btn-danger" id="batch-topbar-revert-btn" style="display:none;" onclick="revertActiveItemToBatch()" title="Reset this photo back to batch settings">
+                      ↺ Revert
+                    </button>
+                  </div>
+                </div>
+                <div class="batch-hud-right" id="batch-topbar-tools">
+                  <button type="button" class="batch-glass-btn" onmousedown="startBatchCompareOriginal()" onmouseup="stopBatchCompareOriginal()" onmouseleave="stopBatchCompareOriginal()" ontouchstart="startBatchCompareOriginal()" ontouchend="stopBatchCompareOriginal()" title="Hold to compare with unedited original">
+                    ⇄ Compare
                   </button>
-                  <button type="button" class="batch-revert-pill-btn" id="batch-topbar-revert-btn" style="display:none;" onclick="revertActiveItemToBatch()" title="Reset this image back to following batch settings">
-                    ↺ Revert to Batch
+                  <button type="button" class="batch-glass-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen
+                  </button>
+                  <button type="button" class="batch-glass-btn" onclick="downloadCurrentBatchImage()" title="Download this active photo">
+                    ↓ Save
+                  </button>
+                  <button type="button" class="batch-glass-btn batch-glass-btn-danger" onclick="clearBatchQueue()" title="Remove all photos from batch">
+                    ✕
                   </button>
                 </div>
               </div>
-              <div class="stage-topbar-tools" id="batch-topbar-tools" style="display:none;">
-                <button type="button" class="stage-tool-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen
-                </button>
-                <button type="button" class="stage-tool-btn" onmousedown="startBatchCompareOriginal()" onmouseup="stopBatchCompareOriginal()" onmouseleave="stopBatchCompareOriginal()" ontouchstart="startBatchCompareOriginal()" ontouchend="stopBatchCompareOriginal()" title="Hold to compare with unedited original">
-                  ⇄ Compare
-                </button>
-                <button type="button" class="stage-tool-btn" onclick="clearBatchQueue()" title="Remove all images from batch">
-                  ✕ Clear
-                </button>
-              </div>
-            </div>
 
-            <div class="stage-viewport" id="batch-viewport">
-              <button class="viewport-fullscreen-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg><span>Full Screen</span></button>
+              <!-- Floating Bottom Quick Nav Glass Pill -->
+              <div class="batch-floating-nav-bar" id="batch-floating-nav-bar" style="display:none;">
+                <button type="button" class="batch-nav-glass-btn" onclick="navigateBatchImage(-1)" title="Previous photo (←)">‹ Prev</button>
+                <span class="batch-nav-glass-counter" id="batch-nav-counter">1 / 1</span>
+                <button type="button" class="batch-nav-glass-btn" onclick="navigateBatchImage(1)" title="Next photo (→)">Next ›</button>
+              </div>
 
               <!-- Empty Batch Dropzone -->
               <div class="batch-empty-dropzone" id="batch-dropzone" onclick="triggerBatchUpload()">
                 <div class="batch-dropzone-icon">⧉</div>
-                <h3 style="margin: 0 0 6px 0; font-size: 18px; font-weight: 700; color: var(--ink);">Drop multiple images or ZIP archive here</h3>
-                <p style="margin: 0 0 20px 0; font-size: 13px; color: var(--muted); max-width: 440px;">
-                  JPG, PNG, WEBP, AVIF, HEIC, or ZIP files up to 100+ images. 100% private, client-side batch processing.
+                <h3 style="margin: 0 0 6px 0; font-size: 19px; font-weight: 700; color: var(--ink);">Drop multiple photos or ZIP archive here</h3>
+                <p style="margin: 0 0 22px 0; font-size: 13.5px; color: var(--muted); max-width: 460px;">
+                  JPG, PNG, WEBP, AVIF, HEIC, or ZIP archives up to 100+ images. 100% private, client-side batch processing.
                 </p>
                 <div class="batch-dropzone-actions" onclick="event.stopPropagation()">
                   <button type="button" class="btn-primary" onclick="triggerBatchUpload()">
-                    <span>📁 Select Images or ZIP</span>
+                    <span>📁 Select Photos or ZIP</span>
                   </button>
                   <button type="button" class="btn-secondary" onclick="loadSampleBatchImages()">
                     <span>⚡ Load 5 Sample Photos</span>
@@ -2396,39 +2409,32 @@
               </div>
             </div>
 
-            <!-- Batch Carousel / Thumbnails Strip -->
-            <div class="batch-slider-panel" id="batch-slider-panel" style="display:none;">
-              <div class="batch-slider-header">
-                <span class="batch-slider-title">
-                  <strong id="batch-count-pill">0 Images</strong>
-                  <span id="batch-active-name" style="color:var(--muted); font-size:12px;"></span>
-                </span>
-                <div class="batch-slider-actions">
-                  <button type="button" class="action-btn-sm" onclick="scrollBatchCarousel(-1)" title="Scroll left">‹</button>
-                  <button type="button" class="action-btn-sm" onclick="scrollBatchCarousel(1)" title="Scroll right">›</button>
-                  <button type="button" class="action-btn-sm" onclick="triggerBatchUpload()" title="Add more images to batch">+ Add More</button>
-                  <button type="button" class="batch-expand-btn" id="batch-expand-btn" onclick="toggleBatchGridExpand()" title="Toggle expanded grid view">
-                    <span class="batch-expand-icon">⤢</span>
-                    <span id="batch-expand-btn-text">Expand Grid</span>
+            <!-- Sleek Filmstrip Dock -->
+            <div class="batch-dock-panel" id="batch-slider-panel" style="display:none;">
+              <div class="batch-dock-header">
+                <div class="batch-dock-info">
+                  <span class="batch-dock-badge" id="batch-count-pill">0 Photos</span>
+                  <span class="batch-dock-summary" id="batch-meta-summary">0 MB</span>
+                  <span class="batch-dock-active-hint" id="batch-active-name"></span>
+                </div>
+                <div class="batch-dock-actions">
+                  <button type="button" class="batch-dock-btn" onclick="scrollBatchCarousel(-1)" title="Scroll left">‹</button>
+                  <button type="button" class="batch-dock-btn" onclick="scrollBatchCarousel(1)" title="Scroll right">›</button>
+                  <button type="button" class="batch-dock-btn batch-dock-btn-accent" onclick="triggerBatchUpload()" title="Add more images to batch">
+                    <span>+ Add Photos</span>
+                  </button>
+                  <button type="button" class="batch-dock-btn" id="batch-expand-btn" onclick="toggleBatchGridExpand()" title="Toggle full grid view">
+                    <span class="batch-expand-icon">⊞</span>
+                    <span id="batch-expand-btn-text">Grid View</span>
                   </button>
                 </div>
               </div>
               <div class="batch-carousel-strip" id="batch-carousel-strip"></div>
             </div>
 
-            <!-- Stage Footer -->
-            <div class="stage-footer" id="batch-stage-footer" style="display:none;">
-              <div class="file-info">
-                <span class="tiny-icon">⧉</span>
-                <div>
-                  <strong id="batch-meta-summary">0 Images in Queue</strong>
-                  <small id="batch-meta-details">Ready to process</small>
-                </div>
-              </div>
-              <div style="display:flex; gap:8px;">
-                <button type="button" class="action-btn-sm" onclick="navigateBatchImage(-1)" title="Previous image (←)">← Prev</button>
-                <button type="button" class="action-btn-sm" onclick="navigateBatchImage(1)" title="Next image (→)">Next →</button>
-              </div>
+            <!-- Hidden for backwards-compatibility -->
+            <div id="batch-stage-footer" style="display:none !important;">
+              <span id="batch-meta-details"></span>
             </div>
           </div>
 
@@ -2461,6 +2467,7 @@
                 </div>
 
                 <div class="batch-tool-nav-list">
+                  <div class="batch-section-header"><span>OUTPUT &amp; COMPRESSION</span></div>
                   <!-- 1. Compress (Active by default) -->
                   <div class="batch-tool-nav-item" onclick="openBatchToolDetail('compress')">
                     <div style="display:flex; align-items:center; gap:10px;">
@@ -2476,6 +2483,7 @@
                     </div>
                   </div>
 
+                  <div class="batch-section-header"><span>GEOMETRY &amp; CROP</span></div>
                   <!-- 2. Resize -->
                   <div class="batch-tool-nav-item" onclick="openBatchToolDetail('resize')">
                     <div style="display:flex; align-items:center; gap:10px;">
@@ -2521,6 +2529,7 @@
                     </div>
                   </div>
 
+                  <div class="batch-section-header"><span>LOOK &amp; OPTICAL EFFECTS</span></div>
                   <!-- 5. Lighting & Tone (Adjust) -->
                   <div class="batch-tool-nav-item" onclick="openBatchToolDetail('adjust')">
                     <div style="display:flex; align-items:center; gap:10px;">
