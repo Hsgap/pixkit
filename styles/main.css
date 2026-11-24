@@ -9985,3 +9985,12 @@ aside.batch-settings-panel {
   background: var(--line);
   margin: 4px 6px;
 }
+
+/* Localhost / Development Only Visibility */
+.dev-only-tool {
+  display: none !important;
+}
+html.is-localhost .dev-only-tool,
+body.is-localhost .dev-only-tool {
+  display: flex !important;
+}

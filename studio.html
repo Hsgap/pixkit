@@ -103,6 +103,37 @@
       }
     } catch (_) {}
   </script>
+  <style>
+    .dev-only-tool {
+      display: none !important;
+    }
+    html.is-localhost .dev-only-tool,
+    body.is-localhost .dev-only-tool {
+      display: flex !important;
+    }
+  </style>
+  <script>
+    (function() {
+      try {
+        var h = window.location.hostname;
+        var p = window.location.port;
+        var proto = window.location.protocol;
+        var isLocal = h === 'localhost' || h === '127.0.0.1' || h === '0.0.0.0' || h.endsWith('.local') || h.startsWith('192.168.') || h.startsWith('10.') || p !== '' || proto === 'file:';
+        if (isLocal) {
+          document.documentElement.classList.add('is-localhost');
+          document.addEventListener('DOMContentLoaded', function() {
+            document.body.classList.add('is-localhost');
+            var badge = document.getElementById('hero-tools-count-badge');
+            if (badge) badge.innerHTML = '<b>10 Edit Tools</b><br><small style="color:var(--muted)">Resize, Crop, Batch & more</small>';
+            var editPill = document.getElementById('cat-edit-tools-pill');
+            if (editPill) editPill.textContent = '10 Tools';
+            var exploreBadge = document.getElementById('explore-edit-tools-label');
+            if (exploreBadge) exploreBadge.textContent = 'Explore 10 Edit Tools';
+          });
+        }
+      } catch (_) {}
+    })();
+  </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <link rel="stylesheet" href="styles/main.css?v=8.22">
   <link rel="manifest" href="manifest.json">
@@ -244,7 +275,7 @@
               <!-- 3D Layered Floating Badges -->
               <div class="float-badge a">
                 <span class="tiny-icon">⌗</span>
-                <span><b>9 Edit Tools</b><br><small style="color:var(--muted)">Resize, Crop, Filter & more</small></span>
+                <span id="hero-tools-count-badge"><b>9 Edit Tools</b><br><small style="color:var(--muted)">Resize, Crop, Filter & more</small></span>
               </div>
               <div class="float-badge b">
                 <span class="tiny-icon">🔒</span>
@@ -260,14 +291,14 @@
           <div class="cat-feature-card highlight" onclick="showView('edit')">
             <div class="cat-card-top">
               <div class="cat-icon-tile">✎</div>
-              <span class="cat-pill-badge">9 Tools</span>
+              <span class="cat-pill-badge" id="cat-edit-tools-pill">9 Tools</span>
             </div>
             <div>
               <h3>Edit Image</h3>
               <p>Resize, crop, rotate & flip, compress, adjust tones, preset filters, add text, and draw shapes.</p>
             </div>
             <div class="cat-card-footer">
-              <span>Explore 9 Edit Tools</span>
+              <span id="explore-edit-tools-label">Explore 9 Edit Tools</span>
               <span>→</span>
             </div>
           </div>
@@ -521,6 +552,25 @@
             </div>
             <div class="tool-row-right">
               <span class="tool-tag">Depth</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 10. Batch Image Processor (Localhost / Testing Only) -->
+          <div class="tool-row-card dev-only-tool" id="tool-card-batch-edit" onclick="openToolWorkspace('batch-edit')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">⧉</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Batch Image Processor</strong>
+                  <span class="tool-number-badge">10</span>
+                  <span class="tool-tag" style="background:rgba(215,243,106,0.18); color:var(--ink); font-size:10px; padding:2px 7px; border-radius:10px; margin-left:6px; font-weight:700;">Beta</span>
+                </div>
+                <p>Process, resize, rotate, filter, and compress multiple images or ZIP archives together</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Batch Multi-Action</span>
               <div class="tool-arrow">→</div>
             </div>
           </div>
@@ -5392,6 +5442,10 @@
                 </div>
                 <div class="shortcut-pill" onclick="openToolWorkspace('blur'); toggleShortcutsModal(false);" title="Open Blur Tool">
                   <div class="pill-left"><kbd>9</kbd> <span class="pill-icon">💧</span> <span class="pill-name">Blur</span></div>
+                  <span class="pill-arrow">↗</span>
+                </div>
+                <div class="shortcut-pill dev-only-tool" onclick="openToolWorkspace('batch-edit'); toggleShortcutsModal(false);" title="Open Batch Image Processor">
+                  <div class="pill-left"><kbd>0</kbd> <span class="pill-icon">⧉</span> <span class="pill-name">Batch</span></div>
                   <span class="pill-arrow">↗</span>
                 </div>
               </div>
