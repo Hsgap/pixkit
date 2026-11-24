@@ -7737,8 +7737,8 @@ body.leaderboard-active .leaderboard-screen {
 /* Batch Viewport & Canvas Preview Spacing */
 #batch-viewport {
   padding: 24px;
-  min-height: 520px;
-  height: 560px;
+  min-height: 540px;
+  height: clamp(540px, 62vh, 740px);
   position: relative;
   display: flex;
   align-items: center;
@@ -10480,6 +10480,97 @@ aside.batch-settings-panel {
   background: rgba(220, 38, 38, 0.25);
   color: #f87171;
   border-color: rgba(248, 113, 113, 0.4);
+}
+
+/* ========================================================
+   EDGE-TO-EDGE FULL-BLEED WORKSPACE FOR BATCH PROCESSOR
+   ======================================================== */
+
+.view.studio-full-bleed,
+#tool-batch-edit-view {
+  max-width: 100% !important;
+  width: 100% !important;
+  padding: 16px 28px 48px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+}
+
+@media (min-width: 1600px) {
+  .view.studio-full-bleed,
+  #tool-batch-edit-view {
+    padding: 18px 40px 54px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .view.studio-full-bleed,
+  #tool-batch-edit-view {
+    padding: 14px 16px 40px !important;
+  }
+}
+
+/* Compact, Expansive Studio Header */
+#tool-batch-edit-view .page-title {
+  margin: 0 0 16px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  padding: 0 2px !important;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+#tool-batch-edit-view .page-title h1 {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  margin: 2px 0 0;
+}
+
+#tool-batch-edit-view .page-title p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+#tool-batch-edit-view .page-title .eyebrow {
+  font-size: 10.5px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 1px;
+}
+
+/* Dynamic Edge-to-Edge Grid Layout */
+#tool-batch-edit-view .workspace-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 22px;
+  align-items: start;
+  width: 100%;
+}
+
+@media (min-width: 1440px) {
+  #tool-batch-edit-view .workspace-layout {
+    grid-template-columns: minmax(0, 1fr) 400px;
+    gap: 26px;
+  }
+}
+
+@media (max-width: 1024px) {
+  #tool-batch-edit-view .workspace-layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+/* Sticky Inspector in Studio Mode */
+#tool-batch-edit-view aside.batch-settings-panel {
+  position: sticky;
+  top: 18px;
+  max-height: calc(100vh - 36px);
+  overflow-y: auto;
 }
 
 /* Localhost / Development Only Visibility */

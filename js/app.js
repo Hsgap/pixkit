@@ -7267,6 +7267,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // Responsive Canvas Refit on Window Resize
+  let batchWindowResizeTimer = null;
+  window.addEventListener('resize', () => {
+    const batchView = document.getElementById('tool-batch-edit-view');
+    if (!batchView || batchView.style.display === 'none') return;
+    clearTimeout(batchWindowResizeTimer);
+    batchWindowResizeTimer = setTimeout(() => {
+      if (batchState.items.length > 0 && typeof renderBatchPreviewCanvas === 'function') {
+        renderBatchPreviewCanvas();
+      }
+    }, 120);
+  });
+
   window.navigateBatchImage = function (dir) {
     if (!batchState.items.length) return;
     let next = batchState.activeIndex + dir;
