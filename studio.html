@@ -2343,9 +2343,17 @@
         <div class="workspace-layout">
           <div class="stage-container">
             <div class="stage-topbar" id="batch-stage-topbar">
-              <div class="batch-topbar-left">
+              <div class="batch-topbar-left" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                 <span class="batch-count-tag" id="batch-viewing-tag" style="display:none;">Viewing 1 of 5</span>
                 <span class="stage-hint" id="batch-stage-status">Batch queue empty · Drop images or ZIP to begin</span>
+                <div id="batch-topbar-scope-controls" style="display:none; align-items:center; gap:6px;">
+                  <button type="button" class="batch-scope-pill-btn" id="batch-topbar-customize-btn" onclick="toggleBatchEditScopeForActiveItem()" title="Customize this image separately">
+                    ✏️ Edit Separately
+                  </button>
+                  <button type="button" class="batch-revert-pill-btn" id="batch-topbar-revert-btn" style="display:none;" onclick="revertActiveItemToBatch()" title="Reset this image back to following batch settings">
+                    ↺ Revert to Batch
+                  </button>
+                </div>
               </div>
               <div class="stage-topbar-tools" id="batch-topbar-tools" style="display:none;">
                 <button type="button" class="stage-tool-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)">
@@ -2430,9 +2438,26 @@
 
               <!-- ================= MASTER VIEW (Configurations List) ================= -->
               <div class="batch-cc-view" id="batch-cc-master-view">
+                <!-- Scope Switcher Bar (All Images vs This Image) -->
+                <div class="batch-scope-switcher-bar" id="batch-scope-switcher-bar">
+                  <button type="button" class="batch-scope-tab active" id="batch-scope-all-btn" onclick="setBatchEditScope('all')" title="Edit settings applied to all images">
+                    <span class="scope-icon">👥</span> All Images (<span id="batch-scope-count">0</span>)
+                  </button>
+                  <button type="button" class="batch-scope-tab" id="batch-scope-single-btn" onclick="setBatchEditScope('single')" title="Edit separate settings for the active image">
+                    <span class="scope-icon">🎯</span> <span id="batch-scope-single-label">This Image (#1)</span>
+                  </button>
+                </div>
+
                 <div class="panel-header" style="margin-bottom:16px;">
-                  <h3 style="margin:0; font-size:16px; font-weight:700;">Batch Configurations</h3>
-                  <p class="sub" style="margin:4px 0 0; font-size:12px; color:var(--muted);">Actions apply to all queued images simultaneously.</p>
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                    <div>
+                      <h3 style="margin:0; font-size:16px; font-weight:700;" id="batch-cc-title">Batch Configurations</h3>
+                      <p class="sub" style="margin:4px 0 0; font-size:12px; color:var(--muted);" id="batch-cc-subtitle">Actions apply to all queued images simultaneously.</p>
+                    </div>
+                    <button type="button" class="batch-revert-pill-btn" id="batch-revert-scope-btn" style="display:none;" onclick="revertActiveItemToBatch()" title="Reset this image back to following batch settings">
+                      ↺ Revert
+                    </button>
+                  </div>
                 </div>
 
                 <div class="batch-tool-nav-list">
@@ -2567,7 +2592,10 @@
                   <button type="button" class="batch-detail-back-btn" onclick="closeBatchToolDetail()">
                     <span class="back-arrow">←</span> All Configurations
                   </button>
-                  <button type="button" class="batch-tool-toggle-pill" id="batch-detail-toggle-btn" onclick="toggleBatchFeatureFromDetail()">Off</button>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span id="batch-detail-scope-badge" style="display:none; font-size:10.5px; font-weight:700; padding:2px 8px; border-radius:10px; background:rgba(215,243,106,0.22); color:var(--ink); border:1px solid rgba(215,243,106,0.6);">🎯 This Image Only</span>
+                    <button type="button" class="batch-tool-toggle-pill" id="batch-detail-toggle-btn" onclick="toggleBatchFeatureFromDetail()">Off</button>
+                  </div>
                 </div>
                 <div class="batch-detail-header">
                   <div class="batch-detail-title-group">

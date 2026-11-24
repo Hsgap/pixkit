@@ -6332,14 +6332,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // TOOL 10: BATCH IMAGE PROCESSOR CONTROLLER
   // ==============================================================
   const batchState = {
-    items: [], // Array of { id, name, size, type, width, height, originalBlob, originalUrl, img, thumbUrl }
+    items: [], // Array of { id, name, size, type, width, height, originalBlob, originalUrl, img, thumbUrl, hasCustom, customConfigs }
     activeIndex: 0,
     compareOriginal: false,
     isExpanded: false,
     isProcessing: false,
     activeAccordion: 'compress',
     activeDetailTool: null,
-    configs: {
+    editScope: 'all', // 'all' | 'single'
+    globalConfigs: {
       resize: {
         enabled: false,
         mode: 'exact', // 'exact' | 'scale'
@@ -6400,6 +6401,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  Object.defineProperty(batchState, 'configs', {
+    get() {
+      if (this.editScope === 'single' && this.items && this.items[this.activeIndex]) {
+        const it = this.items[this.activeIndex];
+        if (!it.customConfigs) {
+          it.customConfigs = JSON.parse(JSON.stringify(this.globalConfigs));
+          it.hasCustom = true;
+        }
+        return it.customConfigs;
+      }
+      return this.globalConfigs;
+    },
+    set(val) {
+      if (this.editScope === 'single' && this.items && this.items[this.activeIndex]) {
+        this.items[this.activeIndex].customConfigs = val;
+        this.items[this.activeIndex].hasCustom = true;
+      } else {
+        this.globalConfigs = val;
+      }
+    }
+  });
+
   let batchBlurBrushMaskCanvas = null;
   let isDraggingBatchBlurFocus = false;
   let isPaintingBatchBlur = false;
@@ -6417,6 +6440,7 @@ document.addEventListener('DOMContentLoaded', () => {
     syncBatchViewUI();
     updateBatchAccordionUI();
     updateAllBatchToolStatusLabels();
+    updateBatchScopeUI();
     setupBatchBlurOverlayEvents();
     if (batchState.items.length > 0) {
       renderBatchPreviewCanvas();
@@ -6580,13 +6604,17 @@ document.addEventListener('DOMContentLoaded', () => {
           type: it.type,
           width: it.width,
           height: it.height,
-          blob: it.originalBlob
+          blob: it.originalBlob,
+          hasCustom: !!it.hasCustom,
+          customConfigs: it.customConfigs ? it.customConfigs : null
         }));
         if (typeof PixKitStorage !== 'undefined') {
           await PixKitStorage.setItem('batch_session', {
             items: serializableItems,
             activeIndex: batchState.activeIndex,
-            configs: batchState.configs,
+            globalConfigs: batchState.globalConfigs,
+            configs: batchState.globalConfigs,
+            editScope: batchState.editScope,
             activeDetailTool: batchState.activeDetailTool
           });
         }
@@ -6734,6 +6762,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const item = await createBatchItemFromBlob(it.blob, it.name);
         if (item) {
           item.id = it.id || item.id;
+          item.hasCustom = !!it.hasCustom;
+          item.customConfigs = it.customConfigs || null;
           restoredItems.push(item);
         }
       }
@@ -6741,13 +6771,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       batchState.items = restoredItems;
       batchState.activeIndex = Math.min(data.activeIndex || 0, restoredItems.length - 1);
-      if (data.configs) {
-        batchState.configs = Object.assign(batchState.configs, data.configs);
+      batchState.editScope = data.editScope || 'all';
+      if (data.globalConfigs || data.configs) {
+        batchState.globalConfigs = Object.assign(batchState.globalConfigs, data.globalConfigs || data.configs);
       }
       syncBatchConfigsToDOM();
       syncBatchViewUI();
       updateBatchAccordionUI();
       updateAllBatchToolStatusLabels();
+      updateBatchScopeUI();
       if (data.activeDetailTool) {
         openBatchToolDetail(data.activeDetailTool);
       }
@@ -6914,6 +6946,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statusHint.title = '';
       }
     }
+    updateBatchScopeUI();
   }
 
   function renderBatchCarousel() {
@@ -6939,11 +6972,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     batchState.items.forEach((item, index) => {
       const card = document.createElement('div');
-      card.className = `batch-thumb-card ${index === batchState.activeIndex ? 'active' : ''}`;
+      const isCustom = !!item.hasCustom;
+      card.className = `batch-thumb-card ${index === batchState.activeIndex ? 'active' : ''} ${isCustom ? 'has-custom' : ''}`;
       card.onclick = () => selectBatchImage(index);
 
       card.innerHTML = `
         <span class="batch-thumb-badge">#${index + 1}</span>
+        ${isCustom ? '<span class="batch-thumb-custom-badge" title="Has separate custom edits">⚡ Custom</span>' : ''}
         <button type="button" class="batch-thumb-del-btn" title="Remove image from batch" onclick="removeBatchItem(${index}, event)">×</button>
         <div class="batch-thumb-img-wrap">
           <img src="${item.thumbUrl || item.originalUrl}" alt="${item.name}" loading="lazy" />
@@ -6951,6 +6986,11 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="batch-thumb-info">
           <span class="batch-thumb-name" title="${item.name}">${item.name}</span>
           <span class="batch-thumb-meta">${item.width} × ${item.height}</span>
+          <div class="batch-thumb-actions">
+            <button type="button" class="batch-thumb-edit-btn ${isCustom ? 'is-custom' : ''}" onclick="openBatchItemCustomEdit(${index}, event)" title="${isCustom ? 'Modify separate settings for this image' : 'Customize this image separately'}">
+              ${isCustom ? '⚡ Edit Separately' : '✏️ Edit Separately'}
+            </button>
+          </div>
         </div>
       `;
       strip.appendChild(card);
@@ -6968,9 +7008,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (index < 0 || index >= batchState.items.length) return;
     const isDifferent = (index !== batchState.activeIndex);
     batchState.activeIndex = index;
-    renderBatchCarousel();
 
     const cur = batchState.items[index];
+    if (cur && cur.hasCustom) {
+      batchState.editScope = 'single';
+    } else if (batchState.editScope === 'single' && (!cur || !cur.hasCustom)) {
+      batchState.editScope = 'all';
+    }
+
+    syncBatchConfigsToDOM();
+    updateBatchAccordionUI();
+    updateAllBatchToolStatusLabels();
+    updateBatchScopeUI();
+    renderBatchCarousel();
+
     const count = batchState.items.length;
     const viewingTag = document.getElementById('batch-viewing-tag');
     const statusHint = document.getElementById('batch-stage-status');
@@ -7017,6 +7068,168 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     persistBatchSession();
   };
+
+  window.setBatchEditScope = function (scope) {
+    if (!batchState.items.length) return;
+    const activeItem = batchState.items[batchState.activeIndex];
+    if (!activeItem) return;
+
+    if (scope === 'single') {
+      batchState.editScope = 'single';
+      if (!activeItem.customConfigs) {
+        activeItem.customConfigs = JSON.parse(JSON.stringify(batchState.globalConfigs));
+        activeItem.hasCustom = true;
+      }
+    } else {
+      batchState.editScope = 'all';
+    }
+
+    syncBatchConfigsToDOM();
+    updateBatchAccordionUI();
+    updateAllBatchToolStatusLabels();
+    updateBatchScopeUI();
+    renderBatchCarousel();
+    renderBatchPreviewCanvas();
+    recalculateBatchCompression();
+
+    if (batchState.editScope === 'single') {
+      showToast(`🎯 Now editing Image #${batchState.activeIndex + 1} (${activeItem.name}) separately`);
+    } else {
+      showToast('👥 Now editing batch configurations for all images');
+    }
+    persistBatchSession();
+  };
+
+  window.toggleBatchEditScopeForActiveItem = function () {
+    if (batchState.editScope === 'single') {
+      setBatchEditScope('all');
+    } else {
+      setBatchEditScope('single');
+    }
+  };
+
+  window.openBatchItemCustomEdit = function (index, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    if (index < 0 || index >= batchState.items.length) return;
+    const item = batchState.items[index];
+    if (!item) return;
+
+    batchState.activeIndex = index;
+    batchState.editScope = 'single';
+    if (!item.customConfigs) {
+      item.customConfigs = JSON.parse(JSON.stringify(batchState.globalConfigs));
+      item.hasCustom = true;
+    }
+
+    syncBatchConfigsToDOM();
+    updateBatchAccordionUI();
+    updateAllBatchToolStatusLabels();
+    updateBatchScopeUI();
+    renderBatchCarousel();
+    renderBatchPreviewCanvas();
+    recalculateBatchCompression();
+
+    showToast(`🎯 Customizing Image #${index + 1} (${item.name}) separately`);
+    persistBatchSession();
+  };
+
+  window.revertActiveItemToBatch = function () {
+    const activeItem = batchState.items[batchState.activeIndex];
+    if (!activeItem) return;
+
+    activeItem.hasCustom = false;
+    activeItem.customConfigs = null;
+    batchState.editScope = 'all';
+
+    syncBatchConfigsToDOM();
+    updateBatchAccordionUI();
+    updateAllBatchToolStatusLabels();
+    updateBatchScopeUI();
+    renderBatchCarousel();
+    renderBatchPreviewCanvas();
+    recalculateBatchCompression();
+
+    showToast(`↺ Image #${batchState.activeIndex + 1} (${activeItem.name}) reverted to batch settings`);
+    persistBatchSession();
+  };
+
+  function updateBatchScopeUI() {
+    const isSingle = (batchState.editScope === 'single');
+    const activeItem = batchState.items[batchState.activeIndex];
+    const total = batchState.items.length;
+    const index = batchState.activeIndex;
+
+    // Scope tab buttons
+    const allBtn = document.getElementById('batch-scope-all-btn');
+    const singleBtn = document.getElementById('batch-scope-single-btn');
+    const countSpan = document.getElementById('batch-scope-count');
+    const singleLabel = document.getElementById('batch-scope-single-label');
+
+    if (countSpan) countSpan.textContent = total;
+    if (singleLabel) {
+      singleLabel.textContent = activeItem ? `This Image (#${index + 1}${activeItem.hasCustom ? ' ⚡' : ''})` : `This Image (#${index + 1})`;
+    }
+
+    if (allBtn) allBtn.classList.toggle('active', !isSingle);
+    if (singleBtn) {
+      singleBtn.classList.toggle('active', isSingle);
+      singleBtn.classList.toggle('is-custom-active', !!(activeItem && activeItem.hasCustom));
+    }
+
+    // Panel Header text
+    const titleEl = document.getElementById('batch-cc-title');
+    const subtitleEl = document.getElementById('batch-cc-subtitle');
+    const revertBtn = document.getElementById('batch-revert-scope-btn');
+
+    if (isSingle && activeItem) {
+      if (titleEl) titleEl.textContent = `Customizing: #${index + 1} · ${activeItem.name}`;
+      if (subtitleEl) subtitleEl.textContent = 'Settings apply to this image only. Other images follow batch.';
+      if (revertBtn) revertBtn.style.display = activeItem.hasCustom ? 'inline-flex' : 'none';
+    } else {
+      if (titleEl) titleEl.textContent = 'Batch Configurations';
+      if (subtitleEl) subtitleEl.textContent = 'Actions apply to all queued images simultaneously.';
+      if (revertBtn) revertBtn.style.display = 'none';
+    }
+
+    // Topbar customize / revert buttons
+    const topbarScopeControls = document.getElementById('batch-topbar-scope-controls');
+    const topbarCustomizeBtn = document.getElementById('batch-topbar-customize-btn');
+    const topbarRevertBtn = document.getElementById('batch-topbar-revert-btn');
+
+    if (topbarScopeControls) {
+      topbarScopeControls.style.display = (total > 0) ? 'inline-flex' : 'none';
+    }
+    if (topbarCustomizeBtn && activeItem) {
+      if (isSingle) {
+        topbarCustomizeBtn.innerHTML = '🎯 Editing Separately';
+        topbarCustomizeBtn.classList.add('active');
+      } else if (activeItem.hasCustom) {
+        topbarCustomizeBtn.innerHTML = '⚡ Has Custom Edits';
+        topbarCustomizeBtn.classList.remove('active');
+      } else {
+        topbarCustomizeBtn.innerHTML = '✏️ Edit Separately';
+        topbarCustomizeBtn.classList.remove('active');
+      }
+    }
+    if (topbarRevertBtn && activeItem) {
+      topbarRevertBtn.style.display = activeItem.hasCustom ? 'inline-flex' : 'none';
+    }
+
+    // Detail view scope badge
+    const detailBadge = document.getElementById('batch-detail-scope-badge');
+    if (detailBadge) {
+      if (isSingle && activeItem) {
+        detailBadge.style.display = 'inline-block';
+        detailBadge.textContent = `🎯 Image #${index + 1} Only`;
+      } else {
+        detailBadge.style.display = 'none';
+      }
+    }
+  }
+  window.updateBatchScopeUI = updateBatchScopeUI;
 
   // Keyboard Left / Right Navigation for Batch Mode
   document.addEventListener('keydown', (e) => {
@@ -7193,6 +7406,7 @@ document.addEventListener('DOMContentLoaded', () => {
       toggleBtn.textContent = isEnabled ? 'Active' : 'Off';
       toggleBtn.classList.toggle('active', isEnabled);
     }
+    updateBatchScopeUI();
 
     // Hide all sub-panels, show target sub-panel
     const allPanels = document.querySelectorAll('.batch-tool-detail-body');
@@ -7287,11 +7501,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (panel) panel.scrollTop = 0;
         isBatchTransitioning = false;
+        updateBatchScopeUI();
       }, 110);
     } else {
       if (detailView) detailView.style.display = 'none';
       if (masterView) masterView.style.display = 'block';
       if (panel) panel.scrollTop = 0;
+      updateBatchScopeUI();
     }
 
     persistBatchSession();
@@ -8625,9 +8841,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let sw = srcImg.naturalWidth;
     let sh = srcImg.naturalHeight;
 
+    const activeCfg = (item && item.hasCustom && item.customConfigs) ? item.customConfigs : batchState.globalConfigs;
+
     // Step 1: Crop Aspect Ratio
     let sx = 0, sy = 0, cw = sw, ch = sh;
-    const cropCfg = batchState.configs.crop;
+    const cropCfg = activeCfg.crop;
     if (cropCfg.enabled && cropCfg.ratio !== 'original') {
       const parts = cropCfg.ratio.split(':');
       if (parts.length === 2) {
@@ -8650,7 +8868,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Intermediate Canvas 1: Cropped + Rotated/Flipped
-    const rotCfg = batchState.configs.rotate;
+    const rotCfg = activeCfg.rotate;
     const angle = rotCfg.enabled ? rotCfg.angle : 0;
     const flipH = rotCfg.enabled && rotCfg.flipH;
     const flipV = rotCfg.enabled && rotCfg.flipV;
@@ -8672,7 +8890,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx1.restore();
 
     // Step 2: Resize Calculation
-    const resCfg = batchState.configs.resize;
+    const resCfg = activeCfg.resize;
     let targetW = postRotW;
     let targetH = postRotH;
 
@@ -8701,7 +8919,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Step 2B: If Compress is in pixel mode, resample targetW / targetH
-    const compCfg = batchState.configs.compress;
+    const compCfg = activeCfg.compress;
     if (compCfg.enabled && compCfg.mode === 'pixels') {
       const pw = compCfg.pxWidth || targetW;
       const ph = compCfg.pxHeight || targetH;
@@ -8729,8 +8947,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx2.drawImage(c1, 0, 0, targetW, targetH);
 
     // Step 3: Tone & Preset Filter Processing
-    const adjCfg = batchState.configs.adjust;
-    const fltCfg = batchState.configs.filters;
+    const adjCfg = activeCfg.adjust;
+    const fltCfg = activeCfg.filters;
     let renderCanvas = c2;
 
     if (adjCfg.enabled || (fltCfg.enabled && fltCfg.preset !== 'natural')) {
@@ -8802,7 +9020,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Step 4: Focus & Blur Effects
-    const blurCfg = batchState.configs.blur;
+    const blurCfg = activeCfg.blur;
     if (blurCfg.enabled && blurCfg.mode !== 'none') {
       const bOptions = {
         mode: blurCfg.mode || 'radial',
