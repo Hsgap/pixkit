@@ -10695,6 +10695,10 @@ aside.batch-settings-panel {
     margin-top: 16px;
   }
   .batch-middle-queue-panel .batch-carousel-strip {
+    flex: none !important;
+    height: auto !important;
+    min-height: 112px !important;
+    max-height: 260px !important;
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
   #tool-batch-edit-view aside.batch-settings-panel,
@@ -10778,10 +10782,14 @@ aside.batch-settings-panel {
   .batch-middle-queue-panel .batch-carousel-strip {
     display: flex !important;
     flex-direction: row !important;
+    flex: none !important;
+    height: auto !important;
+    min-height: 112px !important;
+    max-height: none !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
     gap: 8px;
-    padding: 2px 2px 6px;
+    padding: 4px 2px 8px;
     -webkit-overflow-scrolling: touch;
   }
 
