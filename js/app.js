@@ -9159,10 +9159,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Smoothly adapt wrapper box size to maintain aspect ratio with safe HUD clearance
     if (wrapper && targetWidth > 0 && targetHeight > 0) {
-      const vW = (viewport && viewport.clientWidth) ? viewport.clientWidth : 900;
-      const vH = (viewport && viewport.clientHeight) ? viewport.clientHeight : 620;
-      const maxW = Math.max(220, vW - 64);
-      const maxH = Math.max(200, vH - 136);
+      const vW = (viewport && viewport.clientWidth) ? viewport.clientWidth : 800;
+      const vH = (viewport && viewport.clientHeight) ? viewport.clientHeight : 480;
+      const maxW = Math.max(220, vW - 56);
+      const maxH = Math.max(180, vH - 120);
       const scale = Math.min(maxW / targetWidth, maxH / targetHeight, 1);
       const dispW = Math.round(targetWidth * scale);
       const dispH = Math.round(targetHeight * scale);

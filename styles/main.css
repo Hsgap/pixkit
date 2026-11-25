@@ -7736,9 +7736,9 @@ body.leaderboard-active .leaderboard-screen {
 
 /* Batch Viewport & Canvas Preview Spacing */
 #batch-viewport {
-  padding: 64px 28px 68px;
-  min-height: 580px;
-  height: clamp(580px, 66vh, 780px);
+  padding: 54px 24px 58px;
+  min-height: 460px;
+  height: 480px;
   position: relative;
   display: flex;
   align-items: center;
@@ -8077,12 +8077,12 @@ aside.batch-settings-panel {
   background: var(--white);
   border: 1px solid var(--line);
   border-radius: var(--radius-xl);
-  padding: 22px 20px;
+  padding: 16px 16px;
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-subtle);
   box-sizing: border-box;
-  min-height: 560px;
+  min-height: 460px;
   height: 100%;
   overflow: hidden;
   scrollbar-width: none;
@@ -8246,14 +8246,14 @@ aside.batch-settings-panel {
 .batch-tool-nav-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 5px;
 }
 
 .batch-tool-nav-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 11px 13px;
+  padding: 8px 11px;
   background: var(--paper);
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
@@ -10312,11 +10312,11 @@ aside.batch-settings-panel {
 
 /* Consolidated Pro Filmstrip Dock Panel */
 .batch-dock-panel {
-  margin-top: 14px;
+  margin-top: 10px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  padding: 14px 16px 16px;
+  padding: 10px 14px 12px;
   box-shadow: var(--shadow-sm);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -10325,8 +10325,8 @@ aside.batch-settings-panel {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  gap: 12px;
+  margin-bottom: 8px;
+  gap: 10px;
 }
 
 .batch-dock-info {
@@ -10416,16 +10416,20 @@ aside.batch-settings-panel {
 
 /* Section Header Dividers in Batch Control Center */
 .batch-section-header {
-  margin: 18px 0 8px;
+  margin: 6px 0 2px;
   padding: 0 4px;
   display: flex;
   align-items: center;
   gap: 8px;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  font-size: 10px;
+  letter-spacing: 0.7px;
+  font-size: 9.5px;
   font-weight: 800;
   color: var(--muted);
+}
+
+.batch-section-header:first-child {
+  margin-top: 0;
 }
 
 .batch-section-header::after {
