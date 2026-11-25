@@ -10705,6 +10705,33 @@ aside.batch-settings-panel {
   }
 }
 
+/* Standalone Text Inputs inside Batch Sub-Tools */
+.form-group > .text-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper);
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-group > .text-input:focus {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .form-group > .text-input {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+[data-theme="dark"] .form-group > .text-input:focus {
+  border-color: var(--lime);
+  box-shadow: 0 0 0 2px rgba(215, 243, 106, 0.18);
+}
+
 /* Localhost / Development Only Visibility */
 .dev-only-tool {
   display: none !important;

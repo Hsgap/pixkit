@@ -933,8 +933,8 @@ document.addEventListener('DOMContentLoaded', () => {
       fallbackView?.classList.add('active');
     }
 
-    const isDocTool = toolId.startsWith('doc-') || (toolId === 'convert-pdf' && lastCategoryOrigin === 'document');
-    const isConvertTool = toolId.startsWith('convert-') && lastCategoryOrigin !== 'document';
+    const isDocTool = toolId.startsWith('doc-') || toolId === 'batch-pdf' || (toolId === 'convert-pdf' && lastCategoryOrigin === 'document');
+    const isConvertTool = (toolId.startsWith('convert-') || toolId === 'batch-convert') && lastCategoryOrigin !== 'document';
     document.getElementById('nav-home')?.classList.remove('active');
     document.getElementById('nav-edit')?.classList.toggle('active', !isDocTool && !isConvertTool);
     document.getElementById('nav-convert')?.classList.toggle('active', isConvertTool);
