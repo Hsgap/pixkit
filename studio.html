@@ -135,7 +135,7 @@
     })();
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles/main.css?v=8.33">
+  <link rel="stylesheet" href="styles/main.css?v=8.34">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FBFBF8">
 </head>
@@ -711,6 +711,24 @@
             </div>
             <div class="tool-row-right">
               <span class="tool-tag">Document</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 7. Batch Format Converter (Localhost Dev Only) -->
+          <div class="tool-row-card dev-only-tool" onclick="openToolWorkspace('batch-convert')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">⧉</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Batch Format Converter</strong>
+                  <span class="tool-number-badge">07</span>
+                </div>
+                <p>Batch convert JPG, PNG, WEBP, HEIC, SVG, ICO, Base64, or multi-page PDFs</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Batch Multi-Format</span>
               <div class="tool-arrow">→</div>
             </div>
           </div>
@@ -4083,6 +4101,416 @@
       </section>
 
       <!-- ============================================================== -->
+      <!-- TOOL 07 WORKSPACE: BATCH FORMAT CONVERTER                      -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-batch-convert-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 07 · Convert Suite</div>
+            <h1>Batch Format Converter</h1>
+            <p>Batch convert JPG, PNG, WEBP, HEIC, SVG, ICO, Base64, or multi-page PDFs in one queue.</p>
+          </div>
+          <button class="back-btn" onclick="showView('convert')">← Back to Convert Tools</button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <!-- Stage Viewport (Expansive Hero Photo Stage) -->
+            <div class="stage-viewport" id="batch-conv-viewport">
+              <!-- Floating Top HUD Glass Bar -->
+              <div class="batch-stage-glass-hud" id="batch-conv-stage-glass-hud" style="display:none;">
+                <div class="batch-hud-left">
+                  <div class="batch-glass-pill" id="batch-conv-viewing-tag">Viewing 1 of 5</div>
+                  <span class="stage-hint" id="batch-conv-stage-status" style="display:none;"></span>
+                </div>
+                <div class="batch-hud-right" id="batch-conv-topbar-tools">
+                  <button type="button" class="batch-glass-btn" onmousedown="showBatchConvertOriginal(true)" onmouseup="showBatchConvertOriginal(false)" onmouseleave="showBatchConvertOriginal(false)" ontouchstart="showBatchConvertOriginal(true)" ontouchend="showBatchConvertOriginal(false)" title="Hold to compare with original">
+                    ⇄ Compare
+                  </button>
+                  <button type="button" class="batch-glass-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen
+                  </button>
+                  <button type="button" class="batch-glass-btn" onclick="downloadCurrentBatchConvertImage()" title="Convert & download this active file">
+                    ↓ Save
+                  </button>
+                  <button type="button" class="batch-glass-btn batch-glass-btn-danger" onclick="clearBatchConvertQueue()" title="Remove all files from queue">
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <!-- Floating Bottom Quick Nav Glass Pill -->
+              <div class="batch-floating-nav-bar" id="batch-conv-floating-nav-bar" style="display:none;">
+                <button type="button" class="batch-nav-glass-btn" onclick="navigateBatchConvertImage(-1)" title="Previous file (←)">‹ Prev</button>
+                <span class="batch-nav-glass-counter" id="batch-conv-nav-counter">1 / 1</span>
+                <button type="button" class="batch-nav-glass-btn" onclick="navigateBatchConvertImage(1)" title="Next file (→)">Next ›</button>
+              </div>
+
+              <!-- Empty Batch Convert Dropzone -->
+              <div class="batch-empty-dropzone" id="batch-conv-dropzone" onclick="document.getElementById('batch-conv-files-input').click()">
+                <div class="batch-dropzone-icon">⇄</div>
+                <h3 style="margin: 0 0 6px 0; font-size: 19px; font-weight: 700; color: var(--ink);">Drop images, SVGs, HEIC, or ZIP archive here</h3>
+                <p style="margin: 0 0 22px 0; font-size: 13.5px; color: var(--muted); max-width: 460px;">
+                  JPG, PNG, WEBP, AVIF, HEIC, SVG, or ZIP archives. Convert everything in one private client-side batch.
+                </p>
+                <div class="batch-dropzone-actions" onclick="event.stopPropagation()">
+                  <button type="button" class="btn-primary" onclick="document.getElementById('batch-conv-files-input').click()">
+                    <span>📁 Select Files or ZIP</span>
+                  </button>
+                  <button type="button" class="btn-secondary" onclick="loadSampleBatchConvertImages()">
+                    <span>⚡ Load 5 Sample Files</span>
+                  </button>
+                </div>
+                <input type="file" id="batch-conv-files-input" multiple accept="image/*,.svg,.heic,.heif,.zip,application/zip" style="display:none;" onchange="handleBatchConvertFilesSelect(event)">
+              </div>
+
+              <!-- Active Batch Convert Canvas Wrapper -->
+              <div class="batch-canvas-wrapper" id="batch-conv-canvas-wrapper" style="display:none; position:relative;">
+                <canvas id="canvas-batch-conv-preview"></canvas>
+              </div>
+            </div>
+
+            <!-- Hidden for backwards-compatibility -->
+            <div id="batch-conv-stage-footer" style="display:none !important;">
+              <span id="batch-conv-meta-details"></span>
+            </div>
+          </div>
+
+          <!-- Middle Column: File Queue Grid (Animates smoothly between Preview & Controls) -->
+          <div class="batch-dock-panel batch-middle-queue-panel" id="batch-conv-slider-panel">
+            <div class="batch-dock-header">
+              <div class="batch-dock-info">
+                <span class="batch-dock-badge" id="batch-conv-count-pill">0 Photos</span>
+                <span class="batch-dock-summary" id="batch-conv-meta-summary">0 MB</span>
+                <span class="batch-dock-active-hint" id="batch-conv-active-name" style="display:none;"></span>
+              </div>
+              <div class="batch-dock-actions">
+                <button type="button" class="batch-dock-btn batch-dock-btn-accent" onclick="document.getElementById('batch-conv-files-input').click()" title="Add more files to queue">
+                  <span>+ Add</span>
+                </button>
+              </div>
+            </div>
+            <div class="batch-carousel-strip" id="batch-conv-carousel-strip"></div>
+          </div>
+
+          <!-- Controls Panel (Master-Detail Control Center) -->
+          <aside class="settings-panel batch-settings-panel">
+            <div class="batch-control-center-panel" id="batch-conv-control-center-panel">
+
+              <!-- ================= MASTER VIEW (Conversion Modules) ================= -->
+              <div class="batch-cc-view" id="batch-conv-cc-master-view">
+                <div class="panel-header" style="margin-bottom:12px;">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                    <div>
+                      <h3 style="margin:0; font-size:16px; font-weight:700;">Batch Conversions</h3>
+                      <p class="sub" style="margin:3px 0 0; font-size:12px; color:var(--muted);">Configure conversion pipelines for all queued files.</p>
+                    </div>
+                    <button type="button" class="batch-revert-pill-btn" onclick="resetAllBatchConvertOperations()" title="Reset all conversion settings">
+                      ↺ Reset
+                    </button>
+                  </div>
+                </div>
+
+                <div class="batch-tool-nav-list">
+                  <div class="batch-section-header"><span>IMAGE &amp; VECTOR FORMATS</span></div>
+                  <!-- 1. Target Format & Quality -->
+                  <div class="batch-tool-nav-item" onclick="openBatchConvertToolDetail('format')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span class="batch-tool-nav-icon">⇄</span>
+                      <div>
+                        <strong style="display:block; font-size:13px;">Target Format &amp; Quality</strong>
+                        <small id="batch-conv-status-format" style="font-size:11px; color:var(--muted);">JPG · 90%</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="batch-tool-toggle-pill active" id="batch-conv-toggle-format" onclick="toggleBatchConvertFeature('format', event)">Active</span>
+                      <span class="batch-tool-chevron">›</span>
+                    </div>
+                  </div>
+
+                  <!-- 2. Apple HEIC Decoder -->
+                  <div class="batch-tool-nav-item" onclick="openBatchConvertToolDetail('heic')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span class="batch-tool-nav-icon">📱</span>
+                      <div>
+                        <strong style="display:block; font-size:13px;">Apple HEIC Decoder</strong>
+                        <small id="batch-conv-status-heic" style="font-size:11px; color:var(--muted);">HEIC → JPG</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="batch-tool-toggle-pill active" id="batch-conv-toggle-heic" onclick="toggleBatchConvertFeature('heic', event)">Active</span>
+                      <span class="batch-tool-chevron">›</span>
+                    </div>
+                  </div>
+
+                  <!-- 3. SVG Vector Rasterizer -->
+                  <div class="batch-tool-nav-item" onclick="openBatchConvertToolDetail('svg')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span class="batch-tool-nav-icon">⬡</span>
+                      <div>
+                        <strong style="display:block; font-size:13px;">SVG Vector Rasterizer</strong>
+                        <small id="batch-conv-status-svg" style="font-size:11px; color:var(--muted);">2× PNG</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="batch-tool-toggle-pill active" id="batch-conv-toggle-svg" onclick="toggleBatchConvertFeature('svg', event)">Active</span>
+                      <span class="batch-tool-chevron">›</span>
+                    </div>
+                  </div>
+
+                  <div class="batch-section-header"><span>WEB &amp; DOCUMENT PACKAGES</span></div>
+                  <!-- 4. Favicon & ICO Package -->
+                  <div class="batch-tool-nav-item" onclick="openBatchConvertToolDetail('ico')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span class="batch-tool-nav-icon">★</span>
+                      <div>
+                        <strong style="display:block; font-size:13px;">Favicon &amp; ICO Package</strong>
+                        <small id="batch-conv-status-ico" style="font-size:11px; color:var(--muted);">Off</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="batch-tool-toggle-pill" id="batch-conv-toggle-ico" onclick="toggleBatchConvertFeature('ico', event)">Off</span>
+                      <span class="batch-tool-chevron">›</span>
+                    </div>
+                  </div>
+
+                  <!-- 5. Base64 & Data URLs -->
+                  <div class="batch-tool-nav-item" onclick="openBatchConvertToolDetail('base64')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span class="batch-tool-nav-icon">&lt;/&gt;</span>
+                      <div>
+                        <strong style="display:block; font-size:13px;">Base64 &amp; Data URLs</strong>
+                        <small id="batch-conv-status-base64" style="font-size:11px; color:var(--muted);">Off</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="batch-tool-toggle-pill" id="batch-conv-toggle-base64" onclick="toggleBatchConvertFeature('base64', event)">Off</span>
+                      <span class="batch-tool-chevron">›</span>
+                    </div>
+                  </div>
+
+                  <!-- 6. Images to PDF Document -->
+                  <div class="batch-tool-nav-item" onclick="openBatchConvertToolDetail('pdf')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span class="batch-tool-nav-icon">📄</span>
+                      <div>
+                        <strong style="display:block; font-size:13px;">Images to PDF Document</strong>
+                        <small id="batch-conv-status-pdf" style="font-size:11px; color:var(--muted);">Off</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="batch-tool-toggle-pill" id="batch-conv-toggle-pdf" onclick="toggleBatchConvertFeature('pdf', event)">Off</span>
+                      <span class="batch-tool-chevron">›</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Batch Convert Progress Box -->
+                <div id="batch-conv-progress-box" style="display:none; margin-top:12px; padding:10px 12px; background:var(--soft); border:1px solid var(--line); border-radius:var(--radius-md);">
+                  <div style="display:flex; justify-content:space-between; font-size:11.5px; font-weight:600; margin-bottom:6px;">
+                    <span id="batch-conv-progress-text">Converting...</span>
+                    <span id="batch-conv-progress-percent">0%</span>
+                  </div>
+                  <div style="height:6px; background:var(--line); border-radius:999px; overflow:hidden;">
+                    <div id="batch-conv-progress-bar" style="width:0%; height:100%; background:var(--lime); transition:width 0.2s ease;"></div>
+                  </div>
+                </div>
+
+                <div style="margin-top:auto; padding-top:14px;">
+                  <button type="button" class="btn-primary batch-process-cta" id="btn-batch-conv-process-all" onclick="executeBatchConvertExport(true)">
+                    <span id="batch-conv-primary-btn-text">⚡ Convert All &amp; Download ZIP</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- ================= DETAIL VIEW (Sub-tool Parameters) ================= -->
+              <div class="batch-cc-view" id="batch-conv-cc-detail-view" style="display:none;">
+                <div class="batch-detail-topbar">
+                  <button type="button" class="batch-detail-back-btn" onclick="closeBatchConvertToolDetail()">
+                    <span class="back-arrow">←</span> All Conversions
+                  </button>
+                  <button type="button" class="batch-tool-toggle-pill" id="batch-conv-detail-toggle-btn" onclick="toggleBatchConvertFeatureFromDetail()">Off</button>
+                </div>
+                <div class="batch-detail-header">
+                  <div class="batch-detail-title-group">
+                    <span class="batch-detail-icon-box" id="batch-conv-detail-icon">⇄</span>
+                    <div>
+                      <h3 id="batch-conv-detail-title" style="margin:0; font-size:16px; font-weight:700;">Tool</h3>
+                      <p id="batch-conv-detail-desc" style="margin:2px 0 0; font-size:11.5px; color:var(--muted);"></p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sub-panel: TARGET FORMAT -->
+                <div class="batch-conv-tool-detail-body" id="batch-conv-detail-format" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">Output Format</label>
+                    <div class="chips-group">
+                      <button type="button" class="chip-btn active" id="batch-conv-fmt-jpeg" onclick="setBatchConvertTargetFormat('jpeg')">JPG</button>
+                      <button type="button" class="chip-btn" id="batch-conv-fmt-png" onclick="setBatchConvertTargetFormat('png')">PNG</button>
+                      <button type="button" class="chip-btn" id="batch-conv-fmt-webp" onclick="setBatchConvertTargetFormat('webp')">WEBP</button>
+                      <button type="button" class="chip-btn" id="batch-conv-fmt-avif" onclick="setBatchConvertTargetFormat('avif')">AVIF</button>
+                      <button type="button" class="chip-btn" id="batch-conv-fmt-bmp" onclick="setBatchConvertTargetFormat('bmp')">BMP</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="slider-header">
+                      <label class="form-label">Encoding Quality</label>
+                      <span class="slider-value" id="batch-conv-lbl-quality">90%</span>
+                    </div>
+                    <input type="range" class="range-slider" id="batch-conv-quality" min="10" max="100" value="90" oninput="updateBatchConvertQuality(this.value)">
+                    <div class="chips-group" style="margin-top:8px;">
+                      <button type="button" class="chip-btn" id="batch-conv-chip-q-60" onclick="setBatchConvertQualityPreset(60)">60%</button>
+                      <button type="button" class="chip-btn" id="batch-conv-chip-q-80" onclick="setBatchConvertQualityPreset(80)">80%</button>
+                      <button type="button" class="chip-btn active" id="batch-conv-chip-q-90" onclick="setBatchConvertQualityPreset(90)">90%</button>
+                      <button type="button" class="chip-btn" id="batch-conv-chip-q-100" onclick="setBatchConvertQualityPreset(100)">100%</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Transparent Background Fill</label>
+                    <div class="chips-group">
+                      <button type="button" class="chip-btn active" id="batch-conv-bg-white" onclick="setBatchConvertBgColor('#ffffff')">White</button>
+                      <button type="button" class="chip-btn" id="batch-conv-bg-black" onclick="setBatchConvertBgColor('#000000')">Black</button>
+                      <button type="button" class="chip-btn" id="batch-conv-bg-transparent" onclick="setBatchConvertBgColor('transparent')">Transparent</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sub-panel: HEIC -->
+                <div class="batch-conv-tool-detail-body" id="batch-conv-detail-heic" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">HEIC Output Format</label>
+                    <div class="chips-group">
+                      <button type="button" class="chip-btn active" id="batch-conv-heic-out-jpeg" onclick="setBatchConvertHeicOutput('jpeg')">JPG</button>
+                      <button type="button" class="chip-btn" id="batch-conv-heic-out-png" onclick="setBatchConvertHeicOutput('png')">PNG</button>
+                      <button type="button" class="chip-btn" id="batch-conv-heic-out-webp" onclick="setBatchConvertHeicOutput('webp')">WEBP</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="slider-header">
+                      <label class="form-label">HEIC Quality</label>
+                      <span class="slider-value" id="batch-conv-heic-q-val">92%</span>
+                    </div>
+                    <input type="range" class="range-slider" id="batch-conv-heic-q" min="20" max="100" value="92" oninput="setBatchConvertHeicQuality(this.value)">
+                  </div>
+                </div>
+
+                <!-- Sub-panel: SVG -->
+                <div class="batch-conv-tool-detail-body" id="batch-conv-detail-svg" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">Raster Scale Multiplier</label>
+                    <div class="chips-group">
+                      <button type="button" class="chip-btn" id="batch-conv-svg-scale-1" onclick="setBatchConvertSvgScale(1)">1×</button>
+                      <button type="button" class="chip-btn active" id="batch-conv-svg-scale-2" onclick="setBatchConvertSvgScale(2)">2×</button>
+                      <button type="button" class="chip-btn" id="batch-conv-svg-scale-3" onclick="setBatchConvertSvgScale(3)">3×</button>
+                      <button type="button" class="chip-btn" id="batch-conv-svg-scale-4" onclick="setBatchConvertSvgScale(4)">4×</button>
+                      <button type="button" class="chip-btn" id="batch-conv-svg-scale-8" onclick="setBatchConvertSvgScale(8)">8×</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">SVG Target Format</label>
+                    <div class="chips-group">
+                      <button type="button" class="chip-btn active" id="batch-conv-svg-out-png" onclick="setBatchConvertSvgFormat('png')">PNG</button>
+                      <button type="button" class="chip-btn" id="batch-conv-svg-out-jpeg" onclick="setBatchConvertSvgFormat('jpeg')">JPG</button>
+                      <button type="button" class="chip-btn" id="batch-conv-svg-out-webp" onclick="setBatchConvertSvgFormat('webp')">WEBP</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sub-panel: ICO -->
+                <div class="batch-conv-tool-detail-body" id="batch-conv-detail-ico" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">Package Mode</label>
+                    <div class="segmented-control">
+                      <button type="button" class="segment-btn active" id="batch-conv-ico-pkg-ico" onclick="setBatchConvertIcoPackage('ico')">Multi-Size .ICO</button>
+                      <button type="button" class="segment-btn" id="batch-conv-ico-pkg-pngs" onclick="setBatchConvertIcoPackage('pngs')">Separate PNGs</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Icon Sizes (px)</label>
+                    <div class="chips-group">
+                      <button type="button" class="chip-btn active" id="batch-conv-ico-sz-16" onclick="toggleBatchConvertIcoSize(16)">16</button>
+                      <button type="button" class="chip-btn active" id="batch-conv-ico-sz-32" onclick="toggleBatchConvertIcoSize(32)">32</button>
+                      <button type="button" class="chip-btn active" id="batch-conv-ico-sz-48" onclick="toggleBatchConvertIcoSize(48)">48</button>
+                      <button type="button" class="chip-btn active" id="batch-conv-ico-sz-64" onclick="toggleBatchConvertIcoSize(64)">64</button>
+                      <button type="button" class="chip-btn" id="batch-conv-ico-sz-128" onclick="toggleBatchConvertIcoSize(128)">128</button>
+                      <button type="button" class="chip-btn" id="batch-conv-ico-sz-256" onclick="toggleBatchConvertIcoSize(256)">256</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Square Aspect Fit</label>
+                    <div class="segmented-control">
+                      <button type="button" class="segment-btn active" id="batch-conv-ico-fit-contain" onclick="setBatchConvertIcoFit('contain')">Contain</button>
+                      <button type="button" class="segment-btn" id="batch-conv-ico-fit-cover" onclick="setBatchConvertIcoFit('cover')">Cover Crop</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sub-panel: BASE64 -->
+                <div class="batch-conv-tool-detail-body" id="batch-conv-detail-base64" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">Encoding Format</label>
+                    <div class="chips-group">
+                      <button type="button" class="chip-btn active" id="batch-conv-b64-type-dataurl" onclick="setBatchConvertBase64Type('dataurl')">Data URL</button>
+                      <button type="button" class="chip-btn" id="batch-conv-b64-type-html" onclick="setBatchConvertBase64Type('html')">&lt;img&gt; Tag</button>
+                      <button type="button" class="chip-btn" id="batch-conv-b64-type-css" onclick="setBatchConvertBase64Type('css')">CSS url()</button>
+                      <button type="button" class="chip-btn" id="batch-conv-b64-type-raw" onclick="setBatchConvertBase64Type('raw')">Raw Base64</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Export Bundle</label>
+                    <div class="segmented-control">
+                      <button type="button" class="segment-btn active" id="batch-conv-b64-pkg-json" onclick="setBatchConvertBase64Package('json')">Single JSON</button>
+                      <button type="button" class="segment-btn" id="batch-conv-b64-pkg-txt" onclick="setBatchConvertBase64Package('txt')">Individual .TXT</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sub-panel: PDF -->
+                <div class="batch-conv-tool-detail-body" id="batch-conv-detail-pdf" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">PDF Packaging Mode</label>
+                    <div class="segmented-control">
+                      <button type="button" class="segment-btn active" id="batch-conv-pdf-mode-combined" onclick="setBatchConvertPdfMode('combined')">Combined PDF</button>
+                      <button type="button" class="segment-btn" id="batch-conv-pdf-mode-separate" onclick="setBatchConvertPdfMode('separate')">Separate PDFs</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Page Size</label>
+                    <div class="chips-group">
+                      <button type="button" class="chip-btn active" id="batch-conv-pdf-size-a4" onclick="setBatchConvertPdfPageSize('a4')">A4</button>
+                      <button type="button" class="chip-btn" id="batch-conv-pdf-size-letter" onclick="setBatchConvertPdfPageSize('letter')">Letter</button>
+                      <button type="button" class="chip-btn" id="batch-conv-pdf-size-auto" onclick="setBatchConvertPdfPageSize('auto')">Fit Image</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Orientation</label>
+                    <div class="chips-group">
+                      <button type="button" class="chip-btn active" id="batch-conv-pdf-orient-auto" onclick="setBatchConvertPdfOrient('auto')">Auto</button>
+                      <button type="button" class="chip-btn" id="batch-conv-pdf-orient-portrait" onclick="setBatchConvertPdfOrient('portrait')">Portrait</button>
+                      <button type="button" class="chip-btn" id="batch-conv-pdf-orient-landscape" onclick="setBatchConvertPdfOrient('landscape')">Landscape</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Margins</label>
+                    <div class="chips-group">
+                      <button type="button" class="chip-btn active" id="batch-conv-pdf-margin-none" onclick="setBatchConvertPdfMargin('none')">None</button>
+                      <button type="button" class="chip-btn" id="batch-conv-pdf-margin-small" onclick="setBatchConvertPdfMargin('small')">Small</button>
+                      <button type="button" class="chip-btn" id="batch-conv-pdf-margin-standard" onclick="setBatchConvertPdfMargin('standard')">Standard</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="divider"></div>
+                <button type="button" class="btn-primary" onclick="closeBatchConvertToolDetail()">✓ Save Configuration</button>
+              </div>
+
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- ============================================================== -->
       <!-- TOOL 16 WORKSPACE: PDF TO IMAGES (EXTRACTOR & RASTERIZER)      -->
       <!-- ============================================================== -->
       <section class="view" id="tool-doc-pdf-to-images-view">
@@ -5784,7 +6212,7 @@
   <!-- PixKit Remote Connector to admin.pixkit.site -->
   <script src="js/pixkit-remote.js"></script>
   <script src="js/engine.js?v=2.6"></script>
-  <script src="js/app.js?v=8.32"></script>
+  <script src="js/app.js?v=8.33"></script>
   <script src="js/support.js?v=8.19"></script>
   <script src="js/leaderboard.js"></script>
 </body>

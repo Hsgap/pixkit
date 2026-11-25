@@ -11590,6 +11590,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function syncBatchConvertViewUI() {
     const hasItems = batchConvertState.items.length > 0;
+    const batchConvView = document.getElementById('tool-batch-convert-view');
     const dropzone = document.getElementById('batch-conv-dropzone');
     const canvasWrap = document.getElementById('batch-conv-canvas-wrapper');
     const sliderPanel = document.getElementById('batch-conv-slider-panel');
@@ -11597,12 +11598,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const topbarTools = document.getElementById('batch-conv-topbar-tools');
     const statusHint = document.getElementById('batch-conv-stage-status');
     const viewingTag = document.getElementById('batch-conv-viewing-tag');
+    const glassHud = document.getElementById('batch-conv-stage-glass-hud');
+    const floatingNav = document.getElementById('batch-conv-floating-nav-bar');
+    const navCounter = document.getElementById('batch-conv-nav-counter');
+
+    const wasActive = batchConvView ? batchConvView.classList.contains('has-batch-items') : false;
+    if (batchConvView) {
+      batchConvView.classList.toggle('has-batch-items', hasItems);
+    }
 
     if (dropzone) dropzone.style.display = hasItems ? 'none' : 'flex';
     if (canvasWrap) canvasWrap.style.display = hasItems ? 'flex' : 'none';
-    if (sliderPanel) sliderPanel.style.display = hasItems ? 'block' : 'none';
-    if (stageFooter) stageFooter.style.display = hasItems ? 'flex' : 'none';
+    if (sliderPanel) sliderPanel.style.display = '';
+    if (stageFooter) stageFooter.style.display = 'none';
     if (topbarTools) topbarTools.style.display = hasItems ? 'flex' : 'none';
+    if (glassHud) glassHud.style.display = hasItems ? 'flex' : 'none';
+    if (floatingNav) floatingNav.style.display = hasItems ? 'inline-flex' : 'none';
+
+    if (hasItems && !wasActive) {
+      setTimeout(() => {
+        if (batchConvertState.items.length > 0 && typeof renderBatchConvertPreviewCanvas === 'function') {
+          renderBatchConvertPreviewCanvas();
+        }
+      }, 540);
+    }
 
     if (hasItems) {
       const cur = batchConvertState.items[batchConvertState.activeIndex];
@@ -11611,6 +11630,9 @@ document.addEventListener('DOMContentLoaded', () => {
         viewingTag.style.display = 'inline-flex';
         viewingTag.textContent = `Viewing ${batchConvertState.activeIndex + 1} of ${count}`;
       }
+      if (navCounter) {
+        navCounter.textContent = `${batchConvertState.activeIndex + 1} / ${count}`;
+      }
       if (statusHint) {
         statusHint.textContent = cur ? cur.name : '';
         statusHint.title = cur ? `${cur.name} (${cur.width} × ${cur.height} px)` : '';
@@ -11618,9 +11640,18 @@ document.addEventListener('DOMContentLoaded', () => {
       renderBatchConvertCarousel();
     } else {
       if (viewingTag) viewingTag.style.display = 'none';
+      if (navCounter) navCounter.textContent = '0 / 0';
       if (statusHint) {
         statusHint.textContent = 'Batch queue empty · Drop images or ZIP to begin';
         statusHint.title = '';
+      }
+      if (wasActive) {
+        setTimeout(() => {
+          if (batchConvertState.items.length === 0) {
+            const strip = document.getElementById('batch-conv-carousel-strip');
+            if (strip) strip.innerHTML = '';
+          }
+        }, 520);
       }
     }
   }
@@ -11631,6 +11662,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const activeName = document.getElementById('batch-conv-active-name');
     const metaSummary = document.getElementById('batch-conv-meta-summary');
     const metaDetails = document.getElementById('batch-conv-meta-details');
+    const navCounter = document.getElementById('batch-conv-nav-counter');
 
     if (!strip) return;
     strip.innerHTML = '';
@@ -11640,15 +11672,17 @@ document.addEventListener('DOMContentLoaded', () => {
     batchConvertState.items.forEach(it => { totalBytes += (it.size || 0); });
     const sizeMb = (totalBytes / (1024 * 1024)).toFixed(1);
 
-    if (countPill) countPill.textContent = `${count} Image${count !== 1 ? 's' : ''}`;
+    if (countPill) countPill.textContent = `${count} Photo${count !== 1 ? 's' : ''}`;
     const activeItem = batchConvertState.items[batchConvertState.activeIndex];
     if (activeName) activeName.textContent = activeItem ? `· ${activeItem.name}` : '';
-    if (metaSummary) metaSummary.textContent = `${count} Images in Queue · ${sizeMb} MB Total`;
+    if (metaSummary) metaSummary.textContent = `${sizeMb} MB Total`;
     if (metaDetails) metaDetails.textContent = activeItem ? `Active: ${activeItem.name} (${activeItem.width} × ${activeItem.height} px)` : 'Ready to convert';
+    if (navCounter) navCounter.textContent = count > 0 ? `${batchConvertState.activeIndex + 1} / ${count}` : '0 / 0';
 
     batchConvertState.items.forEach((item, index) => {
       const card = document.createElement('div');
       card.className = `batch-thumb-card ${index === batchConvertState.activeIndex ? 'active' : ''}`;
+      card.style.animationDelay = `${Math.min(index * 28, 220)}ms`;
       card.onclick = () => selectBatchConvertImage(index);
 
       card.innerHTML = `
@@ -11681,9 +11715,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const count = batchConvertState.items.length;
     const viewingTag = document.getElementById('batch-conv-viewing-tag');
     const statusHint = document.getElementById('batch-conv-stage-status');
+    const navCounter = document.getElementById('batch-conv-nav-counter');
     if (viewingTag) {
       viewingTag.style.display = 'inline-flex';
       viewingTag.textContent = `Viewing ${index + 1} of ${count}`;
+    }
+    if (navCounter) {
+      navCounter.textContent = `${index + 1} / ${count}`;
     }
     if (statusHint && cur) {
       statusHint.textContent = cur.name;
@@ -11802,11 +11840,21 @@ document.addEventListener('DOMContentLoaded', () => {
       targetPanel.style.display = 'block';
     }
 
-    // Switch Views
+    // Switch Views & Lock Master Panel Height
     const masterView = document.getElementById('batch-conv-cc-master-view');
     const detailView = document.getElementById('batch-conv-cc-detail-view');
+    const settingsAside = document.querySelector('#tool-batch-convert-view aside.batch-settings-panel');
+
+    if (settingsAside && window.innerWidth > 1080) {
+      const naturalH = settingsAside.offsetHeight;
+      if (naturalH > 400) {
+        settingsAside.style.height = `${naturalH}px`;
+        settingsAside.style.maxHeight = `${naturalH}px`;
+      }
+    }
+
     if (masterView) masterView.style.display = 'none';
-    if (detailView) detailView.style.display = 'block';
+    if (detailView) detailView.style.display = 'flex';
 
     const panel = document.getElementById('batch-conv-control-center-panel');
     if (panel) panel.scrollTop = 0;
@@ -11819,8 +11867,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const masterView = document.getElementById('batch-conv-cc-master-view');
     const detailView = document.getElementById('batch-conv-cc-detail-view');
+    const settingsAside = document.querySelector('#tool-batch-convert-view aside.batch-settings-panel');
     if (detailView) detailView.style.display = 'none';
     if (masterView) masterView.style.display = 'block';
+    if (settingsAside) {
+      settingsAside.style.height = '';
+      settingsAside.style.maxHeight = '';
+    }
 
     updateAllBatchConvertToolStatusLabels();
     renderBatchConvertPreviewCanvas();
@@ -12234,9 +12287,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function renderBatchConvertPreviewCanvas() {
     const canvas = document.getElementById('canvas-batch-conv-preview');
+    const wrapper = document.getElementById('batch-conv-canvas-wrapper');
+    const viewport = document.getElementById('batch-conv-viewport');
     if (!canvas) return;
     const activeItem = batchConvertState.items[batchConvertState.activeIndex];
     if (!activeItem) return;
+
+    let targetWidth = 0;
+    let targetHeight = 0;
 
     if (batchConvertState.compareOriginal) {
       canvas.width = activeItem.img.naturalWidth;
@@ -12244,17 +12302,30 @@ document.addEventListener('DOMContentLoaded', () => {
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(activeItem.img, 0, 0);
-      return;
+      targetWidth = canvas.width;
+      targetHeight = canvas.height;
+    } else {
+      const processedCanvas = await processSingleBatchConvertItem(activeItem, false);
+      if (!processedCanvas) return;
+
+      canvas.width = processedCanvas.width;
+      canvas.height = processedCanvas.height;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(processedCanvas, 0, 0);
+      targetWidth = processedCanvas.width;
+      targetHeight = processedCanvas.height;
     }
 
-    const processedCanvas = await processSingleBatchConvertItem(activeItem, false);
-    if (!processedCanvas) return;
-
-    canvas.width = processedCanvas.width;
-    canvas.height = processedCanvas.height;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(processedCanvas, 0, 0);
+    if (wrapper && targetWidth > 0 && targetHeight > 0) {
+      const vW = (viewport && viewport.clientWidth) ? viewport.clientWidth : 800;
+      const vH = (viewport && viewport.clientHeight) ? viewport.clientHeight : 480;
+      const maxW = Math.max(220, vW - 56);
+      const maxH = Math.max(180, vH - 120);
+      const scale = Math.min(maxW / targetWidth, maxH / targetHeight, 1);
+      wrapper.style.width = `${Math.round(targetWidth * scale)}px`;
+      wrapper.style.height = `${Math.round(targetHeight * scale)}px`;
+    }
   }
 
   window.showBatchConvertOriginal = function (show) {

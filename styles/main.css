@@ -7735,7 +7735,8 @@ body.leaderboard-active .leaderboard-screen {
 }
 
 /* Batch Viewport & Canvas Preview Spacing */
-#batch-viewport {
+#batch-viewport,
+#batch-conv-viewport {
   padding: 54px 24px 58px;
   min-height: 460px;
   height: 480px;
@@ -7751,7 +7752,6 @@ body.leaderboard-active .leaderboard-screen {
   box-sizing: border-box;
 }
 
-#batch-conv-viewport,
 #batch-pdf-viewport {
   padding: 24px;
   min-height: 440px;
@@ -7778,7 +7778,8 @@ body.leaderboard-active .leaderboard-screen {
   will-change: width, height;
 }
 
-#canvas-batch-preview {
+#canvas-batch-preview,
+#canvas-batch-conv-preview {
   width: 100%;
   height: 100%;
   max-width: 100%;
@@ -7792,7 +7793,6 @@ body.leaderboard-active .leaderboard-screen {
   will-change: opacity, transform, filter;
 }
 
-#canvas-batch-conv-preview,
 #canvas-batch-pdf-preview {
   width: 100%;
   height: 100%;
@@ -10492,34 +10492,40 @@ aside.batch-settings-panel {
 }
 
 /* Symmetrical Bottom Alignment & Smooth 2-to-3 Column Studio Shift */
-#tool-batch-edit-view {
+#tool-batch-edit-view,
+#tool-batch-convert-view {
   transition: max-width 0.52s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-#tool-batch-edit-view.has-batch-items {
+#tool-batch-edit-view.has-batch-items,
+#tool-batch-convert-view.has-batch-items {
   max-width: 1520px;
 }
 
-#tool-batch-edit-view .workspace-layout {
+#tool-batch-edit-view .workspace-layout,
+#tool-batch-convert-view .workspace-layout {
   display: flex;
   align-items: stretch;
   gap: 0;
 }
 
-#tool-batch-edit-view .stage-container {
+#tool-batch-edit-view .stage-container,
+#tool-batch-convert-view .stage-container {
   flex: 1 1 0%;
   min-width: 0;
   transition: all 0.52s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-#tool-batch-edit-view #batch-viewport {
+#tool-batch-edit-view #batch-viewport,
+#tool-batch-convert-view #batch-conv-viewport {
   flex: 1;
   min-height: 500px;
   height: auto;
 }
 
 /* Fixed-Height Sub-Tool Layout with Internal Scroll & Bottom-Pinned Save Button */
-#tool-batch-edit-view .batch-control-center-panel {
+#tool-batch-edit-view .batch-control-center-panel,
+#tool-batch-convert-view .batch-control-center-panel {
   height: 100%;
   min-height: 0;
   max-height: 100%;
@@ -10527,7 +10533,8 @@ aside.batch-settings-panel {
   flex-direction: column;
 }
 
-#tool-batch-edit-view #batch-cc-detail-view {
+#tool-batch-edit-view #batch-cc-detail-view,
+#tool-batch-convert-view #batch-conv-cc-detail-view {
   flex: 1 1 0px;
   min-height: 0;
   height: 100%;
@@ -10536,11 +10543,14 @@ aside.batch-settings-panel {
 }
 
 #tool-batch-edit-view #batch-cc-detail-view .batch-detail-topbar,
-#tool-batch-edit-view #batch-cc-detail-view .batch-detail-header {
+#tool-batch-edit-view #batch-cc-detail-view .batch-detail-header,
+#tool-batch-convert-view #batch-conv-cc-detail-view .batch-detail-topbar,
+#tool-batch-convert-view #batch-conv-cc-detail-view .batch-detail-header {
   flex-shrink: 0;
 }
 
-#tool-batch-edit-view #batch-cc-detail-view .batch-tool-detail-body {
+#tool-batch-edit-view #batch-cc-detail-view .batch-tool-detail-body,
+#tool-batch-convert-view #batch-conv-cc-detail-view .batch-conv-tool-detail-body {
   flex: 1 1 0px;
   min-height: 0;
   overflow-y: auto;
@@ -10548,22 +10558,26 @@ aside.batch-settings-panel {
   padding-right: 4px;
 }
 
-#tool-batch-edit-view #batch-cc-detail-view .batch-tool-detail-body::-webkit-scrollbar {
+#tool-batch-edit-view #batch-cc-detail-view .batch-tool-detail-body::-webkit-scrollbar,
+#tool-batch-convert-view #batch-conv-cc-detail-view .batch-conv-tool-detail-body::-webkit-scrollbar {
   width: 4px;
 }
 
-#tool-batch-edit-view #batch-cc-detail-view > .divider {
+#tool-batch-edit-view #batch-cc-detail-view > .divider,
+#tool-batch-convert-view #batch-conv-cc-detail-view > .divider {
   flex-shrink: 0;
   margin-top: auto;
 }
 
-#tool-batch-edit-view #batch-cc-detail-view > .btn-primary {
+#tool-batch-edit-view #batch-cc-detail-view > .btn-primary,
+#tool-batch-convert-view #batch-conv-cc-detail-view > .btn-primary {
   flex-shrink: 0;
   width: 100%;
 }
 
 /* Middle Photo Queue Grid (Hidden & collapsed when empty, fades up smoothly when images loaded) */
-#tool-batch-edit-view .batch-middle-queue-panel {
+#tool-batch-edit-view .batch-middle-queue-panel,
+#tool-batch-convert-view .batch-middle-queue-panel {
   flex: 0 0 0px;
   width: 0;
   max-width: 0;
@@ -10592,7 +10606,8 @@ aside.batch-settings-panel {
   display: none !important;
 }
 
-#tool-batch-edit-view.has-batch-items .batch-middle-queue-panel {
+#tool-batch-edit-view.has-batch-items .batch-middle-queue-panel,
+#tool-batch-convert-view.has-batch-items .batch-middle-queue-panel {
   flex: 0 0 286px;
   width: 286px;
   max-width: 286px;
@@ -10605,14 +10620,16 @@ aside.batch-settings-panel {
   transform: translateY(0) scale(1);
 }
 
-#tool-batch-edit-view aside.batch-settings-panel {
+#tool-batch-edit-view aside.batch-settings-panel,
+#tool-batch-convert-view aside.batch-settings-panel {
   flex: 0 0 340px;
   width: 340px;
   margin-left: 24px;
   transition: margin-left 0.52s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-#tool-batch-edit-view.has-batch-items aside.batch-settings-panel {
+#tool-batch-edit-view.has-batch-items aside.batch-settings-panel,
+#tool-batch-convert-view.has-batch-items aside.batch-settings-panel {
   margin-left: 20px;
 }
 
@@ -10663,10 +10680,12 @@ aside.batch-settings-panel {
 }
 
 @media (max-width: 1080px) {
-  #tool-batch-edit-view .workspace-layout {
+  #tool-batch-edit-view .workspace-layout,
+  #tool-batch-convert-view .workspace-layout {
     flex-direction: column;
   }
-  #tool-batch-edit-view.has-batch-items .batch-middle-queue-panel {
+  #tool-batch-edit-view.has-batch-items .batch-middle-queue-panel,
+  #tool-batch-convert-view.has-batch-items .batch-middle-queue-panel {
     flex: none;
     width: 100%;
     max-width: 100%;
@@ -10678,7 +10697,9 @@ aside.batch-settings-panel {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
   #tool-batch-edit-view aside.batch-settings-panel,
-  #tool-batch-edit-view.has-batch-items aside.batch-settings-panel {
+  #tool-batch-edit-view.has-batch-items aside.batch-settings-panel,
+  #tool-batch-convert-view aside.batch-settings-panel,
+  #tool-batch-convert-view.has-batch-items aside.batch-settings-panel {
     flex: none;
     width: 100%;
     margin-left: 0;
