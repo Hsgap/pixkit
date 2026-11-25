@@ -6968,6 +6968,14 @@ document.addEventListener('DOMContentLoaded', () => {
         statusHint.textContent = 'Batch queue empty · Drop images or ZIP to begin';
         statusHint.title = '';
       }
+      if (wasActive) {
+        setTimeout(() => {
+          if (batchState.items.length === 0) {
+            const strip = document.getElementById('batch-carousel-strip');
+            if (strip) strip.innerHTML = '';
+          }
+        }, 520);
+      }
     }
     updateBatchScopeUI();
   }

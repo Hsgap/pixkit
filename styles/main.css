@@ -10493,7 +10493,7 @@ aside.batch-settings-panel {
 
 /* Symmetrical Bottom Alignment & Smooth 2-to-3 Column Studio Shift */
 #tool-batch-edit-view {
-  transition: max-width 0.52s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: max-width 0.52s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 #tool-batch-edit-view.has-batch-items {
@@ -10509,7 +10509,7 @@ aside.batch-settings-panel {
 #tool-batch-edit-view .stage-container {
   flex: 1 1 0%;
   min-width: 0;
-  transition: all 0.52s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.52s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 #tool-batch-edit-view #batch-viewport {
@@ -10534,14 +10534,14 @@ aside.batch-settings-panel {
   flex-direction: column;
   transform: translateY(18px) scale(0.97);
   transition:
-    flex-basis 0.52s cubic-bezier(0.16, 1, 0.3, 1),
-    width 0.52s cubic-bezier(0.16, 1, 0.3, 1),
-    max-width 0.52s cubic-bezier(0.16, 1, 0.3, 1),
-    margin-left 0.52s cubic-bezier(0.16, 1, 0.3, 1),
-    padding 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-    border-width 0.3s ease,
-    opacity 0.36s ease,
-    transform 0.52s cubic-bezier(0.16, 1, 0.3, 1);
+    flex-basis 0.52s cubic-bezier(0.25, 0.8, 0.25, 1),
+    width 0.52s cubic-bezier(0.25, 0.8, 0.25, 1),
+    max-width 0.52s cubic-bezier(0.25, 0.8, 0.25, 1),
+    margin-left 0.52s cubic-bezier(0.25, 0.8, 0.25, 1),
+    padding 0.52s cubic-bezier(0.25, 0.8, 0.25, 1),
+    border-width 0.52s cubic-bezier(0.25, 0.8, 0.25, 1),
+    opacity 0.52s cubic-bezier(0.25, 0.8, 0.25, 1),
+    transform 0.52s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 #tool-batch-edit-view #batch-topbar-scope-controls {
@@ -10565,7 +10565,7 @@ aside.batch-settings-panel {
   flex: 0 0 340px;
   width: 340px;
   margin-left: 24px;
-  transition: margin-left 0.52s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: margin-left 0.52s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 #tool-batch-edit-view.has-batch-items aside.batch-settings-panel {
