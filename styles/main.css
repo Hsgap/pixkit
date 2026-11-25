@@ -10811,8 +10811,21 @@ html.is-localhost .batch-subtool-pane {
 .tool-list-new-divider {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 12px;
   margin: 6px 4px 2px;
+}
+
+.tool-list-new-divider::before,
+.tool-list-new-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.tool-list-new-line {
+  display: none;
 }
 
 .tool-list-new-pill {
