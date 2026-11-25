@@ -10716,6 +10716,13 @@ aside.batch-settings-panel {
 
 /* Mobile Batch Studio Optimization (<= 768px) */
 @media (max-width: 768px) {
+  #tool-batch-edit-view,
+  #tool-batch-convert-view,
+  #tool-batch-pdf-view {
+    touch-action: pan-y;
+    overflow-y: visible !important;
+  }
+
   #tool-batch-edit-view #batch-viewport,
   #tool-batch-convert-view #batch-conv-viewport,
   #tool-batch-pdf-view #batch-pdf-viewport {
@@ -10723,6 +10730,23 @@ aside.batch-settings-panel {
     max-height: 56vh !important;
     height: auto !important;
     padding: 72px 12px 54px !important;
+    touch-action: pan-y;
+  }
+
+  #tool-batch-edit-view .batch-control-center-panel,
+  #tool-batch-convert-view .batch-control-center-panel,
+  #tool-batch-pdf-view .batch-control-center-panel,
+  #tool-batch-edit-view #batch-cc-detail-view,
+  #tool-batch-convert-view #batch-conv-cc-detail-view,
+  #tool-batch-pdf-view #batch-pdf-detail-view,
+  #tool-batch-edit-view .batch-tool-detail-body,
+  #tool-batch-convert-view .batch-conv-tool-detail-body,
+  #tool-batch-pdf-view .batch-subtool-pane {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    flex: none !important;
+    touch-action: pan-y;
   }
 
   #tool-batch-edit-view .batch-stage-glass-hud,
@@ -10790,6 +10814,7 @@ aside.batch-settings-panel {
     overflow-y: hidden !important;
     gap: 8px;
     padding: 4px 2px 8px;
+    touch-action: pan-x pan-y !important;
     -webkit-overflow-scrolling: touch;
   }
 
@@ -10807,8 +10832,12 @@ aside.batch-settings-panel {
   #tool-batch-convert-view aside.batch-settings-panel,
   #tool-batch-pdf-view aside.batch-settings-panel {
     min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
     padding: 14px 12px !important;
     margin-top: 12px !important;
+    touch-action: pan-y;
   }
 
   .batch-empty-dropzone {
