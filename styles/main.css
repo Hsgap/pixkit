@@ -10518,6 +10518,50 @@ aside.batch-settings-panel {
   height: auto;
 }
 
+/* Fixed-Height Sub-Tool Layout with Internal Scroll & Bottom-Pinned Save Button */
+#tool-batch-edit-view .batch-control-center-panel {
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#tool-batch-edit-view #batch-cc-detail-view {
+  flex: 1 1 0px;
+  min-height: 0;
+  height: 100%;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#tool-batch-edit-view #batch-cc-detail-view .batch-detail-topbar,
+#tool-batch-edit-view #batch-cc-detail-view .batch-detail-header {
+  flex-shrink: 0;
+}
+
+#tool-batch-edit-view #batch-cc-detail-view .batch-tool-detail-body {
+  flex: 1 1 0px;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
+#tool-batch-edit-view #batch-cc-detail-view .batch-tool-detail-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+#tool-batch-edit-view #batch-cc-detail-view > .divider {
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+#tool-batch-edit-view #batch-cc-detail-view > .btn-primary {
+  flex-shrink: 0;
+  width: 100%;
+}
+
 /* Middle Photo Queue Grid (Hidden & collapsed when empty, fades up smoothly when images loaded) */
 #tool-batch-edit-view .batch-middle-queue-panel {
   flex: 0 0 0px;

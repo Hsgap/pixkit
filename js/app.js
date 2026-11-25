@@ -7478,6 +7478,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const masterView = document.getElementById('batch-cc-master-view');
     const detailView = document.getElementById('batch-cc-detail-view');
     const panel = document.getElementById('batch-control-center-panel');
+    const settingsAside = document.querySelector('#tool-batch-edit-view aside.batch-settings-panel');
+
+    // Lock Control Menu, Photo Grid & Preview to exact Master View height before switching
+    if (settingsAside && window.innerWidth > 1080) {
+      const naturalH = settingsAside.offsetHeight;
+      if (naturalH > 400) {
+        settingsAside.style.height = `${naturalH}px`;
+        settingsAside.style.maxHeight = `${naturalH}px`;
+      }
+    }
 
     if (masterView && detailView) {
       isBatchTransitioning = true;
@@ -7488,7 +7498,7 @@ document.addEventListener('DOMContentLoaded', () => {
         masterView.style.display = 'none';
         masterView.classList.remove('anim-fade-up-out');
 
-        detailView.style.display = 'block';
+        detailView.style.display = 'flex';
         detailView.classList.remove('anim-fade-up-out', 'anim-fade-down-out', 'anim-fade-down-in');
         detailView.classList.add('anim-fade-up-in');
 
@@ -7497,7 +7507,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }, 110);
     } else {
       if (masterView) masterView.style.display = 'none';
-      if (detailView) detailView.style.display = 'block';
+      if (detailView) detailView.style.display = 'flex';
       if (panel) panel.scrollTop = 0;
     }
 
@@ -7555,6 +7565,12 @@ document.addEventListener('DOMContentLoaded', () => {
         masterView.style.display = 'block';
         masterView.classList.remove('anim-fade-up-in', 'anim-fade-up-out', 'anim-fade-down-out');
         masterView.classList.add('anim-fade-down-in');
+
+        const settingsAside = document.querySelector('#tool-batch-edit-view aside.batch-settings-panel');
+        if (settingsAside) {
+          settingsAside.style.height = '';
+          settingsAside.style.maxHeight = '';
+        }
 
         if (panel) panel.scrollTop = 0;
         isBatchTransitioning = false;
