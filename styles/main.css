@@ -10483,105 +10483,12 @@ aside.batch-settings-panel {
   border-color: rgba(248, 113, 113, 0.4);
 }
 
-/* ========================================================
-   EDGE-TO-EDGE FULL-BLEED WORKSPACE (LOCALHOST ONLY)
-   ======================================================== */
-
-html.is-localhost .view.studio-full-bleed,
-html.is-localhost .view[id^="tool-"],
-html.is-localhost #tool-batch-edit-view {
-  max-width: 100% !important;
-  width: 100% !important;
-  padding: 18px 28px 48px !important;
-  box-sizing: border-box !important;
-  margin: 0 !important;
+/* Symmetrical Bottom Alignment for Batch Stage & Inspector */
+#tool-batch-edit-view .workspace-layout {
+  align-items: stretch;
 }
-
-@media (min-width: 1600px) {
-  html.is-localhost .view.studio-full-bleed,
-  html.is-localhost .view[id^="tool-"],
-  html.is-localhost #tool-batch-edit-view {
-    padding: 20px 36px 54px !important;
-  }
-}
-
-@media (max-width: 768px) {
-  html.is-localhost .view.studio-full-bleed,
-  html.is-localhost .view[id^="tool-"],
-  html.is-localhost #tool-batch-edit-view {
-    padding: 14px 16px 40px !important;
-  }
-}
-
-/* Compact, Expansive Studio Header (Localhost Only) */
-html.is-localhost .view[id^="tool-"] .page-title,
-html.is-localhost #tool-batch-edit-view .page-title {
-  margin: 0 0 16px !important;
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: center !important;
-  padding: 0 2px !important;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-html.is-localhost .view[id^="tool-"] .page-title h1,
-html.is-localhost #tool-batch-edit-view .page-title h1 {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.3px;
-  margin: 2px 0 0;
-}
-
-html.is-localhost .view[id^="tool-"] .page-title p,
-html.is-localhost #tool-batch-edit-view .page-title p {
-  margin: 2px 0 0;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-html.is-localhost .view[id^="tool-"] .page-title .eyebrow,
-html.is-localhost #tool-batch-edit-view .page-title .eyebrow {
-  font-size: 10.5px;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  font-weight: 700;
-  color: var(--muted);
-  margin-bottom: 1px;
-}
-
-/* Dynamic Edge-to-Edge Grid Layout (Localhost Only) */
-html.is-localhost .view[id^="tool-"] .workspace-layout,
-html.is-localhost #tool-batch-edit-view .workspace-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
-  gap: 22px;
-  align-items: start;
-  width: 100%;
-}
-
-@media (min-width: 1440px) {
-  html.is-localhost .view[id^="tool-"] .workspace-layout,
-  html.is-localhost #tool-batch-edit-view .workspace-layout {
-    grid-template-columns: minmax(0, 1fr) 400px;
-    gap: 26px;
-  }
-}
-
-@media (max-width: 1024px) {
-  html.is-localhost .view[id^="tool-"] .workspace-layout,
-  html.is-localhost #tool-batch-edit-view .workspace-layout {
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
-}
-
-/* Sticky Inspector in Studio Mode (Localhost Only) */
-html.is-localhost #tool-batch-edit-view aside.batch-settings-panel {
-  position: sticky;
-  top: 18px;
-  max-height: calc(100vh - 36px);
-  overflow-y: auto;
+#tool-batch-edit-view #batch-viewport {
+  flex: 1;
 }
 
 /* Localhost / Development Only Visibility */
