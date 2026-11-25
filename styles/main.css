@@ -10710,6 +10710,116 @@ aside.batch-settings-panel {
   }
 }
 
+/* Mobile Batch Studio Optimization (<= 768px) */
+@media (max-width: 768px) {
+  #tool-batch-edit-view #batch-viewport,
+  #tool-batch-convert-view #batch-conv-viewport,
+  #tool-batch-pdf-view #batch-pdf-viewport {
+    min-height: 340px !important;
+    max-height: 56vh !important;
+    height: auto !important;
+    padding: 72px 12px 54px !important;
+  }
+
+  #tool-batch-edit-view .batch-stage-glass-hud,
+  #tool-batch-convert-view .batch-stage-glass-hud,
+  #tool-batch-pdf-view .batch-stage-glass-hud {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  #tool-batch-edit-view .batch-hud-left,
+  #tool-batch-edit-view .batch-hud-right,
+  #tool-batch-convert-view .batch-hud-left,
+  #tool-batch-convert-view .batch-hud-right,
+  #tool-batch-pdf-view .batch-hud-left,
+  #tool-batch-pdf-view .batch-hud-right {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  #tool-batch-edit-view .batch-glass-pill,
+  #tool-batch-edit-view .batch-glass-btn,
+  #tool-batch-convert-view .batch-glass-pill,
+  #tool-batch-convert-view .batch-glass-btn,
+  #tool-batch-pdf-view .batch-glass-pill,
+  #tool-batch-pdf-view .batch-glass-btn {
+    padding: 4px 8px;
+    font-size: 10.5px;
+  }
+
+  #tool-batch-edit-view .batch-floating-nav-bar,
+  #tool-batch-convert-view .batch-floating-nav-bar,
+  #tool-batch-pdf-view .batch-floating-nav-bar {
+    bottom: 10px;
+    padding: 3px 5px;
+    gap: 4px;
+  }
+
+  #tool-batch-edit-view .batch-nav-glass-btn,
+  #tool-batch-convert-view .batch-nav-glass-btn,
+  #tool-batch-pdf-view .batch-nav-glass-btn {
+    padding: 4px 9px;
+    font-size: 11px;
+  }
+
+  /* Compact Horizontal Filmstrip on Mobile */
+  #tool-batch-edit-view.has-batch-items .batch-middle-queue-panel,
+  #tool-batch-convert-view.has-batch-items .batch-middle-queue-panel,
+  #tool-batch-pdf-view.has-batch-items .batch-middle-queue-panel {
+    max-height: none;
+    padding: 10px 10px 12px;
+    margin-top: 12px;
+  }
+
+  .batch-middle-queue-panel .batch-carousel-strip {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    gap: 8px;
+    padding: 2px 2px 6px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .batch-middle-queue-panel .batch-thumb-card {
+    flex: 0 0 106px !important;
+    width: 106px !important;
+    min-width: 106px !important;
+  }
+
+  .batch-middle-queue-panel .batch-thumb-img-wrap {
+    height: 64px;
+  }
+
+  #tool-batch-edit-view aside.batch-settings-panel,
+  #tool-batch-convert-view aside.batch-settings-panel,
+  #tool-batch-pdf-view aside.batch-settings-panel {
+    min-height: 0 !important;
+    padding: 14px 12px !important;
+    margin-top: 12px !important;
+  }
+
+  .batch-empty-dropzone {
+    padding: 24px 14px;
+  }
+
+  .batch-dropzone-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .batch-dropzone-actions .btn-primary,
+  .batch-dropzone-actions .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* Standalone Text Inputs inside Batch Sub-Tools */
 .form-group > .text-input {
   width: 100%;
