@@ -10507,19 +10507,14 @@ aside.batch-settings-panel {
 }
 
 @media (min-width: 1081px) {
-  #tool-batch-edit-view .workspace-layout {
-    height: clamp(560px, 68vh, 620px);
-  }
-  #tool-batch-edit-view .stage-container,
-  #tool-batch-edit-view.has-batch-items .batch-middle-queue-panel,
   #tool-batch-edit-view aside.batch-settings-panel {
-    height: 100%;
-    min-height: 0;
+    min-height: 618px;
+    max-height: 640px;
   }
   #tool-batch-edit-view .batch-control-center-panel {
-    height: 100%;
-    max-height: 100%;
+    flex: 1;
     min-height: 0;
+    max-height: 100%;
     overflow-y: auto;
   }
   #tool-batch-edit-view .batch-cc-view {
