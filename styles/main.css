@@ -10506,22 +10506,6 @@ aside.batch-settings-panel {
   gap: 0;
 }
 
-@media (min-width: 1081px) {
-  #tool-batch-edit-view aside.batch-settings-panel {
-    min-height: 618px;
-    max-height: 640px;
-  }
-  #tool-batch-edit-view .batch-control-center-panel {
-    flex: 1;
-    min-height: 0;
-    max-height: 100%;
-    overflow-y: auto;
-  }
-  #tool-batch-edit-view .batch-cc-view {
-    min-height: 100%;
-  }
-}
-
 #tool-batch-edit-view .stage-container {
   flex: 1 1 0%;
   min-width: 0;
