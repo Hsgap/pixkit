@@ -7054,9 +7054,22 @@ document.addEventListener('DOMContentLoaded', () => {
     updateBatchAccordionUI();
     updateAllBatchToolStatusLabels();
     updateBatchScopeUI();
-    renderBatchCarousel();
 
+    const strip = document.getElementById('batch-carousel-strip');
     const count = batchState.items.length;
+    if (strip && strip.children.length === count) {
+      Array.from(strip.children).forEach((card, i) => {
+        card.classList.toggle('active', i === index);
+      });
+      const activeCard = strip.children[index];
+      if (activeCard && !batchState.isExpanded) {
+        activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+      const activeName = document.getElementById('batch-active-name');
+      if (activeName && cur) activeName.textContent = `· ${cur.name}`;
+    } else {
+      renderBatchCarousel();
+    }
     const viewingTag = document.getElementById('batch-viewing-tag');
     const statusHint = document.getElementById('batch-stage-status');
     const navCounter = document.getElementById('batch-nav-counter');
@@ -11714,11 +11727,27 @@ document.addEventListener('DOMContentLoaded', () => {
   window.selectBatchConvertImage = function (index) {
     if (index < 0 || index >= batchConvertState.items.length) return;
     batchConvertState.activeIndex = index;
-    renderBatchConvertCarousel();
+
+    const strip = document.getElementById('batch-conv-carousel-strip');
+    const count = batchConvertState.items.length;
+    if (strip && strip.children.length === count) {
+      Array.from(strip.children).forEach((card, i) => {
+        card.classList.toggle('active', i === index);
+      });
+      const activeCard = strip.children[index];
+      if (activeCard && !batchConvertState.isExpanded) {
+        activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+      const activeName = document.getElementById('batch-conv-active-name');
+      const curItem = batchConvertState.items[index];
+      if (activeName && curItem) activeName.textContent = `· ${curItem.name}`;
+    } else {
+      renderBatchConvertCarousel();
+    }
+
     renderBatchConvertPreviewCanvas();
 
     const cur = batchConvertState.items[index];
-    const count = batchConvertState.items.length;
     const viewingTag = document.getElementById('batch-conv-viewing-tag');
     const statusHint = document.getElementById('batch-conv-stage-status');
     const navCounter = document.getElementById('batch-conv-nav-counter');
@@ -16803,11 +16832,27 @@ document.addEventListener('DOMContentLoaded', () => {
   window.selectBatchPdfItem = function (index) {
     if (index < 0 || index >= batchPdfState.items.length) return;
     batchPdfState.activeIndex = index;
-    renderBatchPdfCarousel();
+
+    const strip = document.getElementById('batch-pdf-carousel-strip');
+    const count = batchPdfState.items.length;
+    if (strip && strip.children.length === count) {
+      Array.from(strip.children).forEach((card, i) => {
+        card.classList.toggle('active', i === index);
+      });
+      const activeCard = strip.children[index];
+      if (activeCard && !batchPdfState.isExpanded) {
+        activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+      const activeName = document.getElementById('batch-pdf-active-name');
+      const curItem = batchPdfState.items[index];
+      if (activeName && curItem) activeName.textContent = curItem.name;
+    } else {
+      renderBatchPdfCarousel();
+    }
+
     renderBatchPdfPreviewCanvas();
 
     const cur = batchPdfState.items[index];
-    const count = batchPdfState.items.length;
     const viewingTag = document.getElementById('batch-pdf-viewing-tag');
     const statusHint = document.getElementById('batch-pdf-stage-status');
     const navCounter = document.getElementById('batch-pdf-nav-counter');
