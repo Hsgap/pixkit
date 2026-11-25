@@ -10487,28 +10487,12 @@ aside.batch-settings-panel {
    EDGE-TO-EDGE FULL-BLEED WORKSPACE (LOCALHOST ONLY)
    ======================================================== */
 
-html.is-localhost .shell {
-  max-width: 100% !important;
-  width: 100% !important;
-}
-
-html.is-localhost .topbar {
-  height: 60px !important;
-  padding: 0 28px !important;
-}
-
-@media (min-width: 1600px) {
-  html.is-localhost .topbar {
-    padding: 0 36px !important;
-  }
-}
-
 html.is-localhost .view.studio-full-bleed,
 html.is-localhost .view[id^="tool-"],
 html.is-localhost #tool-batch-edit-view {
   max-width: 100% !important;
   width: 100% !important;
-  padding: 14px 28px 36px !important;
+  padding: 18px 28px 48px !important;
   box-sizing: border-box !important;
   margin: 0 !important;
 }
@@ -10517,7 +10501,7 @@ html.is-localhost #tool-batch-edit-view {
   html.is-localhost .view.studio-full-bleed,
   html.is-localhost .view[id^="tool-"],
   html.is-localhost #tool-batch-edit-view {
-    padding: 16px 36px 42px !important;
+    padding: 20px 36px 54px !important;
   }
 }
 
@@ -10525,97 +10509,53 @@ html.is-localhost #tool-batch-edit-view {
   html.is-localhost .view.studio-full-bleed,
   html.is-localhost .view[id^="tool-"],
   html.is-localhost #tool-batch-edit-view {
-    padding: 12px 16px 36px !important;
+    padding: 14px 16px 40px !important;
   }
 }
 
-/* Sleek Single-Line Studio Sub-Header (Localhost Only) */
+/* Compact, Expansive Studio Header (Localhost Only) */
+html.is-localhost .view[id^="tool-"] .page-title,
 html.is-localhost #tool-batch-edit-view .page-title {
-  margin: 0 0 12px !important;
+  margin: 0 0 16px !important;
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
   padding: 0 2px !important;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
-html.is-localhost #tool-batch-edit-view .page-title .eyebrow,
-html.is-localhost #tool-batch-edit-view .page-title p {
-  display: none !important;
-}
-
+html.is-localhost .view[id^="tool-"] .page-title h1,
 html.is-localhost #tool-batch-edit-view .page-title h1 {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.3px;
-  margin: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+  margin: 2px 0 0;
 }
 
-html.is-localhost #tool-batch-edit-view .page-title h1::after {
-  content: 'STUDIO';
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.7px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: var(--soft);
-  border: 1px solid var(--line);
+html.is-localhost .view[id^="tool-"] .page-title p,
+html.is-localhost #tool-batch-edit-view .page-title p {
+  margin: 2px 0 0;
+  font-size: 13px;
   color: var(--muted);
 }
 
-html.is-localhost #tool-batch-edit-view .page-title .back-btn {
-  padding: 6px 12px;
-  font-size: 12px;
-}
-
-/* Flatten Nested Outer Borders on Stage Container (Localhost Only) */
-html.is-localhost #tool-batch-edit-view .stage-container {
-  background: transparent !important;
-  border: none !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
-  box-shadow: none !important;
-  overflow: visible !important;
-  min-height: 0 !important;
-}
-
-html.is-localhost #tool-batch-edit-view #batch-viewport {
-  height: clamp(500px, calc(100vh - 295px), 780px);
-  min-height: 500px;
-  padding: 60px 28px 64px;
-}
-
-/* Minimalist Calm HUD (Hide redundant scope pills over the photo) */
-html.is-localhost #tool-batch-edit-view #batch-topbar-scope-controls {
-  display: none !important;
-}
-
-html.is-localhost #tool-batch-edit-view .batch-glass-pill,
-html.is-localhost #tool-batch-edit-view .batch-glass-btn {
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-}
-
-html.is-localhost[data-theme="dark"] #tool-batch-edit-view .batch-glass-pill,
-html.is-localhost[data-theme="dark"] #tool-batch-edit-view .batch-glass-btn {
-  border-color: rgba(255, 255, 255, 0.12);
-}
-
-/* Slim Filmstrip Scrollbar (Localhost Only) */
-html.is-localhost #tool-batch-edit-view .batch-carousel-strip::-webkit-scrollbar {
-  height: 4px;
+html.is-localhost .view[id^="tool-"] .page-title .eyebrow,
+html.is-localhost #tool-batch-edit-view .page-title .eyebrow {
+  font-size: 10.5px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 1px;
 }
 
 /* Dynamic Edge-to-Edge Grid Layout (Localhost Only) */
 html.is-localhost .view[id^="tool-"] .workspace-layout,
 html.is-localhost #tool-batch-edit-view .workspace-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 370px;
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 22px;
   align-items: start;
   width: 100%;
 }
@@ -10623,8 +10563,8 @@ html.is-localhost #tool-batch-edit-view .workspace-layout {
 @media (min-width: 1440px) {
   html.is-localhost .view[id^="tool-"] .workspace-layout,
   html.is-localhost #tool-batch-edit-view .workspace-layout {
-    grid-template-columns: minmax(0, 1fr) 390px;
-    gap: 24px;
+    grid-template-columns: minmax(0, 1fr) 400px;
+    gap: 26px;
   }
 }
 
@@ -10639,8 +10579,8 @@ html.is-localhost #tool-batch-edit-view .workspace-layout {
 /* Sticky Inspector in Studio Mode (Localhost Only) */
 html.is-localhost #tool-batch-edit-view aside.batch-settings-panel {
   position: sticky;
-  top: 74px;
-  max-height: calc(100vh - 96px);
+  top: 18px;
+  max-height: calc(100vh - 36px);
   overflow-y: auto;
 }
 
