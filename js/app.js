@@ -16582,6 +16582,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function syncBatchPdfViewUI() {
     const hasItems = batchPdfState.items.length > 0;
+    const batchPdfView = document.getElementById('tool-batch-pdf-view');
     const dropzone = document.getElementById('batch-pdf-dropzone');
     const canvasWrap = document.getElementById('batch-pdf-canvas-wrapper');
     const sliderPanel = document.getElementById('batch-pdf-slider-panel');
@@ -16589,12 +16590,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const topbarTools = document.getElementById('batch-pdf-topbar-tools');
     const statusHint = document.getElementById('batch-pdf-stage-status');
     const viewingTag = document.getElementById('batch-pdf-viewing-tag');
+    const glassHud = document.getElementById('batch-pdf-stage-glass-hud');
+    const floatingNav = document.getElementById('batch-pdf-floating-nav-bar');
+    const navCounter = document.getElementById('batch-pdf-nav-counter');
+
+    const wasActive = batchPdfView ? batchPdfView.classList.contains('has-batch-items') : false;
+    if (batchPdfView) {
+      batchPdfView.classList.toggle('has-batch-items', hasItems);
+    }
 
     if (dropzone) dropzone.style.display = hasItems ? 'none' : 'flex';
     if (canvasWrap) canvasWrap.style.display = hasItems ? 'flex' : 'none';
-    if (sliderPanel) sliderPanel.style.display = hasItems ? 'block' : 'none';
-    if (stageFooter) stageFooter.style.display = hasItems ? 'flex' : 'none';
+    if (sliderPanel) sliderPanel.style.display = '';
+    if (stageFooter) stageFooter.style.display = 'none';
     if (topbarTools) topbarTools.style.display = hasItems ? 'flex' : 'none';
+    if (glassHud) glassHud.style.display = hasItems ? 'flex' : 'none';
+    if (floatingNav) floatingNav.style.display = hasItems ? 'inline-flex' : 'none';
+
+    if (hasItems && !wasActive) {
+      setTimeout(() => {
+        if (batchPdfState.items.length > 0 && typeof renderBatchPdfPreviewCanvas === 'function') {
+          renderBatchPdfPreviewCanvas();
+        }
+      }, 540);
+    }
 
     if (hasItems) {
       const cur = batchPdfState.items[batchPdfState.activeIndex];
@@ -16603,6 +16622,9 @@ document.addEventListener('DOMContentLoaded', () => {
         viewingTag.style.display = 'inline-flex';
         viewingTag.textContent = `Viewing ${batchPdfState.activeIndex + 1} of ${count}`;
       }
+      if (navCounter) {
+        navCounter.textContent = `${batchPdfState.activeIndex + 1} / ${count}`;
+      }
       if (statusHint) {
         statusHint.textContent = cur ? cur.name : '';
         statusHint.title = cur ? `${cur.name} (${cur.numPages} Pages)` : '';
@@ -16610,9 +16632,18 @@ document.addEventListener('DOMContentLoaded', () => {
       renderBatchPdfCarousel();
     } else {
       if (viewingTag) viewingTag.style.display = 'none';
+      if (navCounter) navCounter.textContent = '0 / 0';
       if (statusHint) {
         statusHint.textContent = 'Batch queue empty · Drop PDFs or ZIP to begin';
         statusHint.title = '';
+      }
+      if (wasActive) {
+        setTimeout(() => {
+          if (batchPdfState.items.length === 0) {
+            const strip = document.getElementById('batch-pdf-carousel-strip');
+            if (strip) strip.innerHTML = '';
+          }
+        }, 520);
       }
     }
   }
@@ -16644,6 +16675,19 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       await page.render({ canvasContext: ctx, viewport: viewport }).promise;
 
+      // Fit wrapper cleanly inside HUD clearance zone
+      const wrapper = document.getElementById('batch-pdf-canvas-wrapper');
+      const stageViewport = document.getElementById('batch-pdf-viewport');
+      if (wrapper && canvas.width > 0 && canvas.height > 0) {
+        const vW = (stageViewport && stageViewport.clientWidth) ? stageViewport.clientWidth : 800;
+        const vH = (stageViewport && stageViewport.clientHeight) ? stageViewport.clientHeight : 480;
+        const maxW = Math.max(220, vW - 56);
+        const maxH = Math.max(180, vH - 120);
+        const scale = Math.min(maxW / canvas.width, maxH / canvas.height, 1);
+        wrapper.style.width = `${Math.round(canvas.width * scale)}px`;
+        wrapper.style.height = `${Math.round(canvas.height * scale)}px`;
+      }
+
       // Page controls
       const pageControls = document.getElementById('batch-pdf-page-controls');
       const pagePill = document.getElementById('batch-pdf-page-pill');
@@ -16674,6 +16718,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const metaSummary = document.getElementById('batch-pdf-meta-summary');
     const metaDetails = document.getElementById('batch-pdf-meta-details');
 
+    const navCounter = document.getElementById('batch-pdf-nav-counter');
+
     if (!strip) return;
     strip.innerHTML = '';
 
@@ -16682,8 +16728,9 @@ document.addEventListener('DOMContentLoaded', () => {
     batchPdfState.items.forEach(it => { totalBytes += (it.size || 0); });
     const sizeMb = (totalBytes / (1024 * 1024)).toFixed(1);
 
-    if (countPill) countPill.textContent = `${count} Document${count !== 1 ? 's' : ''}`;
-    if (metaSummary) metaSummary.textContent = `${count} Document${count !== 1 ? 's' : ''} in Queue · ${sizeMb} MB Total`;
+    if (countPill) countPill.textContent = `${count} PDF${count !== 1 ? 's' : ''}`;
+    if (metaSummary) metaSummary.textContent = `${sizeMb} MB Total`;
+    if (navCounter) navCounter.textContent = count > 0 ? `${batchPdfState.activeIndex + 1} / ${count}` : '0 / 0';
 
     const cur = batchPdfState.items[batchPdfState.activeIndex];
     if (activeName) activeName.textContent = cur ? cur.name : '';
@@ -16695,17 +16742,18 @@ document.addEventListener('DOMContentLoaded', () => {
     batchPdfState.items.forEach((item, idx) => {
       const card = document.createElement('div');
       card.className = `batch-thumb-card ${idx === batchPdfState.activeIndex ? 'active' : ''}`;
+      card.style.animationDelay = `${Math.min(idx * 28, 220)}ms`;
       card.onclick = () => selectBatchPdfItem(idx);
 
       const numBadge = document.createElement('span');
-      numBadge.className = 'batch-thumb-num';
+      numBadge.className = 'batch-thumb-badge';
       numBadge.textContent = `#${idx + 1}`;
       card.appendChild(numBadge);
 
       const delBtn = document.createElement('button');
-      delBtn.className = 'batch-thumb-del';
+      delBtn.className = 'batch-thumb-del-btn';
       delBtn.title = 'Remove document from queue';
-      delBtn.innerHTML = '✕';
+      delBtn.innerHTML = '×';
       delBtn.onclick = (e) => removeBatchPdfItem(idx, e);
       card.appendChild(delBtn);
 
@@ -16756,9 +16804,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const count = batchPdfState.items.length;
     const viewingTag = document.getElementById('batch-pdf-viewing-tag');
     const statusHint = document.getElementById('batch-pdf-stage-status');
+    const navCounter = document.getElementById('batch-pdf-nav-counter');
     if (viewingTag) {
       viewingTag.style.display = 'inline-flex';
       viewingTag.textContent = `Viewing ${index + 1} of ${count}`;
+    }
+    if (navCounter) {
+      navCounter.textContent = `${index + 1} / ${count}`;
     }
     if (statusHint && cur) {
       statusHint.textContent = cur.name;
@@ -16852,8 +16904,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const masterView = document.getElementById('batch-pdf-master-view');
     const detailView = document.getElementById('batch-pdf-detail-view');
+    const settingsAside = document.querySelector('#tool-batch-pdf-view aside.batch-settings-panel');
+
+    if (settingsAside && window.innerWidth > 1080) {
+      const naturalH = settingsAside.offsetHeight;
+      if (naturalH > 400) {
+        settingsAside.style.height = `${naturalH}px`;
+        settingsAside.style.maxHeight = `${naturalH}px`;
+      }
+    }
+
     if (masterView) masterView.style.display = 'none';
-    if (detailView) detailView.style.display = 'block';
+    if (detailView) detailView.style.display = 'flex';
 
     const panel = document.getElementById('batch-pdf-control-center-panel');
     if (panel) panel.scrollTop = 0;
@@ -16865,12 +16927,17 @@ document.addEventListener('DOMContentLoaded', () => {
     batchPdfState.activeDetailTool = null;
     const masterView = document.getElementById('batch-pdf-master-view');
     const detailView = document.getElementById('batch-pdf-detail-view');
+    const settingsAside = document.querySelector('#tool-batch-pdf-view aside.batch-settings-panel');
 
     if (detailView) {
       detailView.style.display = 'none';
     }
     if (masterView) {
       masterView.style.display = 'block';
+    }
+    if (settingsAside) {
+      settingsAside.style.height = '';
+      settingsAside.style.maxHeight = '';
     }
 
     const panel = document.getElementById('batch-pdf-control-center-panel');

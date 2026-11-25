@@ -135,7 +135,7 @@
     })();
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles/main.css?v=8.34">
+  <link rel="stylesheet" href="styles/main.css?v=8.35">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FBFBF8">
 </head>
@@ -922,6 +922,24 @@
             </div>
             <div class="tool-row-right">
               <span class="tool-tag">Page Editor</span>
+              <div class="tool-arrow">→</div>
+            </div>
+          </div>
+
+          <!-- 8. Batch PDF Processor (Localhost Dev Only) -->
+          <div class="tool-row-card dev-only-tool" onclick="openToolWorkspace('batch-pdf')">
+            <div class="tool-row-left">
+              <div class="tool-icon-box">⧉</div>
+              <div class="tool-row-info">
+                <div class="tool-row-header">
+                  <strong>Batch PDF Processor</strong>
+                  <span class="tool-number-badge">08</span>
+                </div>
+                <p>Merge, compress, rotate, extract, delete pages, watermark, or convert multiple PDFs</p>
+              </div>
+            </div>
+            <div class="tool-row-right">
+              <span class="tool-tag">Batch PDF</span>
               <div class="tool-arrow">→</div>
             </div>
           </div>
@@ -5670,6 +5688,389 @@
         </div>
       </section>
 
+      <!-- ============================================================== -->
+      <!-- TOOL 08 WORKSPACE: BATCH PDF PROCESSOR                         -->
+      <!-- ============================================================== -->
+      <section class="view" id="tool-batch-pdf-view">
+        <div class="page-title">
+          <div>
+            <div class="eyebrow">Tool 08 · Document Suite</div>
+            <h1>Batch PDF Processor</h1>
+            <p>Merge, compress, rotate, extract, delete pages, watermark, or export multiple PDFs together.</p>
+          </div>
+          <button class="back-btn" onclick="showView('document')">← Back to Document Tools</button>
+        </div>
+
+        <div class="workspace-layout">
+          <div class="stage-container">
+            <!-- Stage Viewport (Expansive Hero PDF Stage) -->
+            <div class="stage-viewport" id="batch-pdf-viewport">
+              <!-- Floating Top HUD Glass Bar -->
+              <div class="batch-stage-glass-hud" id="batch-pdf-stage-glass-hud" style="display:none;">
+                <div class="batch-hud-left">
+                  <div class="batch-glass-pill" id="batch-pdf-viewing-tag">Viewing 1 of 3</div>
+                  <span class="stage-hint" id="batch-pdf-stage-status" style="display:none;"></span>
+                </div>
+                <div class="batch-hud-right" id="batch-pdf-topbar-tools">
+                  <div id="batch-pdf-page-controls" style="display:none; align-items:center; gap:4px;">
+                    <button type="button" class="batch-glass-btn" onclick="navigateBatchPdfPage(-1)" title="Previous page">‹</button>
+                    <span class="batch-glass-pill" id="batch-pdf-page-pill">Page 1 of 1</span>
+                    <button type="button" class="batch-glass-btn" onclick="navigateBatchPdfPage(1)" title="Next page">›</button>
+                  </div>
+                  <button type="button" class="batch-glass-btn" onclick="openFullscreenPreview()" title="Full Screen Preview (F)">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:3px; vertical-align:middle;"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Full Screen
+                  </button>
+                  <button type="button" class="batch-glass-btn" onclick="downloadActiveBatchPdf()" title="Download this active PDF">
+                    ↓ Save
+                  </button>
+                  <button type="button" class="batch-glass-btn batch-glass-btn-danger" onclick="clearBatchPdfQueue()" title="Remove all PDFs from queue">
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <!-- Floating Bottom Quick Nav Glass Pill -->
+              <div class="batch-floating-nav-bar" id="batch-pdf-floating-nav-bar" style="display:none;">
+                <button type="button" class="batch-nav-glass-btn" onclick="navigateBatchPdf(-1)" title="Previous PDF (←)">‹ Prev</button>
+                <span class="batch-nav-glass-counter" id="batch-pdf-nav-counter">1 / 1</span>
+                <button type="button" class="batch-nav-glass-btn" onclick="navigateBatchPdf(1)" title="Next PDF (→)">Next ›</button>
+              </div>
+
+              <!-- Empty Batch PDF Dropzone -->
+              <div class="batch-empty-dropzone" id="batch-pdf-dropzone" onclick="document.getElementById('batch-pdf-files-input').click()">
+                <div class="batch-dropzone-icon">📄</div>
+                <h3 style="margin: 0 0 6px 0; font-size: 19px; font-weight: 700; color: var(--ink);">Drop multiple PDF documents or ZIP archive here</h3>
+                <p style="margin: 0 0 22px 0; font-size: 13.5px; color: var(--muted); max-width: 460px;">
+                  Merge, compress, rotate, watermark, or extract pages across dozens of PDFs 100% privately in your browser.
+                </p>
+                <div class="batch-dropzone-actions" onclick="event.stopPropagation()">
+                  <button type="button" class="btn-primary" onclick="document.getElementById('batch-pdf-files-input').click()">
+                    <span>📁 Select PDFs or ZIP</span>
+                  </button>
+                  <button type="button" class="btn-secondary" onclick="loadSampleBatchPdf()">
+                    <span>⚡ Load Sample PDFs</span>
+                  </button>
+                </div>
+                <input type="file" id="batch-pdf-files-input" multiple accept=".pdf,application/pdf,.zip,application/zip" style="display:none;" onchange="handleBatchPdfFilesSelect(event)">
+              </div>
+
+              <!-- Active Batch PDF Canvas Wrapper -->
+              <div class="batch-canvas-wrapper" id="batch-pdf-canvas-wrapper" style="display:none; position:relative;">
+                <canvas id="canvas-batch-pdf-preview"></canvas>
+              </div>
+            </div>
+
+            <!-- Hidden for backwards-compatibility -->
+            <div id="batch-pdf-stage-footer" style="display:none !important;">
+              <span id="batch-pdf-meta-details"></span>
+            </div>
+          </div>
+
+          <!-- Middle Column: PDF Queue Grid (Animates smoothly between Preview & Controls) -->
+          <div class="batch-dock-panel batch-middle-queue-panel" id="batch-pdf-slider-panel">
+            <div class="batch-dock-header">
+              <div class="batch-dock-info">
+                <span class="batch-dock-badge" id="batch-pdf-count-pill">0 PDFs</span>
+                <span class="batch-dock-summary" id="batch-pdf-meta-summary">0 MB</span>
+                <span class="batch-dock-active-hint" id="batch-pdf-active-name" style="display:none;"></span>
+              </div>
+              <div class="batch-dock-actions">
+                <button type="button" class="batch-dock-btn batch-dock-btn-accent" onclick="document.getElementById('batch-pdf-files-input').click()" title="Add more PDFs to queue">
+                  <span>+ Add</span>
+                </button>
+              </div>
+            </div>
+            <div class="batch-carousel-strip" id="batch-pdf-carousel-strip"></div>
+          </div>
+
+          <!-- Controls Panel (Master-Detail Control Center) -->
+          <aside class="settings-panel batch-settings-panel">
+            <div class="batch-control-center-panel" id="batch-pdf-control-center-panel">
+
+              <!-- ================= MASTER VIEW (PDF Operations) ================= -->
+              <div class="batch-cc-view" id="batch-pdf-master-view">
+                <div class="panel-header" style="margin-bottom:12px;">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                    <div>
+                      <h3 style="margin:0; font-size:16px; font-weight:700;">Batch PDF Operations</h3>
+                      <p class="sub" style="margin:3px 0 0; font-size:12px; color:var(--muted);">Actions apply across all queued PDF documents.</p>
+                    </div>
+                    <button type="button" class="batch-revert-pill-btn" onclick="resetBatchPdfConfigs()" title="Reset all PDF operations">
+                      ↺ Reset
+                    </button>
+                  </div>
+                </div>
+
+                <div class="batch-tool-nav-list">
+                  <div class="batch-section-header"><span>COMBINE &amp; OPTIMIZE</span></div>
+                  <!-- 1. Merge All PDFs -->
+                  <div class="batch-tool-nav-item" onclick="openBatchPdfToolDetail('merge')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span class="batch-tool-nav-icon">⧉</span>
+                      <div>
+                        <strong style="display:block; font-size:13px;">Merge All PDFs</strong>
+                        <small id="batch-pdf-status-merge" style="font-size:11px; color:var(--muted);">Off</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="batch-tool-toggle-pill" id="batch-pdf-toggle-merge" onclick="event.stopPropagation(); toggleBatchPdfFeature('merge')">Off</span>
+                      <span class="batch-tool-chevron">›</span>
+                    </div>
+                  </div>
+
+                  <!-- 2. Compress PDFs -->
+                  <div class="batch-tool-nav-item" onclick="openBatchPdfToolDetail('compress')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span class="batch-tool-nav-icon">◉</span>
+                      <div>
+                        <strong style="display:block; font-size:13px;">Compress PDFs</strong>
+                        <small id="batch-pdf-status-compress" style="font-size:11px; color:var(--muted);">Balanced</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="batch-tool-toggle-pill active" id="batch-pdf-toggle-compress" onclick="event.stopPropagation(); toggleBatchPdfFeature('compress')">Active</span>
+                      <span class="batch-tool-chevron">›</span>
+                    </div>
+                  </div>
+
+                  <div class="batch-section-header"><span>PAGE OPERATIONS</span></div>
+                  <!-- 3. Rotate Pages -->
+                  <div class="batch-tool-nav-item" onclick="openBatchPdfToolDetail('rotate')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span class="batch-tool-nav-icon">↻</span>
+                      <div>
+                        <strong style="display:block; font-size:13px;">Rotate Pages</strong>
+                        <small id="batch-pdf-status-rotate" style="font-size:11px; color:var(--muted);">Off</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="batch-tool-toggle-pill" id="batch-pdf-toggle-rotate" onclick="event.stopPropagation(); toggleBatchPdfFeature('rotate')">Off</span>
+                      <span class="batch-tool-chevron">›</span>
+                    </div>
+                  </div>
+
+                  <!-- 4. Extract Pages -->
+                  <div class="batch-tool-nav-item" onclick="openBatchPdfToolDetail('extract')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span class="batch-tool-nav-icon">✂</span>
+                      <div>
+                        <strong style="display:block; font-size:13px;">Extract Pages</strong>
+                        <small id="batch-pdf-status-extract" style="font-size:11px; color:var(--muted);">Off</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="batch-tool-toggle-pill" id="batch-pdf-toggle-extract" onclick="event.stopPropagation(); toggleBatchPdfFeature('extract')">Off</span>
+                      <span class="batch-tool-chevron">›</span>
+                    </div>
+                  </div>
+
+                  <!-- 5. Delete Pages -->
+                  <div class="batch-tool-nav-item" onclick="openBatchPdfToolDetail('delete')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span class="batch-tool-nav-icon">✕</span>
+                      <div>
+                        <strong style="display:block; font-size:13px;">Delete Pages</strong>
+                        <small id="batch-pdf-status-delete" style="font-size:11px; color:var(--muted);">Off</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="batch-tool-toggle-pill" id="batch-pdf-toggle-delete" onclick="event.stopPropagation(); toggleBatchPdfFeature('delete')">Off</span>
+                      <span class="batch-tool-chevron">›</span>
+                    </div>
+                  </div>
+
+                  <div class="batch-section-header"><span>EXPORT &amp; STAMPING</span></div>
+                  <!-- 6. PDFs to Images -->
+                  <div class="batch-tool-nav-item" onclick="openBatchPdfToolDetail('to-images')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span class="batch-tool-nav-icon">🖼</span>
+                      <div>
+                        <strong style="display:block; font-size:13px;">PDFs to Images</strong>
+                        <small id="batch-pdf-status-to-images" style="font-size:11px; color:var(--muted);">Off</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="batch-tool-toggle-pill" id="batch-pdf-toggle-to-images" onclick="event.stopPropagation(); toggleBatchPdfFeature('to-images')">Off</span>
+                      <span class="batch-tool-chevron">›</span>
+                    </div>
+                  </div>
+
+                  <!-- 7. Add Watermark -->
+                  <div class="batch-tool-nav-item" onclick="openBatchPdfToolDetail('watermark')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <span class="batch-tool-nav-icon">◈</span>
+                      <div>
+                        <strong style="display:block; font-size:13px;">Add Watermark</strong>
+                        <small id="batch-pdf-status-watermark" style="font-size:11px; color:var(--muted);">Off</small>
+                      </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span class="batch-tool-toggle-pill" id="batch-pdf-toggle-watermark" onclick="event.stopPropagation(); toggleBatchPdfFeature('watermark')">Off</span>
+                      <span class="batch-tool-chevron">›</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top:auto; padding-top:14px;">
+                  <button type="button" class="btn-primary batch-process-cta" id="btn-batch-pdf-process" onclick="processAndDownloadBatchPdf()">
+                    <span id="batch-pdf-process-btn-text">⚡ Process All &amp; Download ZIP</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- ================= DETAIL VIEW (Sub-tool Parameters) ================= -->
+              <div class="batch-cc-view" id="batch-pdf-detail-view" style="display:none;">
+                <div class="batch-detail-topbar">
+                  <button type="button" class="batch-detail-back-btn" onclick="closeBatchPdfToolDetail()">
+                    <span class="back-arrow">←</span> All Operations
+                  </button>
+                  <button type="button" class="batch-tool-toggle-pill" id="batch-pdf-detail-toggle-btn" onclick="toggleActiveBatchPdfDetailFeature()">Off</button>
+                </div>
+                <div class="batch-detail-header">
+                  <div class="batch-detail-title-group">
+                    <span class="batch-detail-icon-box" id="batch-pdf-detail-icon">📄</span>
+                    <div>
+                      <h3 id="batch-pdf-detail-title" style="margin:0; font-size:16px; font-weight:700;">Operation</h3>
+                      <p id="batch-pdf-detail-desc" style="margin:2px 0 0; font-size:11.5px; color:var(--muted);"></p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sub-pane: MERGE -->
+                <div class="batch-subtool-pane" id="batch-pdf-pane-merge" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">Merged Output Filename</label>
+                    <input type="text" class="text-input" value="merged_bundle.pdf" placeholder="merged_bundle.pdf" oninput="setBatchPdfMergeName(this.value)">
+                  </div>
+                  <p style="font-size:12px; color:var(--muted); line-height:1.5; margin:0;">
+                    Combines all queued PDF documents in queue order into a single clean PDF file.
+                  </p>
+                </div>
+
+                <!-- Sub-pane: COMPRESS -->
+                <div class="batch-subtool-pane" id="batch-pdf-pane-compress" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">Compression Level</label>
+                    <div class="chips-group" id="batch-pdf-compress-level">
+                      <button type="button" class="chip-btn" data-val="light" onclick="setBatchPdfCompressLevel('light')">Light</button>
+                      <button type="button" class="chip-btn active" data-val="balanced" onclick="setBatchPdfCompressLevel('balanced')">Balanced</button>
+                      <button type="button" class="chip-btn" data-val="extreme" onclick="setBatchPdfCompressLevel('extreme')">Maximum</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label style="display:flex; align-items:center; gap:8px; font-size:12.5px; cursor:pointer;">
+                      <input type="checkbox" id="batch-pdf-compress-downscale" checked onchange="setBatchPdfDownscale(this.checked)">
+                      <span>Downscale embedded images to 150 DPI</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Sub-pane: ROTATE -->
+                <div class="batch-subtool-pane" id="batch-pdf-pane-rotate" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">Rotation Angle</label>
+                    <div class="chips-group" id="batch-pdf-rotate-angle">
+                      <button type="button" class="chip-btn active" data-val="90" onclick="setBatchPdfRotateAngle(90)">90° CW</button>
+                      <button type="button" class="chip-btn" data-val="180" onclick="setBatchPdfRotateAngle(180)">180°</button>
+                      <button type="button" class="chip-btn" data-val="270" onclick="setBatchPdfRotateAngle(270)">90° CCW</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Target Pages</label>
+                    <div class="chips-group" id="batch-pdf-rotate-scope">
+                      <button type="button" class="chip-btn active" data-val="all" onclick="setBatchPdfRotateScope('all')">All Pages</button>
+                      <button type="button" class="chip-btn" data-val="first" onclick="setBatchPdfRotateScope('first')">First Only</button>
+                      <button type="button" class="chip-btn" data-val="landscape" onclick="setBatchPdfRotateScope('landscape')">Landscape</button>
+                      <button type="button" class="chip-btn" data-val="portrait" onclick="setBatchPdfRotateScope('portrait')">Portrait</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sub-pane: TO IMAGES -->
+                <div class="batch-subtool-pane" id="batch-pdf-pane-to-images" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">Output Image Format</label>
+                    <div class="chips-group" id="batch-pdf-img-format">
+                      <button type="button" class="chip-btn active" data-val="png" onclick="setBatchPdfImgFormat('png')">PNG</button>
+                      <button type="button" class="chip-btn" data-val="jpeg" onclick="setBatchPdfImgFormat('jpeg')">JPG</button>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Render Scale</label>
+                    <div class="chips-group" id="batch-pdf-img-scale">
+                      <button type="button" class="chip-btn" data-val="1" onclick="setBatchPdfImgScale(1)">1× (72 DPI)</button>
+                      <button type="button" class="chip-btn active" data-val="2" onclick="setBatchPdfImgScale(2)">2× (144 DPI)</button>
+                      <button type="button" class="chip-btn" data-val="3" onclick="setBatchPdfImgScale(3)">3× (216 DPI)</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Sub-pane: EXTRACT -->
+                <div class="batch-subtool-pane" id="batch-pdf-pane-extract" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">Extraction Mode</label>
+                    <div class="chips-group" id="batch-pdf-extract-mode">
+                      <button type="button" class="chip-btn active" data-val="first" onclick="setBatchPdfExtractMode('first')">First Page</button>
+                      <button type="button" class="chip-btn" data-val="odd" onclick="setBatchPdfExtractMode('odd')">Odd Pages</button>
+                      <button type="button" class="chip-btn" data-val="even" onclick="setBatchPdfExtractMode('even')">Even Pages</button>
+                      <button type="button" class="chip-btn" data-val="custom" onclick="setBatchPdfExtractMode('custom')">Custom Range</button>
+                    </div>
+                  </div>
+                  <div class="form-group" id="batch-pdf-extract-custom-wrap" style="display:none;">
+                    <label class="form-label">Page Range (e.g. 1-3, 5)</label>
+                    <input type="text" class="text-input" value="1-2" placeholder="1-3, 5" oninput="setBatchPdfExtractRange(this.value)">
+                  </div>
+                </div>
+
+                <!-- Sub-pane: DELETE -->
+                <div class="batch-subtool-pane" id="batch-pdf-pane-delete" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">Pages to Remove</label>
+                    <div class="chips-group" id="batch-pdf-delete-mode">
+                      <button type="button" class="chip-btn active" data-val="first" onclick="setBatchPdfDeleteMode('first')">First Page</button>
+                      <button type="button" class="chip-btn" data-val="last" onclick="setBatchPdfDeleteMode('last')">Last Page</button>
+                      <button type="button" class="chip-btn" data-val="custom" onclick="setBatchPdfDeleteMode('custom')">Custom</button>
+                    </div>
+                  </div>
+                  <div class="form-group" id="batch-pdf-delete-custom-wrap" style="display:none;">
+                    <label class="form-label">Page Numbers (e.g. 1, 3-4)</label>
+                    <input type="text" class="text-input" value="1" placeholder="1, 3" oninput="setBatchPdfDeletePages(this.value)">
+                  </div>
+                </div>
+
+                <!-- Sub-pane: WATERMARK -->
+                <div class="batch-subtool-pane" id="batch-pdf-pane-watermark" style="display:none;">
+                  <div class="form-group">
+                    <label class="form-label">Stamp Preset</label>
+                    <div class="chips-group" id="batch-pdf-wm-type">
+                      <button type="button" class="chip-btn active" data-val="CONFIDENTIAL" onclick="setBatchPdfWatermarkType('CONFIDENTIAL')">CONFIDENTIAL</button>
+                      <button type="button" class="chip-btn" data-val="DRAFT" onclick="setBatchPdfWatermarkType('DRAFT')">DRAFT</button>
+                      <button type="button" class="chip-btn" data-val="APPROVED" onclick="setBatchPdfWatermarkType('APPROVED')">APPROVED</button>
+                      <button type="button" class="chip-btn" data-val="CUSTOM" onclick="setBatchPdfWatermarkType('CUSTOM')">Custom</button>
+                    </div>
+                  </div>
+                  <div class="form-group" id="batch-pdf-wm-custom-wrap" style="display:none;">
+                    <label class="form-label">Custom Watermark Text</label>
+                    <input type="text" class="text-input" value="INTERNAL" placeholder="Enter stamp text" oninput="setBatchPdfWatermarkCustomText(this.value)">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Position</label>
+                    <div class="chips-group" id="batch-pdf-wm-pos">
+                      <button type="button" class="chip-btn active" data-val="diagonal" onclick="setBatchPdfWatermarkPos('diagonal')">Diagonal Center</button>
+                      <button type="button" class="chip-btn" data-val="footer" onclick="setBatchPdfWatermarkPos('footer')">Footer</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="divider"></div>
+                <button type="button" class="btn-primary" onclick="closeBatchPdfToolDetail()">✓ Save Configuration</button>
+              </div>
+
+            </div>
+          </aside>
+        </div>
+      </section>
+
 
       <!-- Floating Global History Toolbar (Undo / Redo) -->
       <div id="floating-history-bar" class="floating-history-bar">
@@ -6212,7 +6613,7 @@
   <!-- PixKit Remote Connector to admin.pixkit.site -->
   <script src="js/pixkit-remote.js"></script>
   <script src="js/engine.js?v=2.6"></script>
-  <script src="js/app.js?v=8.33"></script>
+  <script src="js/app.js?v=8.34"></script>
   <script src="js/support.js?v=8.19"></script>
   <script src="js/leaderboard.js"></script>
 </body>
