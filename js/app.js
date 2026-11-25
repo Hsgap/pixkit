@@ -6913,6 +6913,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function syncBatchViewUI() {
     const hasItems = batchState.items.length > 0;
+    const batchView = document.getElementById('tool-batch-edit-view');
     const dropzone = document.getElementById('batch-dropzone');
     const canvasWrap = document.getElementById('batch-canvas-wrapper');
     const sliderPanel = document.getElementById('batch-slider-panel');
@@ -6924,13 +6925,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const floatingNav = document.getElementById('batch-floating-nav-bar');
     const navCounter = document.getElementById('batch-nav-counter');
 
+    const wasActive = batchView ? batchView.classList.contains('has-batch-items') : false;
+    if (batchView) {
+      batchView.classList.toggle('has-batch-items', hasItems);
+    }
+
     if (dropzone) dropzone.style.display = hasItems ? 'none' : 'flex';
     if (canvasWrap) canvasWrap.style.display = hasItems ? 'flex' : 'none';
-    if (sliderPanel) sliderPanel.style.display = hasItems ? 'block' : 'none';
+    if (sliderPanel) sliderPanel.style.display = '';
     if (stageFooter) stageFooter.style.display = 'none';
     if (topbarTools) topbarTools.style.display = hasItems ? 'flex' : 'none';
     if (glassHud) glassHud.style.display = hasItems ? 'flex' : 'none';
     if (floatingNav) floatingNav.style.display = hasItems ? 'inline-flex' : 'none';
+
+    if (hasItems && !wasActive) {
+      setTimeout(() => {
+        if (batchState.items.length > 0 && typeof renderBatchPreviewCanvas === 'function') {
+          renderBatchPreviewCanvas();
+        }
+      }, 540);
+    }
 
     if (hasItems) {
       const cur = batchState.items[batchState.activeIndex];
@@ -6985,6 +6999,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const card = document.createElement('div');
       const isCustom = !!item.hasCustom;
       card.className = `batch-thumb-card ${index === batchState.activeIndex ? 'active' : ''} ${isCustom ? 'has-custom' : ''}`;
+      card.style.animationDelay = `${Math.min(index * 28, 220)}ms`;
       card.onclick = () => selectBatchImage(index);
 
       card.innerHTML = `

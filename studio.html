@@ -135,7 +135,7 @@
     })();
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="styles/main.css?v=8.27">
+  <link rel="stylesheet" href="styles/main.css?v=8.28">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#FBFBF8">
 </head>
@@ -2409,33 +2409,27 @@
               </div>
             </div>
 
-            <!-- Sleek Filmstrip Dock -->
-            <div class="batch-dock-panel" id="batch-slider-panel" style="display:none;">
-              <div class="batch-dock-header">
-                <div class="batch-dock-info">
-                  <span class="batch-dock-badge" id="batch-count-pill">0 Photos</span>
-                  <span class="batch-dock-summary" id="batch-meta-summary">0 MB</span>
-                  <span class="batch-dock-active-hint" id="batch-active-name"></span>
-                </div>
-                <div class="batch-dock-actions">
-                  <button type="button" class="batch-dock-btn" onclick="scrollBatchCarousel(-1)" title="Scroll left">‹</button>
-                  <button type="button" class="batch-dock-btn" onclick="scrollBatchCarousel(1)" title="Scroll right">›</button>
-                  <button type="button" class="batch-dock-btn batch-dock-btn-accent" onclick="triggerBatchUpload()" title="Add more images to batch">
-                    <span>+ Add Photos</span>
-                  </button>
-                  <button type="button" class="batch-dock-btn" id="batch-expand-btn" onclick="toggleBatchGridExpand()" title="Toggle full grid view">
-                    <span class="batch-expand-icon">⊞</span>
-                    <span id="batch-expand-btn-text">Grid View</span>
-                  </button>
-                </div>
-              </div>
-              <div class="batch-carousel-strip" id="batch-carousel-strip"></div>
-            </div>
-
             <!-- Hidden for backwards-compatibility -->
             <div id="batch-stage-footer" style="display:none !important;">
               <span id="batch-meta-details"></span>
             </div>
+          </div>
+
+          <!-- Middle Column: Photo Queue Grid (Animates smoothly between Preview & Controls) -->
+          <div class="batch-dock-panel batch-middle-queue-panel" id="batch-slider-panel">
+            <div class="batch-dock-header">
+              <div class="batch-dock-info">
+                <span class="batch-dock-badge" id="batch-count-pill">0 Photos</span>
+                <span class="batch-dock-summary" id="batch-meta-summary">0 MB</span>
+                <span class="batch-dock-active-hint" id="batch-active-name" style="display:none;"></span>
+              </div>
+              <div class="batch-dock-actions">
+                <button type="button" class="batch-dock-btn batch-dock-btn-accent" onclick="triggerBatchUpload()" title="Add more images to batch">
+                  <span>+ Add</span>
+                </button>
+              </div>
+            </div>
+            <div class="batch-carousel-strip" id="batch-carousel-strip"></div>
           </div>
 
           <!-- Controls Panel (Master-Detail Control Center) -->
@@ -5790,7 +5784,7 @@
   <!-- PixKit Remote Connector to admin.pixkit.site -->
   <script src="js/pixkit-remote.js"></script>
   <script src="js/engine.js?v=2.6"></script>
-  <script src="js/app.js?v=8.28"></script>
+  <script src="js/app.js?v=8.29"></script>
   <script src="js/support.js?v=8.19"></script>
   <script src="js/leaderboard.js"></script>
 </body>
