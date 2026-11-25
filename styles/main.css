@@ -10807,6 +10807,39 @@ html.is-localhost .batch-subtool-pane {
   }
 }
 
+/* NEW Tool Divider between Standard Tools & Batch Tools */
+.tool-list-new-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 4px 2px;
+}
+
+.tool-list-new-pill {
+  background: rgba(215, 243, 106, 0.25);
+  color: var(--ink);
+  border: 1px solid rgba(215, 243, 106, 0.65);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tool-list-new-line {
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+[data-theme="dark"] .tool-list-new-pill {
+  background: rgba(215, 243, 106, 0.16);
+  color: #d7f36a;
+  border-color: rgba(215, 243, 106, 0.45);
+}
+
 /* Localhost / Development Only Visibility */
 .dev-only-tool {
   display: none !important;
