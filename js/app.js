@@ -6633,9 +6633,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cfg.compress) {
         const c = cfg.compress;
         ['target', 'pixels', 'manual'].forEach(m => {
-          const btn = document.getElementById(`batch-comp-mode-${m}`);
+          const btn = document.getElementById(`batch-compress-tab-${m}`) || document.getElementById(`batch-comp-mode-${m}`);
           if (btn) btn.classList.toggle('active', c.mode === m);
-          const panel = document.getElementById(`batch-comp-panel-${m}`);
+          const panel = document.getElementById(`batch-compress-mode-${m}-panel`) || document.getElementById(`batch-comp-panel-${m}`);
           if (panel) panel.style.display = (c.mode === m) ? 'block' : 'none';
         });
         const tVal = document.getElementById('batch-compress-target-val') || document.getElementById('batch-comp-target-val');
@@ -9229,6 +9229,12 @@ document.addEventListener('DOMContentLoaded', () => {
   window.showBatchOriginal = function (show) {
     batchState.compareOriginal = !!show;
     renderBatchPreviewCanvas();
+  };
+  window.startBatchCompareOriginal = function () {
+    window.showBatchOriginal(true);
+  };
+  window.stopBatchCompareOriginal = function () {
+    window.showBatchOriginal(false);
   };
 
   // ==============================================================
