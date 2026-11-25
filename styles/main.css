@@ -10735,10 +10735,25 @@ aside.batch-settings-panel {
 /* ========================================================
    SPLIT APP-LIKE CATEGORY SCROLL WITH SMOOTH EDGE FADE (LOCALHOST)
    ======================================================== */
+html.is-localhost,
+html.is-localhost body,
+html.is-localhost .shell,
+html.is-localhost .tool-rows-list,
+html.is-localhost .settings-cards-grid,
+html.is-localhost .batch-middle-queue-panel .batch-carousel-strip,
+html.is-localhost .batch-control-center-panel,
+html.is-localhost .batch-tool-detail-body,
+html.is-localhost .batch-conv-tool-detail-body,
+html.is-localhost .batch-subtool-pane {
+  overscroll-behavior: none !important;
+  overscroll-behavior-y: none !important;
+}
+
 @media (min-width: 769px) {
   html.is-localhost #edit-view.active,
   html.is-localhost #convert-view.active,
-  html.is-localhost #document-view.active {
+  html.is-localhost #document-view.active,
+  html.is-localhost #settings-view.active {
     display: flex;
     flex-direction: column;
     height: calc(100vh - 78px);
@@ -10750,14 +10765,16 @@ aside.batch-settings-panel {
 
   html.is-localhost #edit-view.active .page-title,
   html.is-localhost #convert-view.active .page-title,
-  html.is-localhost #document-view.active .page-title {
+  html.is-localhost #document-view.active .page-title,
+  html.is-localhost #settings-view.active .page-title {
     flex-shrink: 0;
     margin-bottom: 10px;
   }
 
   html.is-localhost #edit-view.active .tool-rows-list,
   html.is-localhost #convert-view.active .tool-rows-list,
-  html.is-localhost #document-view.active .tool-rows-list {
+  html.is-localhost #document-view.active .tool-rows-list,
+  html.is-localhost #settings-view.active .settings-cards-grid {
     flex: 1 1 0px;
     min-height: 0;
     overflow-y: auto;
@@ -10783,7 +10800,8 @@ aside.batch-settings-panel {
 
   html.is-localhost #edit-view.active .tool-rows-list::-webkit-scrollbar,
   html.is-localhost #convert-view.active .tool-rows-list::-webkit-scrollbar,
-  html.is-localhost #document-view.active .tool-rows-list::-webkit-scrollbar {
+  html.is-localhost #document-view.active .tool-rows-list::-webkit-scrollbar,
+  html.is-localhost #settings-view.active .settings-cards-grid::-webkit-scrollbar {
     width: 0;
     display: none;
   }
