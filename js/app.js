@@ -8163,10 +8163,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const compCfg = batchState.configs.compress;
     if (!activeItem || !activeItem.img) return;
 
-    let targetBytes = 200 * 1024;
+    let targetBytes = 200 * 1000;
     if (compCfg.mode === 'target') {
       const v = compCfg.targetVal || 200;
-      targetBytes = (compCfg.targetUnit === 'MB' ? v * 1024 * 1024 : v * 1024);
+      targetBytes = Math.floor((compCfg.targetUnit === 'MB' ? v * 1000 * 1000 : v * 1000) * 0.995);
       setBatchCalibratingUI(true);
     }
 
@@ -9119,7 +9119,7 @@ document.addEventListener('DOMContentLoaded', () => {
       exportBlob = await new Promise(r => renderCanvas.toBlob(r, exportMime, defaultQ));
     } else if (compCfg.mode === 'target') {
       const v = compCfg.targetVal || 200;
-      const targetBytes = (compCfg.targetUnit === 'MB' ? v * 1024 * 1024 : v * 1024);
+      const targetBytes = Math.floor((compCfg.targetUnit === 'MB' ? v * 1000 * 1000 : v * 1000) * 0.995);
 
       // Auto-calibrate this specific item's canvas to guarantee strictly <= targetBytes
       const calibResult = await engine.autoCalibrateCompression(targetBytes, exportMime, renderCanvas);
